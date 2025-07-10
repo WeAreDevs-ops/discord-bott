@@ -37,7 +37,7 @@ client.on('ready', async () => {
       )
   ].map(cmd => cmd.toJSON());
 
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+  const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
   try {
     await rest.put(
       Routes.applicationCommands(client.user.id),
@@ -52,6 +52,12 @@ client.on('ready', async () => {
 // Slash command logic
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
+
+  // ✅ Restrict to only one channel
+  const allowedChannel = '1392522417254961273';
+  if (interaction.channelId !== allowedChannel) {
+    return interaction.reply({ content: '❌ You can only use this command in the designated channel.', ephemeral: true });
+  }
 
   if (interaction.commandName === 'bypass2008') {
     const cookie = interaction.options.getString('cookie');
