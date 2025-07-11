@@ -85,7 +85,7 @@ client.on('messageCreate', async message => {
     
     // Send ephemeral-style reply to the user
     await message.channel.send({
-      content: `<@${message.author.id}> ❌ Command channel only. Please use slash commands.`,
+      content: `<@${message.author.id}> Command channel only. Please use slash commands.`,
     }).then(reply => {
       // Auto-delete the warning message after 5 seconds
       setTimeout(() => {
