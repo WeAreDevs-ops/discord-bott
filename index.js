@@ -62,6 +62,34 @@ client.on('ready', async () => {
   }
 });
 
+client.on('messageCreate', async message => {
+  // Check if message is in the monitored channel
+  if (message.channelId !== '1392522417254961273') return;
+  
+  // Ignore messages from bots (including this bot)
+  if (message.author.bot) return;
+  
+  // Ignore system messages and slash commands
+  if (message.system || message.interaction) return;
+  
+  try {
+    // Delete the message
+    await message.delete();
+    
+    // Send ephemeral-style reply to the user
+    await message.channel.send({
+      content: `<@${message.author.id}> ❌ Command channel only. Please use slash commands.`,
+    }).then(reply => {
+      // Auto-delete the warning message after 5 seconds
+      setTimeout(() => {
+        reply.delete().catch(console.error);
+      }, 5000);
+    });
+  } catch (error) {
+    console.error('Error handling message:', error);
+  }
+});
+
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -227,3 +255,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(process.env.BOT_TOKEN);
+  
