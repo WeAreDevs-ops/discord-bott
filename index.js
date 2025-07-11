@@ -10,7 +10,11 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ],
 });
 
 client.once('ready', () => {
@@ -71,6 +75,9 @@ client.on('messageCreate', async message => {
   
   // Ignore system messages and slash commands
   if (message.system || message.interaction) return;
+  
+  // Allow server owner and administrators to send normal messages
+  if (message.member && (message.member.permissions.has('Administrator') || message.guild.ownerId === message.author.id)) return;
   
   try {
     // Delete the message
