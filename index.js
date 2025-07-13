@@ -644,7 +644,7 @@ client.on('ready', async () => {
         option.setName('duration')
           .setDescription('Duration in minutes (max 40320 = 28 days)')
           .setRequired(true)
-          .setMinMinValue(1)
+          .setMinValue(1)
           .setMaxValue(40320)
       )
       .addStringOption(option =>
