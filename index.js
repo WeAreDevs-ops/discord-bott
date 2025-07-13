@@ -873,7 +873,7 @@ client.on('interactionCreate', async interaction => {
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x00ff88 : 0xff4757)
         .setTitle("📧 Email Bypass (2008 Method)")
-        .setDescription("Bypass result from rbx-tool.com")
+        .setDescription("Bypass results from INC BOT")
         .addFields(
           { name: "🔧 Bypass Result", value: data.message || (data.status === "success" ? "Success removing email!" : "Unknown error"), inline: false },
           { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
@@ -930,7 +930,7 @@ client.on('interactionCreate', async interaction => {
       const embed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x00ff88 : 0xff4757)
         .setTitle("🔓 Age Bypass (13+ to Under 13)")
-        .setDescription("Bypass result from rbx-tool.com")
+        .setDescription("Bypass results from INC BOT")
         .addFields(
           { name: "🔧 Bypass Result", value: data.message || (data.status === "success" ? "Success converting 13+ to under 13!" : "Unknown error"), inline: false },
           { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
