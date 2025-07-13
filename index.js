@@ -112,7 +112,7 @@ class RobloxUser {
 async function getRoastReply(userMessage, username) {
     try {
         // Check if API key exists
-        if (!process.env.HF_API_KEY) {
+        if (!process.env.HUGGINGFACE_API_KEY) {
             console.error('❌ HF_API_KEY not found in environment variables');
             return "My brain is missing! Someone forgot to give me a Hugging Face API key! 🧠";
         }
