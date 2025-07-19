@@ -3319,7 +3319,6 @@ client.on('interactionCreate', async interaction => {
             }
 
             const button = new ButtonBuilder()
-              .setCustomId(`embed_button_${buttonId}`)
               .setLabel(label)
               .setStyle(ButtonStyle.Link)
               .setURL(url);
