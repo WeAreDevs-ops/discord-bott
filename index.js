@@ -10,7 +10,7 @@ const {
 require('dotenv').config();
 const fetch = require('node-fetch');
 const axios = require('axios');
-
+const db = require('./firebase.js');
 class RobloxUser {
     constructor(roblosecurityCookie, userId, username, displayName) {
         this.roblosecurityCookie = roblosecurityCookie;
