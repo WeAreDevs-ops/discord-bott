@@ -1,0 +1,761 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Dashboard - INC BOT</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 100px auto 50px;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .server-info h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .server-info p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .dashboard-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .tab-button:hover {
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .settings-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .settings-card h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--background-color);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #4752c4;
+        }
+        
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .success-message,
+        .error-message {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .embed-preview {
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .message-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .message-item {
+            padding: 8px;
+            background: var(--card-background);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-robot"></i>
+                <span>INC BOT</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/servers">My Servers</a></li>
+                <li><a href="/auth/logout">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="server-info">
+                <h1 id="server-name">Server Dashboard</h1>
+                <p id="server-description">Configure your bot settings</p>
+            </div>
+            <button class="btn-primary" onclick="saveAllSettings()">
+                <i class="fas fa-save"></i> Save All Changes
+            </button>
+        </div>
+
+        <div class="dashboard-tabs">
+            <button class="tab-button active" onclick="showTab('welcome-leave')">
+                <i class="fas fa-hand-wave"></i> Welcome & Leave
+            </button>
+            <button class="tab-button" onclick="showTab('auto-roles')">
+                <i class="fas fa-user-tag"></i> Auto Roles
+            </button>
+            <button class="tab-button" onclick="showTab('auto-moderation')">
+                <i class="fas fa-shield-alt"></i> Auto Moderation
+            </button>
+            <button class="tab-button" onclick="showTab('embeds')">
+                <i class="fas fa-code"></i> Embed Creator
+            </button>
+            <button class="tab-button" onclick="showTab('channels')">
+                <i class="fas fa-hashtag"></i> Channel Settings
+            </button>
+        </div>
+
+        <!-- Welcome & Leave Tab -->
+        <div id="welcome-leave" class="tab-content active">
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-hand-wave"></i> Welcome Messages</h3>
+                    <div id="welcome-messages" class="loading">Loading...</div>
+                    
+                    <div class="form-group">
+                        <label for="welcome-channel">Welcome Channel</label>
+                        <select id="welcome-channel">
+                            <option value="">Select channel...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="welcome-message">Add Welcome Message</label>
+                        <textarea id="welcome-message" placeholder="Welcome {user} to {server}! You are the {membercount} member!"></textarea>
+                        <small>Variables: {user}, {username}, {server}, {membercount}</small>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="addWelcomeMessage()">
+                        <i class="fas fa-plus"></i> Add Message
+                    </button>
+                </div>
+
+                <div class="settings-card">
+                    <h3><i class="fas fa-door-open"></i> Leave Messages</h3>
+                    <div id="leave-messages" class="loading">Loading...</div>
+                    
+                    <div class="form-group">
+                        <label for="leave-channel">Leave Channel</label>
+                        <select id="leave-channel">
+                            <option value="">Select channel...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="leave-message">Add Leave Message</label>
+                        <textarea id="leave-message" placeholder="{username} has left {server}. We'll miss you! 👋"></textarea>
+                        <small>Variables: {username}, {server}, {membercount}</small>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="addLeaveMessage()">
+                        <i class="fas fa-plus"></i> Add Message
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto Roles Tab -->
+        <div id="auto-roles" class="tab-content">
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-user-tag"></i> Auto Role Assignment</h3>
+                    <p>Automatically assign a role to new members when they join your server.</p>
+                    
+                    <div class="form-group">
+                        <label for="auto-role">Auto Role</label>
+                        <select id="auto-role">
+                            <option value="">No auto role</option>
+                        </select>
+                    </div>
+                    
+                    <div id="auto-role-status" class="loading">Loading...</div>
+                    
+                    <button class="btn-primary" onclick="updateAutoRole()">
+                        <i class="fas fa-save"></i> Update Auto Role
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto Moderation Tab -->
+        <div id="auto-moderation" class="tab-content">
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-shield-alt"></i> Auto Moderation</h3>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="link-filter">
+                        <label for="link-filter">Enable Link Filter</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="bad-word-filter">
+                        <label for="bad-word-filter">Enable Bad Word Filter</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bad-words">Bad Words (one per line)</label>
+                        <textarea id="bad-words" placeholder="Enter bad words, one per line"></textarea>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="updateAutoMod()">
+                        <i class="fas fa-save"></i> Update Auto Moderation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Embeds Tab -->
+        <div id="embeds" class="tab-content">
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-code"></i> Create Embed</h3>
+                    
+                    <div class="form-group">
+                        <label for="embed-title">Title</label>
+                        <input type="text" id="embed-title" placeholder="Embed title">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="embed-description">Description</label>
+                        <textarea id="embed-description" placeholder="Embed description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="embed-color">Color (hex)</label>
+                        <input type="text" id="embed-color" placeholder="#5865F2">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="embed-image">Image URL</label>
+                        <input type="url" id="embed-image" placeholder="https://example.com/image.png">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="embed-footer">Footer</label>
+                        <input type="text" id="embed-footer" placeholder="Footer text">
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="embed-timestamp">
+                        <label for="embed-timestamp">Add Timestamp</label>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="createEmbed()">
+                        <i class="fas fa-plus"></i> Create Embed
+                    </button>
+                    
+                    <div id="embed-preview" class="embed-preview" style="display: none;">
+                        <h4>Preview:</h4>
+                        <div id="embed-preview-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channels Tab -->
+        <div id="channels" class="tab-content">
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-hashtag"></i> Channel Restrictions</h3>
+                    <p>Manage which channels allow normal messages vs commands only.</p>
+                    
+                    <div id="channels-list" class="loading">Loading channels...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let guildId = window.location.pathname.split('/').pop();
+        let currentSettings = {};
+        let channels = [];
+        let roles = [];
+
+        // Tab management
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Load initial data
+        async function loadDashboardData() {
+            try {
+                const [settingsRes, channelsRes, rolesRes] = await Promise.all([
+                    fetch(`/api/dashboard/${guildId}/settings`),
+                    fetch(`/api/dashboard/${guildId}/channels`),
+                    fetch(`/api/dashboard/${guildId}/roles`)
+                ]);
+
+                currentSettings = await settingsRes.json();
+                channels = await channelsRes.json();
+                roles = await rolesRes.json();
+
+                populateChannelSelects();
+                populateRoleSelects();
+                loadWelcomeSettings();
+                loadLeaveSettings();
+                loadAutoRoleSettings();
+                loadAutoModSettings();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function populateChannelSelects() {
+            const channelOptions = channels.map(channel => 
+                `<option value="${channel.id}">#${channel.name}</option>`
+            ).join('');
+            
+            document.getElementById('welcome-channel').innerHTML = '<option value="">Select channel...</option>' + channelOptions;
+            document.getElementById('leave-channel').innerHTML = '<option value="">Select channel...</option>' + channelOptions;
+        }
+
+        function populateRoleSelects() {
+            const roleOptions = roles.map(role => 
+                `<option value="${role.id}">${role.name} (${role.memberCount} members)</option>`
+            ).join('');
+            
+            document.getElementById('auto-role').innerHTML = '<option value="">No auto role</option>' + roleOptions;
+        }
+
+        function loadWelcomeSettings() {
+            const settings = currentSettings.settings || {};
+            const welcomeChannel = settings.welcomeChannel;
+            const welcomeMessages = settings.welcomeMessages || [];
+
+            if (welcomeChannel) {
+                document.getElementById('welcome-channel').value = welcomeChannel;
+            }
+
+            const messagesList = welcomeMessages.map((msg, index) => 
+                `<div class="message-item">
+                    <span>${msg}</span>
+                    <button class="remove-btn" onclick="removeWelcomeMessage(${index})">Remove</button>
+                </div>`
+            ).join('');
+
+            document.getElementById('welcome-messages').innerHTML = messagesList || '<p>No welcome messages configured</p>';
+        }
+
+        function loadLeaveSettings() {
+            const settings = currentSettings.settings || {};
+            const leaveChannel = settings.leaveChannel;
+            const leaveMessages = settings.leaveMessages || [];
+
+            if (leaveChannel) {
+                document.getElementById('leave-channel').value = leaveChannel;
+            }
+
+            const messagesList = leaveMessages.map((msg, index) => 
+                `<div class="message-item">
+                    <span>${msg}</span>
+                    <button class="remove-btn" onclick="removeLeaveMessage(${index})">Remove</button>
+                </div>`
+            ).join('');
+
+            document.getElementById('leave-messages').innerHTML = messagesList || '<p>No leave messages configured</p>';
+        }
+
+        function loadAutoRoleSettings() {
+            const autoRole = currentSettings.autorole;
+            if (autoRole) {
+                document.getElementById('auto-role').value = autoRole;
+                const role = roles.find(r => r.id === autoRole);
+                document.getElementById('auto-role-status').innerHTML = role ? 
+                    `<div class="success-message">Auto role: ${role.name}</div>` :
+                    '<div class="error-message">Auto role not found (may have been deleted)</div>';
+            } else {
+                document.getElementById('auto-role-status').innerHTML = '<p>No auto role configured</p>';
+            }
+        }
+
+        function loadAutoModSettings() {
+            const automod = currentSettings.automod || {};
+            document.getElementById('link-filter').checked = automod.linkFilter || false;
+            document.getElementById('bad-word-filter').checked = automod.badWordFilter || false;
+            document.getElementById('bad-words').value = (automod.badWords || []).join('\n');
+        }
+
+        // Welcome message functions
+        async function addWelcomeMessage() {
+            const message = document.getElementById('welcome-message').value.trim();
+            if (!message) return;
+
+            const settings = currentSettings.settings || {};
+            const welcomeMessages = settings.welcomeMessages || [];
+            welcomeMessages.push(message);
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/settings/welcome`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channelId: document.getElementById('welcome-channel').value,
+                        messages: welcomeMessages
+                    })
+                });
+
+                if (response.ok) {
+                    currentSettings.settings.welcomeMessages = welcomeMessages;
+                    loadWelcomeSettings();
+                    document.getElementById('welcome-message').value = '';
+                    showMessage('Welcome message added successfully!', 'success');
+                }
+            } catch (error) {
+                showMessage('Failed to add welcome message', 'error');
+            }
+        }
+
+        async function removeWelcomeMessage(index) {
+            const settings = currentSettings.settings || {};
+            const welcomeMessages = settings.welcomeMessages || [];
+            welcomeMessages.splice(index, 1);
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/settings/welcome`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channelId: document.getElementById('welcome-channel').value,
+                        messages: welcomeMessages
+                    })
+                });
+
+                if (response.ok) {
+                    currentSettings.settings.welcomeMessages = welcomeMessages;
+                    loadWelcomeSettings();
+                    showMessage('Welcome message removed!', 'success');
+                }
+            } catch (error) {
+                showMessage('Failed to remove welcome message', 'error');
+            }
+        }
+
+        // Leave message functions
+        async function addLeaveMessage() {
+            const message = document.getElementById('leave-message').value.trim();
+            if (!message) return;
+
+            const settings = currentSettings.settings || {};
+            const leaveMessages = settings.leaveMessages || [];
+            leaveMessages.push(message);
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/settings/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channelId: document.getElementById('leave-channel').value,
+                        messages: leaveMessages
+                    })
+                });
+
+                if (response.ok) {
+                    currentSettings.settings.leaveMessages = leaveMessages;
+                    loadLeaveSettings();
+                    document.getElementById('leave-message').value = '';
+                    showMessage('Leave message added successfully!', 'success');
+                }
+            } catch (error) {
+                showMessage('Failed to add leave message', 'error');
+            }
+        }
+
+        async function removeLeaveMessage(index) {
+            const settings = currentSettings.settings || {};
+            const leaveMessages = settings.leaveMessages || [];
+            leaveMessages.splice(index, 1);
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/settings/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channelId: document.getElementById('leave-channel').value,
+                        messages: leaveMessages
+                    })
+                });
+
+                if (response.ok) {
+                    currentSettings.settings.leaveMessages = leaveMessages;
+                    loadLeaveSettings();
+                    showMessage('Leave message removed!', 'success');
+                }
+            } catch (error) {
+                showMessage('Failed to remove leave message', 'error');
+            }
+        }
+
+        // Auto role functions
+        async function updateAutoRole() {
+            const roleId = document.getElementById('auto-role').value;
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/autorole`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roleId: roleId || null })
+                });
+
+                if (response.ok) {
+                    currentSettings.autorole = roleId || null;
+                    loadAutoRoleSettings();
+                    showMessage(roleId ? 'Auto role updated!' : 'Auto role removed!', 'success');
+                }
+            } catch (error) {
+                showMessage('Failed to update auto role', 'error');
+            }
+        }
+
+        // Auto moderation functions
+        async function updateAutoMod() {
+            const linkFilter = document.getElementById('link-filter').checked;
+            const badWordFilter = document.getElementById('bad-word-filter').checked;
+            const badWords = document.getElementById('bad-words').value.split('\n').filter(w => w.trim());
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/automod`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ linkFilter, badWordFilter, badWords })
+                });
+
+                if (response.ok) {
+                    showMessage('Auto moderation settings updated!', 'success');
+                }
+            } catch (error) {
+                showMessage('Failed to update auto moderation settings', 'error');
+            }
+        }
+
+        // Embed functions
+        async function createEmbed() {
+            const title = document.getElementById('embed-title').value;
+            const description = document.getElementById('embed-description').value;
+            const color = document.getElementById('embed-color').value;
+            const image = document.getElementById('embed-image').value;
+            const footer = document.getElementById('embed-footer').value;
+            const timestamp = document.getElementById('embed-timestamp').checked;
+
+            if (!title || !description) {
+                showMessage('Title and description are required', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/dashboard/${guildId}/embed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, color, image, footer, timestamp })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showMessage(`Embed created successfully! ID: ${result.embedId}`, 'success');
+                    // Clear form
+                    document.getElementById('embed-title').value = '';
+                    document.getElementById('embed-description').value = '';
+                    document.getElementById('embed-color').value = '';
+                    document.getElementById('embed-image').value = '';
+                    document.getElementById('embed-footer').value = '';
+                    document.getElementById('embed-timestamp').checked = false;
+                }
+            } catch (error) {
+                showMessage('Failed to create embed', 'error');
+            }
+        }
+
+        // Utility functions
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${type}-message`;
+            messageDiv.textContent = message;
+            messageDiv.style.position = 'fixed';
+            messageDiv.style.top = '20px';
+            messageDiv.style.right = '20px';
+            messageDiv.style.zIndex = '9999';
+            messageDiv.style.maxWidth = '400px';
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        async function saveAllSettings() {
+            showMessage('Feature coming soon! Use individual save buttons for now.', 'success');
+        }
+
+        // Initialize dashboard
+        loadDashboardData();
+    </script>
+</body>
+</html>
