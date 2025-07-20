@@ -210,7 +210,7 @@
                         `https://cdn.discordapp.com/icons/${server.id}/${server.icon}.png?size=128` : 
                         null;
                     
-                    const memberText = server.memberCount ? 
+                    const memberText = server.memberCount && server.memberCount > 0 ?  
                         `${server.memberCount.toLocaleString()} members` : 
                         'Unknown members';
                     
