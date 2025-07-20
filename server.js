@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Discord OAuth2 configuration
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1393887962772734104';
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `${process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : 'http://localhost:5000'}/auth/discord/callback`
+const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `${process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : 'https://discord-bott-production.up.railway.app//auth/discord/callback`
 // OAuth2 Scopes configuration
 const OAUTH_SCOPES = {
     basic: ['identify', 'guilds'],
