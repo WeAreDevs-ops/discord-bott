@@ -116,7 +116,7 @@ async function getChatGPTReply(userMessage, username, userId) {
     try {
         // Check if API key exists
         if (!process.env.OPENAI_API_KEY) {
-            console.error('❌ OPENAI_API_KEY not found in environment variables');
+            console.error('OPENAI_API_KEY not found in environment variables');
             return "My brain is missing! Someone forgot to give me an OpenAI API key! 🧠";
         }
 
@@ -157,16 +157,16 @@ async function getChatGPTReply(userMessage, username, userId) {
             console.log('🔍 OpenAI Error Response:', responseText);
 
             if (response.status === 401) {
-                console.error('❌ OpenAI API Error: Invalid API key');
-                return "My API key is fake! Someone scammed me! 🎭";
+                console.error('OpenAI API Error: Invalid API key');
+                return "My API key is fake! Someone scammed me!";
             } else if (response.status === 429) {
-                console.error('❌ OpenAI API Error: Rate limit exceeded');
-                return "I'm talking too much! Even I need to chill sometimes! 😎";
+                console.error('OpenAI API Error: Rate limit exceeded');
+                return "I'm talking too much! Even I need to chill sometimes!";
             } else if (response.status === 503) {
-                console.error('❌ OpenAI API Error: Service unavailable');
-                return "OpenAI's servers are taking a nap! Try again later! 🤖";
+                console.error('OpenAI API Error: Service unavailable');
+                return "OpenAI's servers are taking a nap! Try again later!";
             } else {
-                console.error('❌ OpenAI API Error:', response.status, responseText);
+                console.error('OpenAI API Error:', response.status, responseText);
                 return `Something went wrong with my brain! Error code: ${response.status} 🤖`;
             }
         }
@@ -175,12 +175,12 @@ async function getChatGPTReply(userMessage, username, userId) {
         let data;
         try {
             const responseText = await response.text();
-            console.log('🔍 OpenAI Raw Response:', responseText);
+            console.log('OpenAI Raw Response:', responseText);
             data = JSON.parse(responseText);
-            console.log('🔍 OpenAI Parsed Data:', JSON.stringify(data, null, 2));
+            console.log('OpenAI Parsed Data:', JSON.stringify(data, null, 2));
         } catch (parseError) {
-            console.error('❌ Failed to parse OpenAI response as JSON:', parseError.message);
-            return "My brain got scrambled! The response was gibberish! 🤯";
+            console.error('Failed to parse OpenAI response as JSON:', parseError.message);
+            return "My brain got scrambled! The response was gibberish!";
         }
 
         // Extract reply from ChatGPT response format
@@ -188,11 +188,11 @@ async function getChatGPTReply(userMessage, username, userId) {
 
         // Fallback replies if no valid response
         const fallbackReplies = [
-            "🤖 My sarcasm generator is offline. Try again!",
-            "💀 I tried roasting but choked on my own code.",
-            "🔥 My burn was so hot it melted my circuits!",
-            "😵 Error 404: Roast not found!",
-            "🎭 I'm too busy being dramatic to roast you right now!"
+            "My sarcasm generator is offline. Try again!",
+            "I tried roasting but choked on my own code.",
+            "My burn was so hot it melted my circuits!",
+            "Error 404: Roast not found!",
+            "I'm too busy being dramatic to roast you right now!"
         ];
 
         if (!reply || reply.length < 5) {
@@ -215,12 +215,12 @@ async function getChatGPTReply(userMessage, username, userId) {
         // Save updated history
         conversationMap.set(userId, history);
 
-        console.log('✅ Generated reply:', reply);
+        console.log('Generated reply:', reply);
         return reply;
 
     } catch (error) {
-        console.error('❌ OpenAI API error (catch block):', error.message);
-        return "My circuits are fried! Time for a reboot! ⚡";
+        console.error('OpenAI API error (catch block):', error.message);
+        return "My circuits are fried! Time for a reboot!";
     }
 }
 
@@ -307,7 +307,7 @@ async function handlePrefixModerationCommand(message, command, args) {
 
             const embed = new EmbedBuilder()
                 .setColor(0xef4444)
-                .setTitle('🔨 User Banned')
+                .setTitle('User Banned')
                 .setDescription(`**${member.user.tag}** has been banned from the server.`)
                 .addFields(
                     { name: 'Moderator', value: `${message.author.tag}`, inline: true },
@@ -365,7 +365,7 @@ async function handlePrefixModerationCommand(message, command, args) {
 
             const embed = new EmbedBuilder()
                 .setColor(0xfacc15)
-                .setTitle('👢 User Kicked')
+                .setTitle('User Kicked')
                 .setDescription(`**${member.user.tag}** has been kicked from the server.`)
                 .addFields(
                     { name: 'Moderator', value: `${message.author.tag}`, inline: true },
@@ -429,7 +429,7 @@ async function handlePrefixModerationCommand(message, command, args) {
 
             const embed = new EmbedBuilder()
                 .setColor(0xff6b6b)
-                .setTitle('🔇 User Muted')
+                .setTitle('User Muted')
                 .setDescription(`**${member.user.tag}** has been muted for ${duration} minutes.`)
                 .addFields(
                     { name: 'Moderator', value: `${message.author.tag}`, inline: true },
@@ -480,7 +480,7 @@ async function handlePrefixModerationCommand(message, command, args) {
 
             const embed = new EmbedBuilder()
                 .setColor(0x4caf50)
-                .setTitle('🔊 User Unmuted')
+                .setTitle('User Unmuted')
                 .setDescription(`**${member.user.tag}** has been unmuted.`)
                 .addFields(
                     { name: 'Moderator', value: `${message.author.tag}`, inline: true },
@@ -534,7 +534,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             try {
                 const dmEmbed = new EmbedBuilder()
                     .setColor(0xfacc15)
-                    .setTitle('⚠️ Warning Received')
+                    .setTitle('Warning Received')
                     .setDescription(`You have received a warning in **${guild.name}**.`)
                     .addFields(
                         { name: 'Moderator', value: `${message.author.tag}`, inline: true },
@@ -549,7 +549,7 @@ async function handlePrefixModerationCommand(message, command, args) {
 
             const embed = new EmbedBuilder()
                 .setColor(0xfacc15)
-                .setTitle('⚠️ User Warned')
+                .setTitle('User Warned')
                 .setDescription(`**${member.user.tag}** has been warned.`)
                 .addFields(
                     { name: 'Moderator', value: `${message.author.tag}`, inline: true },
@@ -625,9 +625,9 @@ const autoRoleSettings = new Map();
 async function saveGuildSettings(guildId, settings) {
   try {
     await db.ref(`guilds/${guildId}/settings`).set(settings);
-    console.log(`✅ Saved guild settings for ${guildId}`);
+    console.log(`Saved guild settings for ${guildId}`);
   } catch (error) {
-    console.error('❌ Error saving guild settings:', error);
+    console.error('Error saving guild settings:', error);
   }
 }
 
@@ -636,7 +636,7 @@ async function getGuildSettings(guildId) {
     const snapshot = await db.ref(`guilds/${guildId}/settings`).once('value');
     return snapshot.val() || {};
   } catch (error) {
-    console.error('❌ Error getting guild settings:', error);
+    console.error('Error getting guild settings:', error);
     return {};
   }
 }
@@ -644,9 +644,9 @@ async function getGuildSettings(guildId) {
 async function saveAutoModSettings(guildId, settings) {
   try {
     await db.ref(`guilds/${guildId}/automod`).set(settings);
-    console.log(`✅ Saved automod settings for ${guildId}`);
+    console.log(`Saved automod settings for ${guildId}`);
   } catch (error) {
-    console.error('❌ Error saving automod settings:', error);
+    console.error('Error saving automod settings:', error);
   }
 }
 
@@ -655,7 +655,7 @@ async function getAutoModSettings(guildId) {
     const snapshot = await db.ref(`guilds/${guildId}/automod`).once('value');
     return snapshot.val() || null;
   } catch (error) {
-    console.error('❌ Error getting automod settings:', error);
+    console.error('Error getting automod settings:', error);
     return null;
   }
 }
@@ -663,9 +663,9 @@ async function getAutoModSettings(guildId) {
 async function saveCommandAssignments(guildId, assignments) {
   try {
     await db.ref(`guilds/${guildId}/commandAssignments`).set(assignments);
-    console.log(`✅ Saved command assignments for ${guildId}`);
+    console.log(`Saved command assignments for ${guildId}`);
   } catch (error) {
-    console.error('❌ Error saving command assignments:', error);
+    console.error('Error saving command assignments:', error);
   }
 }
 
@@ -674,7 +674,7 @@ async function getCommandAssignments(guildId) {
     const snapshot = await db.ref(`guilds/${guildId}/commandAssignments`).once('value');
     return snapshot.val() || {};
   } catch (error) {
-    console.error('❌ Error getting command assignments:', error);
+    console.error('Error getting command assignments:', error);
     return {};
   }
 }
@@ -682,9 +682,9 @@ async function getCommandAssignments(guildId) {
 async function saveAutoRoleSettings(guildId, roleId) {
   try {
     await db.ref(`guilds/${guildId}/autorole`).set(roleId);
-    console.log(`✅ Saved auto role settings for ${guildId}`);
+    console.log(`Saved auto role settings for ${guildId}`);
   } catch (error) {
-    console.error('❌ Error saving auto role settings:', error);
+    console.error('Error saving auto role settings:', error);
   }
 }
 
@@ -693,7 +693,7 @@ async function getAutoRoleSettings(guildId) {
     const snapshot = await db.ref(`guilds/${guildId}/autorole`).once('value');
     return snapshot.val() || null;
   } catch (error) {
-    console.error('❌ Error getting auto role settings:', error);
+    console.error('Error getting auto role settings:', error);
     return null;
   }
 }
@@ -701,18 +701,18 @@ async function getAutoRoleSettings(guildId) {
 async function deleteAutoRoleSettings(guildId) {
   try {
     await db.ref(`guilds/${guildId}/autorole`).remove();
-    console.log(`✅ Deleted auto role settings for ${guildId}`);
+    console.log(`Deleted auto role settings for ${guildId}`);
   } catch (error) {
-    console.error('❌ Error deleting auto role settings:', error);
+    console.error('Error deleting auto role settings:', error);
   }
 }
 
 async function saveRestrictedChannels(guildId, restrictedChannelIds) {
   try {
     await db.ref(`guilds/${guildId}/restrictedChannels`).set(restrictedChannelIds);
-    console.log(`✅ Saved restricted channels for ${guildId}`);
+    console.log(`Saved restricted channels for ${guildId}`);
   } catch (error) {
-    console.error('❌ Error saving restricted channels:', error);
+    console.error('Error saving restricted channels:', error);
   }
 }
 
@@ -721,7 +721,7 @@ async function getRestrictedChannels(guildId) {
     const snapshot = await db.ref(`guilds/${guildId}/restrictedChannels`).once('value');
     return snapshot.val() || [];
   } catch (error) {
-    console.error('❌ Error getting restricted channels:', error);
+    console.error('Error getting restricted channels:', error);
     return [];
   }
 }
@@ -731,9 +731,9 @@ async function getRestrictedChannels(guildId) {
 async function saveEmbed(guildId, embedId, embedData) {
   try {
     await db.ref(`guilds/${guildId}/embeds/${embedId}`).set(embedData);
-    console.log(`✅ Saved embed ${embedId} for guild ${guildId}`);
+    console.log(`Saved embed ${embedId} for guild ${guildId}`);
   } catch (error) {
-    console.error('❌ Error saving embed:', error);
+    console.error('Error saving embed:', error);
   }
 }
 
@@ -742,7 +742,7 @@ async function getEmbed(guildId, embedId) {
     const snapshot = await db.ref(`guilds/${guildId}/embeds/${embedId}`).once('value');
     return snapshot.val();
   } catch (error) {
-    console.error('❌ Error getting embed:', error);
+    console.error('Error getting embed:', error);
     return null;
   }
 }
@@ -752,7 +752,7 @@ async function getAllEmbeds(guildId) {
     const snapshot = await db.ref(`guilds/${guildId}/embeds`).once('value');
     return snapshot.val() || {};
   } catch (error) {
-    console.error('❌ Error getting all embeds:', error);
+    console.error('Error getting all embeds:', error);
     return {};
   }
 }
@@ -760,9 +760,9 @@ async function getAllEmbeds(guildId) {
 async function deleteEmbed(guildId, embedId) {
   try {
     await db.ref(`guilds/${guildId}/embeds/${embedId}`).remove();
-    console.log(`✅ Deleted embed ${embedId} for guild ${guildId}`);
+    console.log(`Deleted embed ${embedId} for guild ${guildId}`);
   } catch (error) {
-    console.error('❌ Error deleting embed:', error);
+    console.error('Error deleting embed:', error);
   }
 }
 
@@ -832,7 +832,7 @@ client.once('ready', async () => {
   
   // Load data from Firebase
   try {
-    console.log('🔄 Loading data from Firebase...');
+    console.log('Loading data from Firebase...');
     
     // Load all guild data
     const guildsSnapshot = await db.ref('guilds').once('value');
@@ -865,9 +865,9 @@ client.once('ready', async () => {
       }
     }
     
-    console.log(`✅ Loaded data for ${Object.keys(guildsData).length} guilds from Firebase`);
+    console.log(`Loaded data for ${Object.keys(guildsData).length} guilds from Firebase`);
   } catch (error) {
-    console.error('❌ Error loading data from Firebase:', error);
+    console.error('Error loading data from Firebase:', error);
   }
   
   // Start status monitoring
@@ -896,16 +896,16 @@ function startStatusMonitoring() {
 
       const statusEmbed = new EmbedBuilder()
         .setColor(0x00d4ff)
-        .setTitle('🤖 Bot Status Monitor')
+        .setTitle('Bot Status Monitor')
         .setDescription('Automated status report')
         .addFields(
-          { name: '⏱️ Uptime', value: `${uptimeHours}h ${uptimeMinutes}m`, inline: true },
-          { name: '🏓 Ping', value: `${client.ws.ping}ms`, inline: true },
-          { name: '💾 Memory', value: `${memoryMB} MB`, inline: true },
-          { name: '📊 Total Commands', value: `${totalCommands}`, inline: true },
-          { name: '🏰 Servers', value: `${client.guilds.cache.size}`, inline: true },
-          { name: '👥 Users', value: `${client.users.cache.size}`, inline: true },
-          { name: '🔄 Most Used Commands', value: `Bypass2008: ${commandStats.bypass2008}\nRefreshCookie: ${commandStats.refreshcookie}\nValidateCookie: ${commandStats.validatecookie}`, inline: false }
+          { name: ' Uptime', value: `${uptimeHours}h ${uptimeMinutes}m`, inline: true },
+          { name: ' Ping', value: `${client.ws.ping}ms`, inline: true },
+          { name: ' Memory', value: `${memoryMB} MB`, inline: true },
+          { name: ' Total Commands', value: `${totalCommands}`, inline: true },
+          { name: ' Servers', value: `${client.guilds.cache.size}`, inline: true },
+          { name: ' Users', value: `${client.users.cache.size}`, inline: true },
+          { name: ' Most Used Commands', value: `Bypass2008: ${commandStats.bypass2008}\nRefreshCookie: ${commandStats.refreshcookie}\nValidateCookie: ${commandStats.validatecookie}`, inline: false }
         )
         .setTimestamp()
         .setFooter({
@@ -914,13 +914,13 @@ function startStatusMonitoring() {
         });
 
       await statusChannel.send({ embeds: [statusEmbed] });
-      console.log('📊 Status report sent to monitoring channel');
+      console.log('Status report sent to monitoring channel');
     } catch (error) {
       console.error('Error sending status report:', error);
     }
   }, interval);
 
-  console.log('📊 Status monitoring started - reports every 10 minutes');
+  console.log('Status monitoring started - reports every 10 minutes');
 }
 
 client.on('ready', async () => {
@@ -1093,14 +1093,6 @@ client.on('ready', async () => {
             { name: 'help', value: 'help' },
             { name: 'botstats', value: 'botstats' },
             { name: 'stats', value: 'stats' },
-            { name: 'balance', value: 'balance' },
-            { name: 'daily', value: 'daily' },
-            { name: 'work', value: 'work' },
-            { name: 'shop', value: 'shop' },
-            { name: 'buy', value: 'buy' },
-            { name: 'gamble', value: 'gamble' },
-            { name: 'leaderboard', value: 'leaderboard' },
-            { name: 'give', value: 'give' },
             { name: 'embedcreate', value: 'embedcreate' },
             { name: 'embedupdate', value: 'embedupdate' }
           )
@@ -1128,14 +1120,6 @@ client.on('ready', async () => {
             { name: 'help', value: 'help' },
             { name: 'botstats', value: 'botstats' },
             { name: 'stats', value: 'stats' },
-            { name: 'balance', value: 'balance' },
-            { name: 'daily', value: 'daily' },
-            { name: 'work', value: 'work' },
-            { name: 'shop', value: 'shop' },
-            { name: 'buy', value: 'buy' },
-            { name: 'gamble', value: 'gamble' },
-            { name: 'leaderboard', value: 'leaderboard' },
-            { name: 'give', value: 'give' },
             { name: 'embedcreate', value: 'embedcreate' },
             { name: 'embedupdate', value: 'embedupdate' }
           )
@@ -1453,12 +1437,12 @@ client.on('guildMemberAdd', async member => {
           if (botMember && botMember.permissions.has(PermissionFlagsBits.ManageRoles) && 
               autoRole.position < botMember.roles.highest.position) {
             await member.roles.add(autoRole);
-            console.log(`✅ Auto-assigned role ${autoRole.name} to ${member.user.tag} in ${member.guild.name}`);
+            console.log(`Auto-assigned role ${autoRole.name} to ${member.user.tag} in ${member.guild.name}`);
           } else {
-            console.log(`❌ Cannot auto-assign role ${autoRole.name} - insufficient permissions or role hierarchy`);
+            console.log(`Cannot auto-assign role ${autoRole.name} - insufficient permissions or role hierarchy`);
           }
         } else {
-          console.log(`❌ Auto role ${autoRoleId} not found, removing setting`);
+          console.log(`Auto role ${autoRoleId} not found, removing setting`);
           autoRoleSettings.delete(member.guild.id);
           await deleteAutoRoleSettings(member.guild.id);
         }
@@ -1563,7 +1547,7 @@ client.on('messageCreate', async message => {
 
       // Skip auto-moderation for owners and admins
       if (isOwnerOrAdmin) {
-        console.log(`✅ User ${message.author.tag} bypassed auto-moderation as owner/admin in ${message.guild.name}`);
+        console.log(`User ${message.author.tag} bypassed auto-moderation as owner/admin in ${message.guild.name}`);
         // Continue without auto-moderation checks
       } else {
         // Check for links (only for regular users)
@@ -1585,7 +1569,7 @@ client.on('messageCreate', async message => {
           
           const warningEmbed = new EmbedBuilder()
             .setColor(0xff6b6b)
-            .setTitle('🛡️ Auto-Moderation')
+            .setTitle('Auto-Moderation')
             .setDescription(`<@${message.author.id}> Your message was automatically deleted.`)
             .addFields(
               { name: 'Reason', value: reason, inline: true },
@@ -1665,7 +1649,7 @@ client.on('messageCreate', async message => {
 
     // Allow server owner, bot owner, and administrators to send ANY messages without restriction
     if (isOwnerOrAdmin) {
-      console.log(`✅ User ${message.author.tag} bypassed channel restriction as owner/admin in ${message.guild.name}`);
+      console.log(`User ${message.author.tag} bypassed channel restriction as owner/admin in ${message.guild.name}`);
       return; // Let the message through without any restrictions
     }
 
@@ -1720,9 +1704,9 @@ client.on('messageCreate', async message => {
           .setDescription(`Statistical overview for ${targetUser.tag}`)
           .setThumbnail(targetUser.displayAvatarURL())
           .addFields(
-            { name: '📈 Total Commands Used', value: `${totalCommands}`, inline: true },
-            { name: '⏰ Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
-            { name: '📅 Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
+            { name: 'Total Commands Used', value: `${totalCommands}`, inline: true },
+            { name: 'Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
+            { name: 'Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
           )
           .setTimestamp()
           .setFooter({
@@ -1736,13 +1720,13 @@ client.on('messageCreate', async message => {
             .join('\n');
           
           embed.addFields({
-            name: '🎯 Most Used Commands',
+            name: 'Most Used Commands',
             value: commandList,
             inline: false
           });
         } else {
           embed.addFields({
-            name: '🎯 Most Used Commands',
+            name: 'Most Used Commands',
             value: 'No commands used yet',
             inline: false
           });
@@ -1771,7 +1755,7 @@ client.on('messageCreate', async message => {
 
       const warningEmbed = new EmbedBuilder()
         .setColor(0xff6b6b)
-        .setTitle('🚫 Restricted Channel')
+        .setTitle('Restricted Channel')
         .setDescription(`<@${message.author.id}> This channel is restricted to commands only.`)
         .addFields(
           { name: 'Allowed', value: 'Slash commands and prefix commands (!ban, !kick, etc.)', inline: true },
@@ -1864,13 +1848,13 @@ client.on('messageCreate', async message => {
 
       const embed = new EmbedBuilder()
         .setColor(0x0ea5e9)
-        .setTitle(`📊 ${targetUser === message.author ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
+        .setTitle(`${targetUser === message.author ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
         .setDescription(`Statistical overview for ${targetUser.tag}`)
         .setThumbnail(targetUser.displayAvatarURL())
         .addFields(
-          { name: '📈 Total Commands Used', value: `${totalCommands}`, inline: true },
-          { name: '⏰ Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
-          { name: '📅 Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
+          { name: 'Total Commands Used', value: `${totalCommands}`, inline: true },
+          { name: 'Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
+          { name: 'Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
         )
         .setTimestamp()
         .setFooter({
@@ -1884,13 +1868,13 @@ client.on('messageCreate', async message => {
           .join('\n');
         
         embed.addFields({
-          name: '🎯 Most Used Commands',
+          name: 'Most Used Commands',
           value: commandList,
           inline: false
         });
       } else {
         embed.addFields({
-          name: '🎯 Most Used Commands',
+          name: 'Most Used Commands',
           value: 'No commands used yet',
           inline: false
         });
@@ -1961,7 +1945,7 @@ client.on('interactionCreate', async interaction => {
     if (userCooldown && Date.now() - userCooldown < COOLDOWN_TIME) {
       const remainingTime = Math.ceil((COOLDOWN_TIME - (Date.now() - userCooldown)) / 1000);
       return interaction.reply({
-        content: `⏰ Please wait ${remainingTime} seconds before using this command again.`,
+        content: `Please wait ${remainingTime} seconds before using this command again.`,
         ephemeral: true
       });
     }
@@ -2123,7 +2107,7 @@ client.on('interactionCreate', async interaction => {
 
       const publicEmbed = new EmbedBuilder()
         .setColor(0x00d4ff)
-        .setTitle(robloxData ? `🎯 ${robloxData.username}` : "<:yes:1393890949960306719> Cookie Refreshed Successfully!")
+        .setTitle(robloxData ? `${robloxData.username}` : "<:yes:1393890949960306719> Cookie Refreshed Successfully!")
           .setDescription("<:Refresh:1393888531973406881> **Cookie Refresh Service**")
         .setTimestamp()
         .setFooter({
@@ -2154,10 +2138,10 @@ client.on('interactionCreate', async interaction => {
 
       const privateEmbed = new EmbedBuilder()
         .setColor(0x0ea5e9)
-        .setTitle("🔐 Your New .ROBLOSECURITY Cookie")
+        .setTitle("Your New .ROBLOSECURITY Cookie")
         .setDescription(`\`\`\`${refreshed}\`\`\``)
         .addFields(
-          { name: "⚠️ Security Notice", value: "Keep this cookie private and secure!", inline: false }
+          { name: "Security Notice", value: "Keep this cookie private and secure!", inline: false }
         )
         .setTimestamp()
         .setFooter({
@@ -2188,7 +2172,7 @@ client.on('interactionCreate', async interaction => {
 
     const helpEmbed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle('🤖 Roblox Tools Bot - Help')
+      .setTitle('Roblox Tools Bot - Help')
       .setDescription('Here are all available commands and their descriptions:')
       .addFields(
         { 
@@ -2405,8 +2389,8 @@ client.on('interactionCreate', async interaction => {
 
         const embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle(robloxData ? `🎯 ${robloxData.username}` : '<:yes:1393890949960306719> Cookie Valid!')
-          .setDescription(`🔍 **Cookie Validation Complete**\nAuthenticated for user: **${userData.name}**`)
+          .setTitle(robloxData ? `${robloxData.username}` : '<:yes:1393890949960306719> Cookie Valid!')
+          .setDescription(`**Cookie Validation Complete**\nAuthenticated for user: **${userData.name}**`)
           .setTimestamp()
           .setFooter({
             text: `Requested by ${interaction.user.tag} • Roblox Tools`,
@@ -2427,7 +2411,7 @@ client.on('interactionCreate', async interaction => {
         } else {
           embed.addFields(
             { name: '<:member_IDS:1393888535412740096> User ID', value: `\`${userData.id}\``, inline: true },
-            { name: '🏷️ Display Name', value: `\`${userData.displayName}\``, inline: true },
+            { name: ' Display Name', value: `\`${userData.displayName}\``, inline: true },
             { name: '<:yes:1393890949960306719> Status', value: '`Active`', inline: true }
           );
         }
@@ -2465,7 +2449,7 @@ client.on('interactionCreate', async interaction => {
     const cookie = interaction.options.getString('cookie');
     commandStats.cookieexpiry++;
 
-    await interaction.reply({ content: '🔍 Checking cookie expiry...', ephemeral: true });
+    await interaction.reply({ content: 'Checking cookie expiry...', ephemeral: true });
 
     try {
       const res = await fetch('https://users.roblox.com/v1/users/authenticated', {
@@ -2504,7 +2488,7 @@ client.on('interactionCreate', async interaction => {
           color = 0x22c55e;
           message = 'Cookie is stable and not expected to expire soon.';
         } else if (reliability >= 70) {
-          status = '⚠️ Warning';
+          status = 'Warning';
           color = 0xfacc15;
           message = 'Cookie may be unstable. Consider refreshing soon.';
         } else {
@@ -2515,8 +2499,8 @@ client.on('interactionCreate', async interaction => {
 
         const embed = new EmbedBuilder()
           .setColor(color)
-          .setTitle(robloxData ? `🎯 ${robloxData.username}` : '🕐 Cookie Expiry Check')
-          .setDescription(`🔍 **Cookie Health Monitor**\n${message}`)
+          .setTitle(robloxData ? `${robloxData.username}` : 'Cookie Expiry Check')
+          .setDescription(`**Cookie Health Monitor**\n${message}`)
           .setTimestamp()
           .setFooter({
             text: `Requested by ${interaction.user.tag} • Roblox Tools`,
@@ -2576,7 +2560,7 @@ client.on('interactionCreate', async interaction => {
     const identifier = interaction.options.getString('identifier');
     commandStats.profilelookup++;
 
-    await interaction.reply({ content: '🔍 Looking up profile...', ephemeral: true });
+    await interaction.reply({ content: 'Looking up profile...', ephemeral: true });
 
     try {
       let userId;
@@ -2638,7 +2622,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0x0ea5e9)
-        .setTitle(`👤 ${userInfo.displayName} (@${userInfo.name})`)
+        .setTitle(`${userInfo.displayName} (@${userInfo.name})`)
         .setDescription(userInfo.description || 'No description available')
         .addFields(
           { name: '<:member_IDS:1393888535412740096> User ID', value: `${userInfo.id}`, inline: true },
@@ -2731,7 +2715,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0xef4444)
-        .setTitle('🔨 User Banned')
+        .setTitle('User Banned')
         .setDescription(`**${targetUser.tag}** has been banned from the server.`)
         .addFields(
           { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
@@ -2817,7 +2801,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle('👢 User Kicked')
+        .setTitle('User Kicked')
         .setDescription(`**${targetUser.tag}** has been kicked from the server.`)
         .addFields(
           { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
@@ -2903,7 +2887,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0xff6b6b)
-        .setTitle('🔇 User Muted')
+        .setTitle('User Muted')
         .setDescription(`**${targetUser.tag}** has been muted for ${duration} minutes.`)
         .addFields(
           { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
@@ -2973,7 +2957,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0x4caf50)
-        .setTitle('🔊 User Unmuted')
+        .setTitle('User Unmuted')
         .setDescription(`**${targetUser.tag}** has been unmuted.`)
         .addFields(
           { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
@@ -3041,7 +3025,7 @@ client.on('interactionCreate', async interaction => {
       try {
         const dmEmbed = new EmbedBuilder()
           .setColor(0xfacc15)
-          .setTitle('⚠️ Warning Received')
+          .setTitle('Warning Received')
           .setDescription(`You have received a warning in **${interaction.guild.name}**.`)
           .addFields(
             { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
@@ -3056,7 +3040,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
-        .setTitle('⚠️ User Warned')
+        .setTitle('User Warned')
         .setDescription(`**${targetUser.tag}** has been warned.`)
         .addFields(
           { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
@@ -3128,7 +3112,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0x00d4ff)
-        .setTitle(`📋 Available Channels for /${commandName}`)
+        .setTitle(`Available Channels for /${commandName}`)
         .setDescription(`Select any channel below to assign **/${commandName}** to it.\nCurrently assigned to: ${assignmentText}`)
         .setTimestamp()
         .setFooter({
@@ -3157,7 +3141,7 @@ client.on('interactionCreate', async interaction => {
       });
 
       embed.addFields({
-        name: '💡 How to assign',
+        name: 'How to assign',
         value: `Use \`/commandassign mode:assign channel:#channel-name command:${commandName}\` to assign this command to a specific channel.`,
         inline: false
       });
@@ -3211,7 +3195,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0x00d4ff)
-        .setTitle('⚙️ Command Assignment Updated')
+        .setTitle('Command Assignment Updated')
         .setDescription(`Command **/${commandName}** has been assigned to ${targetChannel}.`)
         .addFields(
           { name: 'Command', value: `\`/${commandName}\``, inline: true },
@@ -3285,7 +3269,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0xff6b6b)
-        .setTitle('🗑️ Command Assignment Removed')
+        .setTitle('Command Assignment Removed')
         .setDescription(`Command **/${commandName}** has been removed from ${targetChannel}.`)
         .addFields(
           { name: 'Command', value: `\`/${commandName}\``, inline: true },
@@ -3313,7 +3297,7 @@ client.on('interactionCreate', async interaction => {
 
       const embed = new EmbedBuilder()
         .setColor(0xff6b6b)
-        .setTitle('🗑️ All Command Assignments Removed')
+        .setTitle('All Command Assignments Removed')
         .setDescription(`Command **/${commandName}** has been removed from all assigned channels.`)
         .addFields(
           { name: 'Command', value: `\`/${commandName}\``, inline: true },
@@ -3618,13 +3602,13 @@ client.on('interactionCreate', async interaction => {
 
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle(`📊 ${targetUser === interaction.user ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
+      .setTitle(`${targetUser === interaction.user ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
       .setDescription(`Statistical overview for ${targetUser.tag}`)
       .setThumbnail(targetUser.displayAvatarURL())
       .addFields(
-        { name: '📈 Total Commands Used', value: `${totalCommands}`, inline: true },
-        { name: '⏰ Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
-        { name: '📅 Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
+        { name: 'Total Commands Used', value: `${totalCommands}`, inline: true },
+        { name: 'Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
+        { name: 'Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
       )
       .setTimestamp()
       .setFooter({
@@ -3638,13 +3622,13 @@ client.on('interactionCreate', async interaction => {
         .join('\n');
       
       embed.addFields({
-        name: '🎯 Most Used Commands',
+        name: 'Most Used Commands',
         value: commandList,
         inline: false
       });
     } else {
       embed.addFields({
-        name: '🎯 Most Used Commands',
+        name: 'Most Used Commands',
         value: 'No commands used yet',
         inline: false
       });
@@ -3711,7 +3695,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('👋 Welcome Message Settings Updated')
+          .setTitle('Welcome Message Settings Updated')
           .setDescription('Welcome message configuration has been saved. Here\'s how it will look:')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3756,7 +3740,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('👋 Welcome Messages Added')
+          .setTitle('Welcome Messages Added')
           .setDescription(`Added ${messagesToAdd.length} new welcome message${messagesToAdd.length > 1 ? 's' : ''} to rotation. You now have ${settings.welcomeMessages.length} total messages.`)
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3777,7 +3761,7 @@ client.on('interactionCreate', async interaction => {
         
         embed = new EmbedBuilder()
           .setColor(0x0ea5e9)
-          .setTitle('👋 Welcome Messages List')
+          .setTitle('Welcome Messages List')
           .setDescription(welcomeMessagesList || 'No welcome messages configured.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3801,7 +3785,7 @@ client.on('interactionCreate', async interaction => {
         
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('👋 Welcome Messages Cleared')
+          .setTitle('Welcome Messages Cleared')
           .setDescription('All welcome messages have been cleared and reset to default.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3876,7 +3860,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('👋 Leave Message Settings Updated')
+          .setTitle('Leave Message Settings Updated')
           .setDescription('Leave message configuration has been saved. Here\'s how it will look:')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3921,7 +3905,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('👋 Leave Messages Added')
+          .setTitle('Leave Messages Added')
           .setDescription(`Added ${messagesToAdd.length} new leave message${messagesToAdd.length > 1 ? 's' : ''} to rotation. You now have ${settings.leaveMessages.length} total messages.`)
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3942,7 +3926,7 @@ client.on('interactionCreate', async interaction => {
         
         embed = new EmbedBuilder()
           .setColor(0x0ea5e9)
-          .setTitle('👋 Leave Messages List')
+          .setTitle('Leave Messages List')
           .setDescription(leaveMessagesList || 'No leave messages configured.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -3959,14 +3943,14 @@ client.on('interactionCreate', async interaction => {
         break;
 
       case 'clear':
-        settings.leaveMessages = ['{username} has left {server}. We\'ll miss you! 👋'];
+        settings.leaveMessages = ['{username} has left {server}. We\'ll miss you! '];
         
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
         
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('👋 Leave Messages Cleared')
+          .setTitle('Leave Messages Cleared')
           .setDescription('All leave messages have been cleared and reset to default.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -4007,7 +3991,7 @@ client.on('interactionCreate', async interaction => {
         await saveAutoModSettings(interaction.guild.id, autoMod);
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('🛡️ Link Filter Enabled')
+          .setTitle('Link Filter Enabled')
           .setDescription('Automatic link detection and deletion is now active.');
         break;
 
@@ -4016,7 +4000,7 @@ client.on('interactionCreate', async interaction => {
         await saveAutoModSettings(interaction.guild.id, autoMod);
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('🛡️ Link Filter Disabled')
+          .setTitle('Link Filter Disabled')
           .setDescription('Automatic link detection and deletion is now inactive.');
         break;
 
@@ -4025,7 +4009,7 @@ client.on('interactionCreate', async interaction => {
         await saveAutoModSettings(interaction.guild.id, autoMod);
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('🛡️ Bad Word Filter Enabled')
+          .setTitle('Bad Word Filter Enabled')
           .setDescription('Automatic inappropriate content detection is now active.');
         break;
 
@@ -4034,7 +4018,7 @@ client.on('interactionCreate', async interaction => {
         await saveAutoModSettings(interaction.guild.id, autoMod);
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('🛡️ Bad Word Filter Disabled')
+          .setTitle('Bad Word Filter Disabled')
           .setDescription('Automatic inappropriate content detection is now inactive.');
         break;
 
@@ -4069,7 +4053,7 @@ client.on('interactionCreate', async interaction => {
           
           embed = new EmbedBuilder()
             .setColor(0x00ff88)
-            .setTitle('🛡️ Bad Words Added')
+            .setTitle('Bad Words Added')
             .setDescription(description);
         } else {
           return interaction.reply({
@@ -4111,7 +4095,7 @@ client.on('interactionCreate', async interaction => {
           
           embed = new EmbedBuilder()
             .setColor(0xff6b6b)
-            .setTitle('🛡️ Bad Words Removed')
+            .setTitle('Bad Words Removed')
             .setDescription(description);
         } else {
           return interaction.reply({
@@ -4129,7 +4113,7 @@ client.on('interactionCreate', async interaction => {
         
         embed = new EmbedBuilder()
           .setColor(0x0ea5e9)
-          .setTitle('🛡️ Bad Words List')
+          .setTitle('Bad Words List')
           .setDescription(wordList)
           .addFields(
             { name: 'Total Words', value: `${autoMod.badWords.length}`, inline: true }
@@ -4139,7 +4123,7 @@ client.on('interactionCreate', async interaction => {
       case 'show':
         embed = new EmbedBuilder()
           .setColor(0x0ea5e9)
-          .setTitle('🛡️ Auto-Moderation Settings')
+          .setTitle('Auto-Moderation Settings')
           .setDescription('Current auto-moderation configuration')
           .addFields(
             { name: 'Link Filter', value: autoMod.linkFilter ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
@@ -4215,7 +4199,7 @@ client.on('interactionCreate', async interaction => {
 
         const embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('✅ Role Added')
+          .setTitle('Role Added')
           .setDescription(`Successfully added the **${role.name}** role to ${targetUser.tag}.`)
           .addFields(
             { name: 'User', value: `${targetUser.tag}`, inline: true },
@@ -4237,7 +4221,7 @@ client.on('interactionCreate', async interaction => {
         });
       }
     } else if (mode === 'all') {
-      await interaction.reply({ content: '⏳ Adding role to all members... This may take a while.', ephemeral: true });
+      await interaction.reply({ content: 'Adding role to all members... This may take a while.', ephemeral: true });
 
       try {
         const members = await interaction.guild.members.fetch();
@@ -4265,7 +4249,7 @@ client.on('interactionCreate', async interaction => {
 
         const embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('✅ Role Added to All Members')
+          .setTitle('Role Added to All Members')
           .setDescription(`Finished adding the **${role.name}** role to server members.`)
           .addFields(
             { name: 'Successfully Added', value: `${successCount} members`, inline: true },
@@ -4341,7 +4325,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('🤖 Auto Role Configured')
+          .setTitle('Auto Role Configured')
           .setDescription(`New members will automatically receive the **${role.name}** role when they join the server.`)
           .addFields(
             { name: 'Auto Role', value: `${role.name}`, inline: true },
@@ -4374,7 +4358,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('🗑️ Auto Role Removed')
+          .setTitle('Auto Role Removed')
           .setDescription('Auto role assignment has been disabled. New members will no longer automatically receive a role.')
           .addFields(
             { name: 'Previous Auto Role', value: removedRoleName, inline: true },
@@ -4396,7 +4380,7 @@ client.on('interactionCreate', async interaction => {
         if (!autoRoleId) {
           embed = new EmbedBuilder()
             .setColor(0x6b7280)
-            .setTitle('📊 Auto Role Status')
+            .setTitle('Auto Role Status')
             .setDescription('No auto role is currently configured.')
             .addFields(
               { name: 'Status', value: 'Disabled', inline: true },
@@ -4417,7 +4401,7 @@ client.on('interactionCreate', async interaction => {
             
             embed = new EmbedBuilder()
               .setColor(0xff6b6b)
-              .setTitle('📊 Auto Role Status')
+              .setTitle('Auto Role Status')
               .setDescription('The configured auto role was deleted. Auto role has been disabled.')
               .addFields(
                 { name: 'Status', value: 'Disabled (role deleted)', inline: true },
@@ -4435,11 +4419,11 @@ client.on('interactionCreate', async interaction => {
 
             embed = new EmbedBuilder()
               .setColor(canAssign ? 0x00ff88 : 0xfacc15)
-              .setTitle('📊 Auto Role Status')
+              .setTitle('Auto Role Status')
               .setDescription('Auto role assignment is currently active.')
               .addFields(
                 { name: 'Auto Role', value: `${autoRole.name}`, inline: true },
-                { name: 'Status', value: canAssign ? 'Active ✅' : 'Warning ⚠️', inline: true },
+                { name: 'Status', value: canAssign ? 'Active' : 'Warning', inline: true },
                 { name: 'Members Count', value: `${autoRole.members.size} members have this role`, inline: true }
               )
               .setTimestamp()
@@ -4450,7 +4434,7 @@ client.on('interactionCreate', async interaction => {
 
             if (!canAssign) {
               embed.addFields({
-                name: '⚠️ Permission Issue',
+                name: 'Permission Issue',
                 value: 'I cannot assign this role due to permission or hierarchy issues.',
                 inline: false
               });
@@ -4519,7 +4503,7 @@ client.on('interactionCreate', async interaction => {
 
         const embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('🗑️ Role Removed')
+          .setTitle('Role Removed')
           .setDescription(`Successfully removed the **${role.name}** role from ${targetUser.tag}.`)
           .addFields(
             { name: 'User', value: `${targetUser.tag}`, inline: true },
@@ -4541,7 +4525,7 @@ client.on('interactionCreate', async interaction => {
         });
       }
     } else if (mode === 'all') {
-      await interaction.reply({ content: '⏳ Removing role from all members... This may take a while.', ephemeral: true });
+      await interaction.reply({ content: 'Removing role from all members... This may take a while.', ephemeral: true });
 
       try {
         const members = await interaction.guild.members.fetch();
@@ -4569,7 +4553,7 @@ client.on('interactionCreate', async interaction => {
 
         const embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('🗑️ Role Removed from All Members')
+          .setTitle('Role Removed from All Members')
           .setDescription(`Finished removing the **${role.name}** role from server members.`)
           .addFields(
             { name: 'Successfully Removed', value: `${successCount} members`, inline: true },
@@ -4643,7 +4627,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
-          .setTitle('🚫 Channel Restricted')
+          .setTitle('Channel Restricted')
           .setDescription(`${channel} is now restricted to commands only.`)
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -4674,7 +4658,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
-          .setTitle('✅ Channel Unrestricted')
+          .setTitle('Channel Unrestricted')
           .setDescription(`${channel} is now unrestricted and allows normal messages.`)
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -4699,10 +4683,10 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(isCurrentlyRestricted ? 0xff6b6b : 0x0ea5e9)
-          .setTitle('📊 Channel Restriction Status')
+          .setTitle('Channel Restriction Status')
           .setDescription(`Status for ${channel}`)
           .addFields(
-            { name: 'Current Status', value: isCurrentlyRestricted ? '🚫 Restricted (Commands Only)' : '✅ Unrestricted (Normal Messages)', inline: true },
+            { name: 'Current Status', value: isCurrentlyRestricted ? 'Restricted (Commands Only)' : '✅ Unrestricted (Normal Messages)', inline: true },
             { name: 'Total Restricted Channels', value: `${totalRestricted}`, inline: true },
             { name: 'Restricted Channels', value: restrictedChannelsList, inline: false }
           )
@@ -4953,7 +4937,7 @@ client.on('interactionCreate', async interaction => {
       // Create update confirmation embed
       const updateEmbed = new EmbedBuilder()
         .setColor(0x00ff88)
-        .setTitle('✅ Embed Updated Successfully')
+        .setTitle('Embed Updated Successfully')
         .setDescription(`Embed \`${embedId}\` has been updated and saved.`)
         .addFields(
           { name: 'Embed ID', value: `\`${embedId}\``, inline: true },
