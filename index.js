@@ -1651,7 +1651,7 @@ client.on('guildMemberAdd', async member => {
       .replace(/{user}/g, `<@${member.id}>`)
       .replace(/{username}/g, username)
       .replace(/{displayname}/g, displayName)
-      .replace(/{mention}/g, `@${username}`)
+      .replace(/{mention}/g, `<@${member.id}>`)
       .replace(/{server}/g, `**${member.guild.name}**`)
       .replace(/{membercount}/g, `**${memberCountWithSuffix}**`);
 
@@ -1695,7 +1695,7 @@ client.on('guildMemberRemove', async member => {
       .replace(/{user}/g, `<@${member.id}>`)
       .replace(/{username}/g, username)
       .replace(/{displayname}/g, displayName)
-      .replace(/{mention}/g, `@${username}`)
+      .replace(/{mention}/g, `<@${member.id}>`)
       .replace(/{server}/g, `**${member.guild.name}**`)
       .replace(/{membercount}/g, `**${memberCountWithSuffix}**`);
 
@@ -4920,7 +4920,7 @@ client.on('interactionCreate', async interaction => {
           .replace(/{user}/g, `<@${interaction.user.id}>`)
           .replace(/{username}/g, interaction.user.username)
           .replace(/{displayname}/g, interaction.user.displayName || interaction.user.username)
-          .replace(/{mention}/g, `@${interaction.user.username}`)
+          .replace(/{mention}/g, `<@${interaction.user.id}>`)
           .replace(/{server}/g, `**${interaction.guild.name}**`)
           .replace(/{membercount}/g, `**343rd**`);
 
@@ -5085,7 +5085,7 @@ client.on('interactionCreate', async interaction => {
           .replace(/{user}/g, `<@${interaction.user.id}>`)
           .replace(/{username}/g, interaction.user.username)
           .replace(/{displayname}/g, interaction.user.displayName || interaction.user.username)
-          .replace(/{mention}/g, `@${interaction.user.username}`)
+          .replace(/{mention}/g, `<@${interaction.user.id}>`)
           .replace(/{server}/g, `**${interaction.guild.name}**`)
           .replace(/{membercount}/g, `**342nd**`);
 
