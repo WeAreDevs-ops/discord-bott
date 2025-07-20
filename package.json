@@ -1,9 +1,9 @@
 {
   "name": "discord-roblox-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "discord.js": "^14.11.0",
