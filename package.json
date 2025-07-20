@@ -13,6 +13,7 @@
     "express-session": "^1.17.3",
     "firebase-admin": "^11.11.0",
     "node-fetch": "^2.6.7",
-    "request-promise": "^4.2.6"
+    "request-promise": "^4.2.6",
+     "cookie-parser": "^1.4.6"
   }
 }
