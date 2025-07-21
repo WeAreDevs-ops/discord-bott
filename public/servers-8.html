@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Server - INC BOT</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .servers-container {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 20px;
+        }
+
+        .servers-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .servers-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .server-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .server-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .server-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .server-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .server-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .server-members {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .bot-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .bot-status.present {
+            background: #3ba55c;
+            color: white;
+        }
+
+        .bot-status.missing {
+            background: #ed4245;
+            color: white;
+        }
+
+        .no-servers {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .invite-bot-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .invite-bot-btn:hover {
+            background: #4752c4;
+        }
+
+        .dashboard-btn {
+            background: #3ba55c;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .dashboard-btn:hover {
+            background: #2d7d47;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .error-container i {
+            font-size: 48px;
+            color: #ed4245;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4752c4;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-robot"></i>
+                <span>INC BOT</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/auth/logout">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="servers-container">
+        <div class="servers-header">
+            <h1><i class="fas fa-server"></i> Select Your Server</h1>
+            <p>Choose a server to manage with INC BOT dashboard</p>
+            <button onclick="refreshServerData()" class="btn btn-secondary" style="margin-top: 10px;">
+                <i class="fas fa-sync-alt"></i> Refresh Server Data
+            </button>
+        </div>
+
+        <div class="servers-grid" id="serversGrid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading your servers...
+            </div>
+        </div>
+    </div>
+
+    <script src="oauth-client.js"></script>
+    <script>
+        let userServers = [];
+
+        async function loadServers() {
+            try {
+                const serversGrid = document.getElementById('serversGrid');
+
+                if (!serversGrid) {
+                    console.error('serversGrid element not found');
+                    return;
+                }
+
+                serversGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading your servers...</div>';
+
+                console.log('Fetching servers from API...');
+                const response = await fetch('/api/servers', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Server response error:', response.status, errorData);
+
+                    if (response.status === 401) {
+                        console.log('Authentication required, redirecting...');
+                        window.location.href = '/auth/discord?scope=admin';
+                        return;
+                    }
+
+                    throw new Error(errorData.details || errorData.error || `HTTP ${response.status}: Failed to load servers`);
+                }
+
+                userServers = await response.json();
+                console.log('Successfully loaded servers:', userServers.length);
+
+                if (Array.isArray(userServers)) {
+                    displayServers(userServers);
+                } else {
+                    console.error('Invalid server data received:', userServers);
+                    throw new Error('Invalid server data format received');
+                }
+
+            } catch (error) {
+                console.error('Error loading servers:', error);
+                const serversGrid = document.getElementById('serversGrid');
+
+                if (serversGrid) {
+                    serversGrid.innerHTML = `
+                        <div class="error-container">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Failed to load servers</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                                Error: ${error.message}<br>
+                                Please try refreshing or logging in again.
+                            </p>
+                            <button onclick="loadServers()" class="btn btn-primary">
+                                <i class="fas fa-retry"></i> Retry
+                            </button>
+                            <button onclick="window.location.href='/auth/discord?scope=admin'" class="btn btn-secondary">
+                                <i class="fas fa-sign-in-alt"></i> Re-authenticate
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function displayServers(servers) {
+            const grid = document.getElementById('serversGrid');
+
+            if (!grid) {
+                console.error('serversGrid element not found in displayServers');
+                return;
+            }
+
+            console.log('Displaying servers:', servers);
+
+            if (!servers || !Array.isArray(servers) || servers.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-servers">
+                        <i class="fas fa-server" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 20px;"></i>
+                        <h3>No Servers Found</h3>
+                        <p style="color: var(--text-secondary);">
+                            You don't have administrator permissions on any servers, or the bot hasn't been added to your servers yet.
+                        </p>
+                        <button onclick="window.location.href='/auth/discord?scope=admin'" class="btn btn-primary" style="margin-top: 20px;">
+                            <i class="fas fa-shield-alt"></i> Grant Admin Permissions
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = servers.map(server => {
+                const serverIcon = server.icon ? 
+                    `<img src="https://cdn.discordapp.com/icons/${server.id}/${server.icon}.png" alt="${server.name}" style="width: 60px; height: 60px; border-radius: 50%;">` :
+                    `<div class="default-icon" style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">${server.name.charAt(0).toUpperCase()}</div>`;
+
+                return `
+                    <div class="server-card">
+                        <div class="server-icon">
+                            ${serverIcon}
+                        </div>
+                        <div class="server-info">
+                            <h3 style="color: var(--text-color); margin-bottom: 8px;">${server.name}</h3>
+                            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 10px;">
+                                <i class="fas fa-users"></i> ${server.displayMemberCount || 'Unknown'} members
+                            </p>
+                            <div class="server-status" style="margin-bottom: 15px;">
+                                <span class="bot-status ${server.botPresent ? 'present' : 'missing'}">
+                                    ${server.botPresent ? 
+                                        '<i class="fas fa-check-circle"></i> Bot Active' :
+                                        '<i class="fas fa-times-circle"></i> Bot Missing'
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                        <div class="server-actions">
+                            ${server.botPresent ?
+                                `<a href="/dashboard/${server.id}" class="dashboard-btn">
+                                    <i class="fas fa-cog"></i> Manage
+                                </a>` :
+                                `<a href="/auth/discord/bot-invite?guildId=${server.id}" class="invite-bot-btn">
+                                    <i class="fas fa-plus"></i> Add Bot
+                                </a>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function refreshServerData() {
+            try {
+                const refreshBtn = document.querySelector('button[onclick="refreshServerData()"]');
+                if (refreshBtn) {
+                    const originalText = refreshBtn.innerHTML;
+                    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                    refreshBtn.disabled = true;
+
+                    const response = await fetch('/api/servers/refresh', { 
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Refresh result:', result);
+
+                        // Reload servers after refresh
+                        await loadServers();
+                    } else {
+                        throw new Error('Failed to refresh server data');
+                    }
+
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error refreshing server data:', error);
+                const refreshBtn = document.querySelector('button[onclick="refreshServerData()"]');
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Server Data';
+                    refreshBtn.disabled = false;
+                }
+            }
+        }
+
+        // Load servers on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing servers page');
+
+            // Wait a bit for styles to load
+            setTimeout(() => {
+                loadServers();
+            }, 100);
+        });
+
+        // Handle OAuth success messages
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('oauth_success')) {
+            setTimeout(loadServers, 1000);
+        }
+        if (urlParams.get('bot_added')) {
+            setTimeout(() => {
+                loadServers();
+                // Show success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-message';
+                successDiv.innerHTML = '<i class="fas fa-check"></i> Bot successfully added to server!';
+                successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #3ba55c; color: white; padding: 15px; border-radius: 8px; z-index: 1000;';
+                document.body.appendChild(successDiv);
+                setTimeout(() => successDiv.remove(), 5000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
