@@ -5140,3 +5140,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(process.env.BOT_TOKEN);
+
+// Export the client for use in other modules
+module.exports = { client };
