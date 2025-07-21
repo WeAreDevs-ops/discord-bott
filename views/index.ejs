@@ -1,0 +1,851 @@
+
+<%- include('layout', { title: 'Roblox Tools Bot - Professional Discord Bot Management', showSidebar: false, body: `
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <section class="hero-section py-5">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <div class="mb-4">
+                            <span class="hero-badge">
+                                <i class="fas fa-star me-2"></i>Professional Discord Bot
+                            </span>
+                        </div>
+                        <h1 class="hero-title mb-4">
+                            Roblox Tools Bot
+                            <span class="hero-gradient">Dashboard</span>
+                        </h1>
+                        <p class="hero-description mb-4">
+                            The ultimate Discord bot for Roblox enthusiasts. Manage your server with powerful tools, 
+                            advanced moderation, and seamless Roblox integration. Configure everything through our 
+                            intuitive web dashboard.
+                        </p>
+                        
+                        ${user ? `
+                            <div class="hero-buttons mb-4">
+                                <a href="/dashboard" class="btn btn-primary btn-hero">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    Access Dashboard
+                                </a>
+                                <a href="#features" class="btn btn-outline-light btn-hero">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Learn More
+                                </a>
+                            </div>
+                        ` : `
+                            <div class="hero-buttons mb-4">
+                                <a href="/auth/discord" class="btn btn-primary btn-hero">
+                                    <i class="fab fa-discord me-2"></i>
+                                    Login with Discord
+                                </a>
+                                <a href="#features" class="btn btn-outline-light btn-hero">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    View Features
+                                </a>
+                            </div>
+                            <div class="security-note">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Secure Discord OAuth2 authentication • No passwords required
+                            </div>
+                        `}
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual text-center">
+                        <div class="bot-showcase">
+                            <div class="bot-avatar">
+                                <i class="fas fa-robot"></i>
+                                <div class="status-pulse online"></div>
+                            </div>
+                            <div class="bot-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-server"></i>
+                                    <h3>500+</h3>
+                                    <p>Servers</p>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-users"></i>
+                                    <h3>10K+</h3>
+                                    <p>Users</p>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-clock"></i>
+                                    <h3>99.9%</h3>
+                                    <p>Uptime</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-subtitle">Everything you need to manage your Discord server and Roblox community</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-cookie-bite"></i>
+                        </div>
+                        <h4>Roblox Cookie Tools</h4>
+                        <p>Advanced cookie management, validation, and refresh capabilities for seamless Roblox integration.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Cookie validation & expiry check</li>
+                            <li><i class="fas fa-check"></i> Auto refresh functionality</li>
+                            <li><i class="fas fa-check"></i> Bypass tools for age restrictions</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Advanced Moderation</h4>
+                        <p>Comprehensive moderation suite with auto-detection and customizable filters.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Auto link filtering</li>
+                            <li><i class="fas fa-check"></i> Bad word detection & removal</li>
+                            <li><i class="fas fa-check"></i> Kick, ban, mute commands</li>
+                            <li><i class="fas fa-check"></i> Warning system</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <h4>Welcome & Leave Messages</h4>
+                        <p>Customizable welcome and goodbye messages with dynamic placeholders.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Custom welcome messages</li>
+                            <li><i class="fas fa-check"></i> Leave notifications</li>
+                            <li><i class="fas fa-check"></i> Dynamic user & server info</li>
+                            <li><i class="fas fa-check"></i> Channel-specific settings</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h4>Auto Role Assignment</h4>
+                        <p>Automatically assign roles to new members when they join your server.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Instant role assignment</li>
+                            <li><i class="fas fa-check"></i> Customizable default roles</li>
+                            <li><i class="fas fa-check"></i> Permission-based configuration</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h4>Custom Embeds</h4>
+                        <p>Create beautiful, interactive embeds with buttons, images, and rich formatting.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Rich embed creation</li>
+                            <li><i class="fas fa-check"></i> Interactive buttons</li>
+                            <li><i class="fas fa-check"></i> Custom colors & images</li>
+                            <li><i class="fas fa-check"></i> Update existing embeds</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4>Profile Lookup</h4>
+                        <p>Comprehensive Roblox user profile information and statistics lookup.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> User ID & username lookup</li>
+                            <li><i class="fas fa-check"></i> Profile information display</li>
+                            <li><i class="fas fa-check"></i> Account statistics</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Commands Section -->
+    <section class="commands-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Available Commands</h2>
+                <p class="section-subtitle">Comprehensive command suite for all your needs</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="command-category">
+                        <div class="category-header">
+                            <i class="fas fa-cookie-bite"></i>
+                            <h4>Roblox Tools</h4>
+                        </div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>/bypass2008</code>
+                                <p>Remove verified email address from Roblox account</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/bypass13plus</code>
+                                <p>Convert 13+ account to under 13 account</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/refreshcookie</code>
+                                <p>Refresh your .ROBLOSECURITY cookie</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/validatecookie</code>
+                                <p>Check if a .ROBLOSECURITY cookie is valid</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/cookieexpiry</code>
+                                <p>Check if your cookie might expire soon</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/profilelookup</code>
+                                <p>Get Roblox user info from username or ID</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="command-category">
+                        <div class="category-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>Moderation & Utility</h4>
+                        </div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>/ban</code>
+                                <p>Ban a user from the server (Requires Ban Members permission)</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/kick</code>
+                                <p>Kick a user from the server (Requires Kick Members permission)</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/mute</code>
+                                <p>Timeout/mute a user for specified minutes</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/unmute</code>
+                                <p>Remove timeout/unmute a user</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/warn</code>
+                                <p>Send a warning to a user</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/embedcreate</code>
+                                <p>Create custom embed messages with buttons</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/embedupdate</code>
+                                <p>Update existing embeds using their ID</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/botstats</code>
+                                <p>Show bot statistics and uptime</p>
+                            </div>
+                            <div class="command-item">
+                                <code>/help</code>
+                                <p>Display comprehensive help information</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Section -->
+    <section class="security-section py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="section-title">Built for Security & Trust</h2>
+                    <p class="section-subtitle mb-4">
+                        Your server's security is our priority. We implement industry-standard security practices 
+                        to ensure your data and community remain protected.
+                    </p>
+                    <div class="security-features">
+                        <div class="security-item">
+                            <div class="security-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div>
+                                <h5>Secure Authentication</h5>
+                                <p>Discord OAuth2 integration with no password storage</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-icon">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div>
+                                <h5>Permission Validation</h5>
+                                <p>Role-based access control for all administrative functions</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div>
+                                <h5>Encrypted Data Storage</h5>
+                                <p>All sensitive data encrypted and securely stored</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h5>99.9% Uptime</h5>
+                                <p>Reliable service with continuous monitoring</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="trust-badges">
+                        <div class="trust-badge">
+                            <div class="badge-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <h5>Verified Bot</h5>
+                            <p>Discord verified for quality assurance</p>
+                        </div>
+                        <div class="trust-badge">
+                            <div class="badge-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <h5>Community Trusted</h5>
+                            <p>Loved by thousands of server owners</p>
+                        </div>
+                        <div class="trust-badge">
+                            <div class="badge-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <h5>24/7 Support</h5>
+                            <p>Always here when you need assistance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section py-5">
+        <div class="container text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h2 class="cta-title mb-4">Ready to Enhance Your Server?</h2>
+                    <p class="cta-description mb-4">
+                        Join thousands of server owners who trust Roblox Tools Bot to manage their communities. 
+                        Get started in minutes with our easy setup process.
+                    </p>
+                    <div class="cta-buttons">
+                        ${user ? `
+                            <a href="/dashboard" class="btn btn-primary btn-cta">
+                                <i class="fas fa-rocket me-2"></i>
+                                Access Your Dashboard
+                            </a>
+                        ` : `
+                            <a href="/auth/discord" class="btn btn-primary btn-cta">
+                                <i class="fab fa-discord me-2"></i>
+                                Get Started Now
+                            </a>
+                        `}
+                        <a href="#features" class="btn btn-outline-light btn-cta">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--discord-bg-tertiary) 0%, var(--discord-bg-primary) 100%);
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 70%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 30%, rgba(235, 69, 158, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .hero-badge {
+        background: linear-gradient(135deg, var(--discord-blurple), #4752C4);
+        color: var(--discord-white);
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        display: inline-block;
+        box-shadow: 0 4px 20px rgba(88, 101, 242, 0.3);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--discord-text-normal);
+        line-height: 1.2;
+    }
+
+    .hero-gradient {
+        background: linear-gradient(135deg, var(--discord-blurple), var(--discord-fuchsia));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-description {
+        font-size: 1.25rem;
+        color: var(--discord-text-muted);
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-hero {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        min-width: 200px;
+    }
+
+    .security-note {
+        color: var(--discord-text-muted);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Hero Visual */
+    .bot-showcase {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .bot-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--discord-blurple), #4752C4);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--discord-white);
+        margin-bottom: 2rem;
+        position: relative;
+        box-shadow: 0 10px 40px rgba(88, 101, 242, 0.4);
+    }
+
+    .status-pulse {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        border: 4px solid var(--discord-bg-primary);
+    }
+
+    .status-pulse.online {
+        background: var(--discord-green);
+        animation: pulse-status 2s infinite;
+    }
+
+    @keyframes pulse-status {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(87, 242, 135, 0.7); }
+        70% { box-shadow: 0 0 0 20px rgba(87, 242, 135, 0); }
+    }
+
+    .bot-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .stat-item {
+        background: var(--discord-bg-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-item i {
+        font-size: 1.5rem;
+        color: var(--discord-blurple);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-item h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--discord-text-normal);
+        margin: 0.5rem 0;
+    }
+
+    .stat-item p {
+        color: var(--discord-text-muted);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Sections */
+    .features-section {
+        background: var(--discord-bg-primary);
+    }
+
+    .commands-section {
+        background: var(--discord-bg-secondary);
+    }
+
+    .security-section {
+        background: var(--discord-bg-primary);
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, var(--discord-bg-tertiary) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--discord-text-normal);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.125rem;
+        color: var(--discord-text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        background: var(--discord-bg-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--discord-blurple), var(--discord-fuchsia));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--discord-blurple), #4752C4);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: var(--discord-white);
+        box-shadow: 0 8px 25px rgba(88, 101, 242, 0.3);
+    }
+
+    .feature-card h4 {
+        color: var(--discord-text-normal);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+        color: var(--discord-text-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        text-align: left;
+    }
+
+    .feature-list li {
+        margin: 0.75rem 0;
+        display: flex;
+        align-items: center;
+        color: var(--discord-text-normal);
+    }
+
+    .feature-list i {
+        color: var(--discord-green);
+        margin-right: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    /* Command Categories */
+    .command-category {
+        background: var(--discord-bg-primary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        height: 100%;
+    }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .category-header i {
+        font-size: 1.5rem;
+        color: var(--discord-blurple);
+        margin-right: 1rem;
+    }
+
+    .category-header h4 {
+        color: var(--discord-text-normal);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .command-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .command-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .command-item code {
+        background: rgba(88, 101, 242, 0.2);
+        color: var(--discord-blurple);
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .command-item p {
+        margin: 0.75rem 0 0 0;
+        color: var(--discord-text-muted);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    /* Security Features */
+    .security-item {
+        display: flex;
+        align-items: flex-start;
+        margin: 2rem 0;
+    }
+
+    .security-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--discord-blurple), #4752C4);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--discord-white);
+        font-size: 1.2rem;
+        margin-right: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .security-item h5 {
+        color: var(--discord-text-normal);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .security-item p {
+        color: var(--discord-text-muted);
+        margin: 0;
+    }
+
+    /* Trust Badges */
+    .trust-badges {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+
+    .trust-badge {
+        background: var(--discord-bg-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .trust-badge:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .badge-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--discord-blurple), #4752C4);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: var(--discord-white);
+    }
+
+    .trust-badge h5 {
+        color: var(--discord-text-normal);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .trust-badge p {
+        color: var(--discord-text-muted);
+        margin: 0;
+    }
+
+    /* CTA Section */
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--discord-text-normal);
+    }
+
+    .cta-description {
+        font-size: 1.125rem;
+        color: var(--discord-text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-cta {
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .hero-buttons, .cta-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-hero, .btn-cta {
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .bot-stats {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .hero-content {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+` }) %>
