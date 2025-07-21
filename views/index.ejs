@@ -1,0 +1,58 @@
+
+<%- include('layout', { title: 'Roblox Tools Bot Dashboard', showSidebar: false, body: `
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-lg-8">
+            <div class="card text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-robot fa-5x text-primary"></i>
+                    </div>
+                    <h1 class="card-title display-4 mb-4">Roblox Tools Bot</h1>
+                    <p class="card-text lead mb-4">
+                        Manage your Discord server with powerful Roblox tools and moderation features.
+                        Configure welcome messages, auto-moderation, roles, and more through our intuitive dashboard.
+                    </p>
+                    
+                    <div class="row text-start mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-check-circle text-success me-2"></i>Features</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Roblox Cookie Tools</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Auto Moderation</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Welcome Messages</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Auto Role Assignment</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Command Management</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-shield-alt text-success me-2"></i>Security</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Discord OAuth2</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Permission Validation</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Secure Data Storage</li>
+                                <li><i class="fas fa-chevron-right text-primary me-2"></i>Role-based Access</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    ${user ? `
+                        <a href="/dashboard" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Go to Dashboard
+                        </a>
+                    ` : `
+                        <a href="/auth/discord" class="btn btn-primary btn-lg px-5">
+                            <i class="fab fa-discord me-2"></i>
+                            Login with Discord
+                        </a>
+                        <p class="text-muted mt-3">
+                            <small>You'll be redirected to Discord to authorize the application</small>
+                        </p>
+                    `}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+` }) %>
