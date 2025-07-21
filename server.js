@@ -1079,6 +1079,6 @@ app.listen(PORT, '0.0.0.0', () => {
   if (process.env.RAILWAY_STATIC_URL) {
     console.log(`🔗 Railway URL: https://${process.env.RAILWAY_STATIC_URL}`);
   } else {
-    console.log(`🔗 Local URL: http://localhost:${PORT}`);
+    console.log(`🔗 Local URL: https://localhost:${PORT}`);
   }
 });
