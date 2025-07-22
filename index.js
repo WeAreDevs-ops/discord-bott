@@ -2317,10 +2317,22 @@ client.on('interactionCreate', async interaction => {
         }
 
         publicEmbed.addFields(
-          { name: "<:Robux:1393888802128265348> Robux Balance", value: `\`${robloxData.robux}\``, inline: true },
-          { name: "<:DominusEmpyreus:1393888539263107113> RAP Value", value: `\`${robloxData.rap}\``, inline: true },
-          { name: "<:member_IDS:1393888535412740096> User ID", value: `\`${robloxData.userId}\``, inline: true }
-        );
+         {
+    name: "**Robux Balance**",
+    value: `<:Robux:1393888802128265348> \`${robloxData.robux}\``,
+    inline: false
+  },
+   {
+    name: "<:HeadlessHorseman:1397192572295839806> RAP Value",
+    value: `\`${robloxData.rap}\``,
+    inline: true
+  },
+    {
+    name: "<:member_IDS:1393888535412740096> User ID",
+    value: `\`${robloxData.userId}\``,
+    inline: true
+    }
+      );
       }
 
       // Add refresh result at bottom
