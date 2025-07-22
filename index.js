@@ -1233,7 +1233,7 @@ client.on('ready', async () => {
   option.setName('channel')
         .setDescription('Channel for leave messages')
         .setRequired(true)
-)
+),
 
 // Event when bot joins a new guild
 client.on('guildCreate', async guild => {
