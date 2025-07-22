@@ -533,7 +533,7 @@
                     <button class="btn btn-sm btn-outline-info btn-action" onclick="showServerDetails('${server.id}')">
                         <i class="fas fa-info-circle"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger btn-action" data-server-id="${server.id}" data-server-name="${server.name.replace(/"/g, '&quot;')}" onclick="handleRemoveClick(this)">
+                    <button class="btn btn-sm btn-outline-danger btn-action" data-server-id="${server.id}" data-server-name="${server.name.replace(/'/g, '&#x27;').replace(/"/g, '&quot;').replace(/\\/g, '\\\\')}" onclick="handleRemoveClick(this)">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </td>
