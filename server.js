@@ -10,19 +10,19 @@ const { validateGuildId, validateChannelId, sanitizeInput } = require('./utils.j
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Discord OAuth2 configuration
+
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `https://${process.env.RAILWAY_STATIC_URL || 'localhost:5000'}/auth/discord/callback`;
 
-// Middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Rate limiting
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -33,7 +33,7 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// Security headers
+
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Firebase session store
+
 const FirebaseStore = require('connect-session-firebase')(session);
 
 // Session configuration
@@ -60,7 +60,7 @@ app.use(session({
   }
 }));
 
-// Helper functions
+
 function requireAuth(req, res, next) {
   if (req.session.user) {
     next();
@@ -116,7 +116,7 @@ function generateBotInviteLink(guildId) {
   const scope = 'bot%20applications.commands';
   const redirectUri = encodeURIComponent(DISCORD_REDIRECT_URI);
   
-  // Include OAuth flow with redirect for proper authentication
+  
   return `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=${permissions}&guild_id=${guildId}&scope=${scope}&response_type=code&redirect_uri=${redirectUri}&disable_guild_select=true`;
 }
 
@@ -154,7 +154,7 @@ function hasManageGuildPermission(permissions) {
   return (permissions & (MANAGE_GUILD | ADMINISTRATOR)) !== 0;
 }
 
-// Routes
+
 app.get('/', (req, res) => {
   res.render('index', { user: req.session.user });
 });
@@ -170,7 +170,7 @@ app.get('/auth/discord/bot-invite', requireAuth, (req, res) => {
     return res.redirect('/dashboard');
   }
   
-  // Generate bot invite URL that includes OAuth flow
+  
   const botInviteUrl = generateBotInviteLink(guildId);
   res.redirect(botInviteUrl);
 });
@@ -183,7 +183,7 @@ app.get('/auth/discord/callback', async (req, res) => {
   }
 
   try {
-    // Exchange code for access token
+    
     const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       client_secret: DISCORD_CLIENT_SECRET,
@@ -210,9 +210,9 @@ app.get('/auth/discord/callback', async (req, res) => {
       access_token: access_token
     };
 
-    // If this was a bot invitation (guild_id present), redirect to that guild's config
+    
     if (guild_id) {
-      // Wait a moment for Discord to process the bot addition, then redirect to guild config
+      
       setTimeout(() => {
         res.redirect(`/guild/${guild_id}?invited=true`);
       }, 2000);
@@ -238,7 +238,7 @@ app.get('/dashboard', requireAuth, async (req, res) => {
 
     const userGuilds = userGuildsResponse.data;
 
-    // Get bot guild IDs using direct bot client access
+    
     let botGuildIds = [];
     try {
       const botModule = require('./index.js');
@@ -250,10 +250,10 @@ app.get('/dashboard', requireAuth, async (req, res) => {
       console.log('Bot client not available:', error.message);
     }
 
-    // Only show guilds the user owns
+    
     const ownedGuilds = userGuilds.filter(g => g.owner);
 
-    // Add bot presence flag for each guild
+  
     const finalGuilds = ownedGuilds.map(guild => {
       const botIsIn = botGuildIds.includes(guild.id);
       return {
@@ -295,7 +295,7 @@ app.get('/guild/:id', requireAuth, async (req, res) => {
   }
   
   try {
-    // Verify user has permission to manage this guild
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -303,7 +303,7 @@ app.get('/guild/:id', requireAuth, async (req, res) => {
       return res.redirect('/dashboard');
     }
 
-    // Fetch guild data from Discord API
+    
     const [channels, roles, guildSettings, autoModSettings, autoRoleSettings, commandAssignments, restrictedChannels, embeds] = await Promise.all([
       getGuildChannels(guildId),
       getGuildRoles(guildId),
@@ -342,13 +342,13 @@ app.get('/guild/:id', requireAuth, async (req, res) => {
   }
 });
 
-// API Routes for updating settings
+
 app.post('/api/guild/:id/welcome', requireAuth, async (req, res) => {
   const guildId = req.params.id;
   const { channelId, messages, enabled } = req.body;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -356,16 +356,16 @@ app.post('/api/guild/:id/welcome', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'No permission' });
     }
 
-    // Get existing settings to preserve leave settings
+    
     const existingSettings = await getGuildSettings(guildId);
 
-    // Parse messages from comma-separated string if it's a string
+    
     let parsedMessages = messages;
     if (typeof messages === 'string') {
       parsedMessages = messages.split(',').map(msg => msg.trim()).filter(msg => msg.length > 0);
     }
 
-    // Update settings in Firebase
+    
     const settings = {
       ...existingSettings,
       welcomeChannel: channelId,
@@ -386,7 +386,7 @@ app.post('/api/guild/:id/leave', requireAuth, async (req, res) => {
   const { channelId, messages, enabled } = req.body;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -394,10 +394,10 @@ app.post('/api/guild/:id/leave', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'No permission' });
     }
 
-    // Get existing settings to preserve welcome settings
+    
     const existingSettings = await getGuildSettings(guildId);
 
-    // Parse messages from comma-separated string if it's a string
+   
     let parsedMessages = messages;
     if (typeof messages === 'string') {
       parsedMessages = messages.split(',').map(msg => msg.trim()).filter(msg => msg.length > 0);
@@ -424,7 +424,7 @@ app.post('/api/guild/:id/automod', requireAuth, async (req, res) => {
   const { linkFilter, badWordFilter, badWords } = req.body;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -432,7 +432,7 @@ app.post('/api/guild/:id/automod', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'No permission' });
     }
 
-    // Parse bad words from comma-separated string if it's a string
+    
     let parsedBadWords = badWords;
     if (typeof badWords === 'string') {
       parsedBadWords = badWords.split(',').map(word => word.trim().toLowerCase()).filter(word => word.length > 0);
@@ -457,7 +457,7 @@ app.post('/api/guild/:id/autorole', requireAuth, async (req, res) => {
   const { roleId } = req.body;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -478,13 +478,13 @@ app.post('/api/guild/:id/autorole', requireAuth, async (req, res) => {
   }
 });
 
-// Embed management routes
+
 app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
   const guildId = req.params.id;
   const { title, description, color, thumbnail, image, footer, timestamp, buttons, channelId } = req.body;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -492,15 +492,15 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'No permission' });
     }
 
-    // Validate required fields
+    
     if (!title || !description || !channelId) {
       return res.status(400).json({ error: 'Title, description, and channel are required' });
     }
 
-    // Parse color input
+    
     let embedColor = 0x0099ff; // Default blue color
     if (color) {
-      // Handle hex colors
+      
       if (color.startsWith('#')) {
         const hexColor = parseInt(color.slice(1), 16);
         if (!isNaN(hexColor)) {
@@ -512,7 +512,7 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
           embedColor = hexColor;
         }
       } else {
-        // Handle color names
+        
         const colorNames = {
           'red': 0xff0000, 'green': 0x00ff00, 'blue': 0x0000ff, 'yellow': 0xffff00,
           'orange': 0xffa500, 'purple': 0x800080, 'pink': 0xffc0cb, 'cyan': 0x00ffff,
@@ -528,14 +528,14 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
       }
     }
 
-    // Create Discord embed object
+    
     const discordEmbed = {
       title: title,
       description: description,
       color: embedColor
     };
 
-    // Add optional elements
+    
     if (thumbnail) {
       try {
         new URL(thumbnail); // Validate URL
@@ -562,11 +562,11 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
       discordEmbed.timestamp = new Date().toISOString();
     }
 
-    // Parse and create buttons
+    
     const components = [];
     if (buttons && buttons.trim()) {
       try {
-        // Split buttons by | separator
+       
         const buttonPairs = buttons.split('|').map(pair => pair.trim()).filter(pair => pair);
         
         if (buttonPairs.length > 5) {
@@ -576,7 +576,7 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
         const buttonComponents = [];
 
         for (const pair of buttonPairs) {
-          // Match optional emoji, label, and URL - supports both <:name:id> and <a:name:id>
+          
           const emojiMatch = pair.match(/^<(a?):([a-zA-Z0-9_]+):(\d+)>\s*(.*?),\s*(https:\/\/\S+)$/);
 
           let buttonData;
@@ -592,21 +592,21 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
             }
 
             buttonData = {
-              type: 2, // Button component type
-              style: 5, // Link style
+              type: 2, 
+              style: 5, 
               label: label,
               url: url,
               emoji: { name, id, animated }
             };
           } else {
-            // Fallback if no emoji - standard format
+            
             const [label, url] = pair.split(',').map(s => s.trim());
             
             if (!label || !url) {
               return res.status(400).json({ error: 'Invalid button format. Use: "Label,URL" or "<:emoji:id> Label,URL"' });
             }
 
-            // Validate URL
+            
             try {
               new URL(url);
             } catch {
@@ -618,8 +618,8 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
             }
 
             buttonData = {
-              type: 2, // Button component type
-              style: 5, // Link style
+              type: 2, 
+              style: 5, 
               label: label,
               url: url
             };
@@ -628,10 +628,10 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
           buttonComponents.push(buttonData);
         }
 
-        // Create action row (max 5 buttons per row)
+        
         if (buttonComponents.length > 0) {
           components.push({
-            type: 1, // Action row type
+            type: 1,
             components: buttonComponents
           });
         }
@@ -642,10 +642,10 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
       }
     }
 
-    // Generate unique embed ID
+    
     const embedId = `embed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Send embed via Discord API
+    
     let sentMessage;
     try {
       const messagePayload = { 
@@ -672,7 +672,7 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
       });
     }
 
-    // Create embed data for database storage
+    
     const embedData = {
       id: embedId,
       title,
@@ -691,7 +691,7 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
       lastUpdated: Date.now()
     };
 
-    // Save embed data to database
+    
     await saveEmbed(guildId, embedId, embedData);
 
     res.json({ 
@@ -713,7 +713,7 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
   const { title, description, color, thumbnail, image, footer, timestamp, buttons, channelId } = req.body;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -721,13 +721,13 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
       return res.status(403).json({ error: 'No permission' });
     }
 
-    // Get existing embed
+    
     const existingEmbed = await getEmbed(guildId, embedId);
     if (!existingEmbed) {
       return res.status(404).json({ error: 'Embed not found' });
     }
 
-    // Merge new data with existing data
+    
     const updatedData = {
       title: title !== undefined ? title : existingEmbed.title,
       description: description !== undefined ? description : existingEmbed.description,
@@ -740,13 +740,13 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
       channelId: channelId !== undefined ? channelId : existingEmbed.channelId
     };
 
-    // Validate required fields
+    
     if (!updatedData.title || !updatedData.description || !updatedData.channelId) {
       return res.status(400).json({ error: 'Title, description, and channel are required' });
     }
 
-    // Parse color input
-    let embedColor = 0x0099ff; // Default blue color
+    
+    let embedColor = 0x0099ff; 
     if (updatedData.color) {
       if (updatedData.color.startsWith('#')) {
         const hexColor = parseInt(updatedData.color.slice(1), 16);
@@ -773,14 +773,14 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
       }
     }
 
-    // Create Discord embed object
+    
     const discordEmbed = {
       title: updatedData.title,
       description: updatedData.description,
       color: embedColor
     };
 
-    // Add optional elements
+    
     if (updatedData.thumbnail) {
       try {
         new URL(updatedData.thumbnail);
@@ -807,7 +807,7 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
       discordEmbed.timestamp = new Date().toISOString();
     }
 
-    // Parse and create buttons
+    
     const components = [];
     if (updatedData.buttons && updatedData.buttons.trim()) {
       try {
@@ -873,7 +873,7 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
       }
     }
 
-    // Send updated embed to channel
+    
     let sentMessage;
     try {
       const messagePayload = { 
@@ -900,7 +900,7 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
       });
     }
 
-    // Update embed data in database
+    
     const updatedEmbedData = {
       ...existingEmbed,
       ...updatedData,
@@ -928,7 +928,7 @@ app.delete('/api/guild/:id/embed/:embedId', requireAuth, async (req, res) => {
   const embedId = req.params.embedId;
 
   try {
-    // Verify permissions
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -944,12 +944,12 @@ app.delete('/api/guild/:id/embed/:embedId', requireAuth, async (req, res) => {
   }
 });
 
-// API endpoint to check bot presence
+
 app.get('/api/guild/:id/bot-presence', requireAuth, async (req, res) => {
   const guildId = req.params.id;
   
   try {
-    // Verify user has permission to manage this guild
+    
     const userGuilds = await getUserGuilds(req.session.user.access_token);
     const guild = userGuilds.find(g => g.id === guildId && hasManageGuildPermission(g.permissions));
     
@@ -957,7 +957,7 @@ app.get('/api/guild/:id/bot-presence', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'No permission' });
     }
 
-    // Check bot presence using bot client
+    
     let botPresent = false;
     try {
       const botModule = require('./index.js');
@@ -980,7 +980,7 @@ app.get('/api/guild/:id/bot-presence', requireAuth, async (req, res) => {
   }
 });
 
-// Admin panel routes
+
 function requireAdmin(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ error: 'Not authenticated' });
@@ -1023,7 +1023,7 @@ app.get('/api/admin/dashboard', requireAuth, requireAdmin, async (req, res) => {
             banned: false
           };
 
-          // Try to get owner information
+          
           try {
             const owner = await guild.fetchOwner();
             guildData.owner.username = owner.user.username;
@@ -1031,7 +1031,7 @@ app.get('/api/admin/dashboard', requireAuth, requireAdmin, async (req, res) => {
             console.log('Could not fetch owner for guild:', guild.name);
           }
 
-          // Get command usage from database if available
+          
           try {
             const guildSettings = await getGuildSettings(guild.id);
             const snapshot = await db.ref(`guilds/${guild.id}/stats`).once('value');
@@ -1052,7 +1052,7 @@ app.get('/api/admin/dashboard', requireAuth, requireAdmin, async (req, res) => {
       console.error('Error fetching bot guilds:', error);
     }
 
-    // Get recent activities from database
+    
     let recentActivities = [];
     try {
       const activitiesSnapshot = await db.ref('admin/activities').orderByChild('timestamp').limitToLast(20).once('value');
@@ -1093,7 +1093,7 @@ app.post('/api/admin/remove-server', requireAuth, requireAdmin, async (req, res)
   }
 
   try {
-    // Get bot client with better error handling
+    
     let botClient;
     try {
       const botModule = require('./index.js');
@@ -1120,7 +1120,7 @@ app.post('/api/admin/remove-server', requireAuth, requireAdmin, async (req, res)
 
     console.log(`Removing bot from guild: ${guildName} (${serverId}) - Members: ${memberCount}`);
 
-    // Log the removal activity first
+    
     try {
       const activity = {
         type: 'removal',
@@ -1148,7 +1148,7 @@ app.post('/api/admin/remove-server', requireAuth, requireAdmin, async (req, res)
       console.error('Error logging removal activity:', error);
     }
 
-    // Clean up guild data from database before leaving
+    
     try {
       await db.ref(`guilds/${serverId}/settings`).remove();
       await db.ref(`guilds/${serverId}/automod`).remove();
@@ -1161,8 +1161,8 @@ app.post('/api/admin/remove-server', requireAuth, requireAdmin, async (req, res)
       console.error('Error cleaning up guild data:', error);
     }
 
-    // Leave the guild - this should work regardless of your permissions in the server
-    // The bot can always leave a server, even if the bot owner doesn't have permissions
+    
+    
     try {
       await guild.leave();
       console.log(`Successfully left guild: ${guildName}`);
@@ -1180,21 +1180,21 @@ app.post('/api/admin/remove-server', requireAuth, requireAdmin, async (req, res)
     } catch (leaveError) {
       console.error('Error leaving guild:', leaveError);
       
-      // If leaving fails, try alternative approaches
-      if (leaveError.code === 50001) { // Missing Access
+      
+      if (leaveError.code === 50001) { 
         res.json({
           success: false,
           error: 'Bot does not have access to this server (may have already been removed)',
           details: leaveError.message
         });
-      } else if (leaveError.code === 50013) { // Missing Permissions
+      } else if (leaveError.code === 50013) { 
         res.json({
           success: false,
           error: 'Bot lacks permissions to leave this server (unusual Discord error)',
           details: leaveError.message
         });
       } else {
-        // For any other error, still mark as partially successful since we logged it
+        
         res.json({
           success: true,
           message: `Removal logged but bot may still be in ${guildName}. Discord API error occurred.`,
@@ -1225,7 +1225,7 @@ app.get('/api/admin/server/:id/details', requireAuth, requireAdmin, async (req, 
       return res.status(404).json({ error: 'Server not found' });
     }
 
-    // Get detailed server information
+    
     const serverData = {
       id: guild.id,
       name: guild.name,
@@ -1240,7 +1240,7 @@ app.get('/api/admin/server/:id/details', requireAuth, requireAdmin, async (req, 
       recentCommands: []
     };
 
-    // Get stats and recent commands from database
+    
     try {
       const statsSnapshot = await db.ref(`guilds/${serverId}/stats`).once('value');
       const stats = statsSnapshot.val();
@@ -1274,7 +1274,7 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// Import Firebase functions from your existing bot
+
 async function saveGuildSettings(guildId, settings) {
   try {
     await db.ref(`guilds/${guildId}/settings`).set(settings);
