@@ -848,7 +848,7 @@ app.post('/api/guild/:id/embed/:embedId/update', requireAuth, async (req, res) =
         const buttonComponents = [];
 
         for (const pair of buttonPairs) {
-          const emojiMatch = pair.match(/^<(a?):([a-zA-Z0-9_]+):(\d+)>\s*(*.*?),\\s*(https:\\/\\/\\S+)$/);
+          const emojiMatch = pair.match(/^<(a?):([a-zA-Z0-9_]+):(\d+)>\s*(.*?),\s*(https:\/\/\S+)$/);
 
           let buttonData;
           if (emojiMatch) {
