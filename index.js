@@ -2323,19 +2323,19 @@ client.on('interactionCreate', async interaction => {
     inline: false
   },
    {
-    name: "<:HeadlessHorseman:1397192572295839806> RAP Value",
-    value: `\`${robloxData.rap}\``,
-    inline: true
+    name: "**RAP Value**",
+    value: `<:HeadlessHorseman:1397192572295839806> \`${robloxData.rap}\``,
+    inline: false
   },
     {
-    name: "<:member_IDS:1393888535412740096> User ID",
-    value: `\`${robloxData.userId}\``,
-    inline: true
+    name: "**User ID**",
+    value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``,
+    inline: false 
     }
       );
       }
 
-      // Add refresh result at bottom
+      
       publicEmbed.addFields(
         { name: "<:Refresh:1393888531973406881> Refresh Result", value: "Your new cookie has been generated and sent privately.", inline: false },
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
