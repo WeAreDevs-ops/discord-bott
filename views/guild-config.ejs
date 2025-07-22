@@ -16,7 +16,7 @@
                 </a>
             </div>
 
-            <!-- Welcome Messages Section -->
+            
             <div class="card modern-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
@@ -66,7 +66,7 @@
                 </div>
             </div>
 
-            <!-- Leave Messages Section -->
+            
             <div class="card modern-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
@@ -116,7 +116,7 @@
                 </div>
             </div>
 
-            <!-- Auto Moderation Section -->
+            
             <div class="card modern-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
@@ -168,7 +168,7 @@
                 </div>
             </div>
 
-            <!-- Auto Role Section -->
+            
             <div class="card modern-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
@@ -204,7 +204,7 @@
                 </div>
             </div>
 
-            <!-- Embed Management Section -->
+            
             <div class="card modern-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
@@ -276,7 +276,7 @@
                 </div>
             </div>
 
-            <!-- Admin & Owner Commands Section -->
+            
             <div class="card modern-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
@@ -452,7 +452,7 @@
     </div>
 </div>
 
-<!-- Create Embed Modal -->
+
 <div class="modal fade" id="createEmbedModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-dark">
@@ -533,7 +533,7 @@
     </div>
 </div>
 
-<!-- Edit Embed Modal -->
+
 <div class="modal fade" id="editEmbedModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-dark">
@@ -818,7 +818,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Commands section styles */
+    
     .command-category {
         background: var(--discord-bg-primary);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -963,7 +963,7 @@
         font-weight: 500;
     }
 
-    /* Responsive button behavior */
+    
     @media (max-width: 992px) {
         .btn-text {
             display: none;
@@ -1002,7 +1002,7 @@
     const guildId = '${guild.id}';
     const embedsData = ${JSON.stringify(settings.embeds || {})};
 
-    // Form submission handlers
+    
     document.getElementById('welcomeForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -1103,7 +1103,7 @@
         }
     });
 
-    // Embed management functions
+    
     async function createEmbed() {
         const title = document.getElementById('embedTitle').value;
         const description = document.getElementById('embedDescription').value;
@@ -1159,7 +1159,7 @@
         document.getElementById('editEmbedTimestamp').checked = embed.timestamp || false;
         document.getElementById('editEmbedButtons').value = embed.buttons || '';
 
-        // Show modal
+        
         new bootstrap.Modal(document.getElementById('editEmbedModal')).show();
     }
 
@@ -1222,7 +1222,7 @@
         }
     }
 
-    // Initialize tooltips
+    
     document.addEventListener('DOMContentLoaded', function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
