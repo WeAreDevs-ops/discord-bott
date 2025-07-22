@@ -55,7 +55,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Set to true in production with HTTPS
+    secure: false, 
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -112,7 +112,7 @@ async function isBotInGuild(guildId) {
 
 function generateBotInviteLink(guildId) {
   const clientId = process.env.DISCORD_CLIENT_ID;
-  const permissions = '8'; // Administrator permission
+  const permissions = '2421013328';
   const scope = 'bot%20applications.commands';
   const redirectUri = encodeURIComponent(DISCORD_REDIRECT_URI);
   
