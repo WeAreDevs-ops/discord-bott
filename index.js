@@ -1230,7 +1230,10 @@ client.on('ready', async () => {
       .setName('setleave')
       .setDescription('Set leave message and channel (Admin/Owner only)')
       .addChannelOption(option =>
-        option.setName('channel')
+  option.setName('channel')
+        .setDescription('Channel for leave messages')
+        .setRequired(true)
+)
 
 // Event when bot joins a new guild
 client.on('guildCreate', async guild => {
