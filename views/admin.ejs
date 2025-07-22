@@ -1,0 +1,761 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - INC BOT</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --discord-bg-primary: #36393f;
+            --discord-bg-secondary: #2f3136;
+            --discord-bg-tertiary: #202225;
+            --discord-text-normal: #dcddde;
+            --discord-text-muted: #72767d;
+            --discord-blurple: #5865f2;
+            --discord-green: #57f287;
+            --discord-yellow: #fee75c;
+            --discord-red: #ed4245;
+        }
+
+        body {
+            background-color: var(--discord-bg-primary);
+            color: var(--discord-text-normal);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background-color: var(--discord-bg-tertiary) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            background-color: var(--discord-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--discord-text-normal);
+        }
+
+        .card-header {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, var(--discord-red), #C73E1D);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-card {
+            background: var(--discord-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .bg-blurple { background: linear-gradient(135deg, var(--discord-blurple), #4752C4); }
+        .bg-green { background: linear-gradient(135deg, var(--discord-green), #3BA55D); }
+        .bg-yellow { background: linear-gradient(135deg, var(--discord-yellow), #E0B54D); }
+        .bg-red { background: linear-gradient(135deg, var(--discord-red), #C73E1D); }
+
+        .stat-content h3 {
+            color: var(--discord-text-normal);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-content p {
+            color: var(--discord-text-muted);
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .modern-card {
+            background: var(--discord-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-dark {
+            --bs-table-bg: transparent;
+            --bs-table-border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-dark th {
+            border-color: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--discord-text-muted);
+        }
+
+        .table-dark td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .server-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin-right: 0.75rem;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .server-name {
+            font-weight: 600;
+            color: var(--discord-text-normal);
+            margin: 0;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-normal { background: rgba(87, 242, 135, 0.2); color: var(--discord-green); }
+        .status-flagged { background: rgba(254, 231, 92, 0.2); color: var(--discord-yellow); }
+        .status-banned { background: rgba(237, 66, 69, 0.2); color: var(--discord-red); }
+
+        .btn-action {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            margin-right: 0.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .activity-content h6 {
+            color: var(--discord-text-normal);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-content p {
+            color: var(--discord-text-muted);
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .activity-time {
+            color: var(--discord-text-muted);
+            font-size: 0.75rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            
+            .server-name {
+                max-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fab fa-discord me-2" style="color: var(--discord-blurple);"></i>
+                INC BOT
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <img src="<%= user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png` %>" alt="Avatar" class="rounded-circle me-2" width="30" height="30">
+                        <%= user.username %>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h2 class="mb-2" style="color: var(--discord-text-normal); font-weight: 600;">
+                            <i class="fas fa-shield-alt me-3" style="color: var(--discord-red);"></i>
+                            Admin Panel
+                        </h2>
+                        <p class="text-muted mb-0">Monitor bot activities and manage servers</p>
+                    </div>
+                    <div class="admin-badge">
+                        <i class="fas fa-crown me-2"></i>
+                        Bot Owner
+                    </div>
+                </div>
+
+                <!-- Bot Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-blurple">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalServers">0</h3>
+                                <p>Total Servers</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-green">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalUsers">0</h3>
+                                <p>Total Users</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-yellow">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalCommands">0</h3>
+                                <p>Commands Used</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-red">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="flaggedServers">0</h3>
+                                <p>Flagged Servers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Server Management -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card modern-card">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-server me-3"></i>
+                                    <h5 class="card-title mb-0">Server Management</h5>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="refreshData()">
+                                        <i class="fas fa-sync-alt me-1"></i>
+                                        Refresh
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="showBulkActions()">
+                                        <i class="fas fa-tools me-1"></i>
+                                        Bulk Actions
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Server</th>
+                                                <th>Owner</th>
+                                                <th>Members</th>
+                                                <th>Commands</th>
+                                                <th>Joined</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="serversTable">
+                                            <tr>
+                                                <td colspan="7" class="text-center">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card modern-card">
+                            <div class="card-header">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-history me-3"></i>
+                                    <h5 class="card-title mb-0">Recent Activities</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentActivities" class="activity-list">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Server Modal -->
+    <div class="modal fade" id="removeServerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Remove Bot from Server
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning me-2"></i>
+                        This action will immediately remove the bot from the selected server and cannot be undone.
+                    </div>
+                    <p>Are you sure you want to remove the bot from <strong id="serverNameToRemove"></strong>?</p>
+                    <div class="form-group mt-3">
+                        <label for="removalReason" class="form-label">Reason for removal (optional):</label>
+                        <textarea class="form-control bg-secondary border-0 text-white" id="removalReason" rows="3" placeholder="Enter reason for removal..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmRemoveServer()">
+                        <i class="fas fa-sign-out-alt me-1"></i>
+                        Remove Bot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Details Modal -->
+    <div class="modal fade" id="serverDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Server Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="serverDetailsContent">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    let currentServerToRemove = null;
+    let serversData = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardData();
+        setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
+    });
+
+    async function loadDashboardData() {
+        try {
+            const response = await fetch('/api/admin/dashboard');
+            const data = await response.json();
+            
+            if (data.success) {
+                updateStatistics(data.stats);
+                updateServersTable(data.servers);
+                updateRecentActivities(data.activities);
+                serversData = data.servers;
+            }
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            showNotification('Error loading dashboard data', 'error');
+        }
+    }
+
+    function updateStatistics(stats) {
+        document.getElementById('totalServers').textContent = stats.totalServers || 0;
+        document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+        document.getElementById('totalCommands').textContent = stats.totalCommands || 0;
+        document.getElementById('flaggedServers').textContent = stats.flaggedServers || 0;
+    }
+
+    function updateServersTable(servers) {
+        const tbody = document.getElementById('serversTable');
+        
+        if (!servers || servers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No servers found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = servers.map(server => `
+            <tr>
+                <td>
+                    <div class="server-info">
+                        <img src="${server.iconURL || '/placeholder-server.png'}" alt="${server.name}" class="server-avatar">
+                        <div>
+                            <div class="server-name" title="${server.name}">${server.name}</div>
+                            <small class="text-muted">ID: ${server.id}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <div class="text-white">${server.owner?.username || 'Unknown'}</div>
+                        <small class="text-muted">ID: ${server.owner?.id || 'N/A'}</small>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">${server.memberCount || 0}</span>
+                </td>
+                <td>
+                    <span class="badge bg-primary">${server.commandsUsed || 0}</span>
+                </td>
+                <td>
+                    <small class="text-muted">${formatDate(server.joinedAt)}</small>
+                </td>
+                <td>
+                    <span class="status-badge status-${getServerStatus(server)}">${getServerStatus(server)}</span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info btn-action" onclick="showServerDetails('${server.id}')">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="showRemoveModal('${server.id}', '${server.name}')">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateRecentActivities(activities) {
+        const container = document.getElementById('recentActivities');
+        
+        if (!activities || activities.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted">No recent activities</div>';
+            return;
+        }
+
+        container.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-icon bg-${getActivityColor(activity.type)}">
+                    <i class="fas fa-${getActivityIcon(activity.type)}"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>${activity.title}</h6>
+                    <p>${activity.description}</p>
+                </div>
+                <div class="activity-time">
+                    ${formatTime(activity.timestamp)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function getServerStatus(server) {
+        if (server.flagged) return 'flagged';
+        if (server.banned) return 'banned';
+        return 'normal';
+    }
+
+    function getActivityColor(type) {
+        switch (type) {
+            case 'join': return 'green';
+            case 'leave': return 'red';
+            case 'command': return 'blurple';
+            case 'warning': return 'yellow';
+            default: return 'secondary';
+        }
+    }
+
+    function getActivityIcon(type) {
+        switch (type) {
+            case 'join': return 'plus-circle';
+            case 'leave': return 'minus-circle';
+            case 'command': return 'bolt';
+            case 'warning': return 'exclamation-triangle';
+            default: return 'info-circle';
+        }
+    }
+
+    function formatDate(timestamp) {
+        if (!timestamp) return 'Unknown';
+        return new Date(timestamp).toLocaleDateString();
+    }
+
+    function formatTime(timestamp) {
+        if (!timestamp) return 'Unknown';
+        return new Date(timestamp).toLocaleString();
+    }
+
+    function showRemoveModal(serverId, serverName) {
+        currentServerToRemove = serverId;
+        document.getElementById('serverNameToRemove').textContent = serverName;
+        new bootstrap.Modal(document.getElementById('removeServerModal')).show();
+    }
+
+    async function confirmRemoveServer() {
+        if (!currentServerToRemove) return;
+        
+        const reason = document.getElementById('removalReason').value;
+        
+        try {
+            const response = await fetch('/api/admin/remove-server', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    serverId: currentServerToRemove,
+                    reason: reason 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Bot removed from server successfully', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('removeServerModal')).hide();
+                loadDashboardData(); // Refresh data
+            } else {
+                showNotification('Failed to remove bot from server: ' + data.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error removing server:', error);
+            showNotification('Error removing bot from server', 'error');
+        }
+        
+        currentServerToRemove = null;
+        document.getElementById('removalReason').value = '';
+    }
+
+    async function showServerDetails(serverId) {
+        const server = serversData.find(s => s.id === serverId);
+        if (!server) return;
+        
+        try {
+            const response = await fetch(`/api/admin/server/${serverId}/details`);
+            const details = await response.json();
+            
+            if (details.success) {
+                const content = document.getElementById('serverDetailsContent');
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Server Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Name:</strong> ${details.data.name}</li>
+                                <li><strong>ID:</strong> ${details.data.id}</li>
+                                <li><strong>Members:</strong> ${details.data.memberCount}</li>
+                                <li><strong>Channels:</strong> ${details.data.channelCount}</li>
+                                <li><strong>Roles:</strong> ${details.data.roleCount}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Bot Usage</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Commands Used:</strong> ${details.data.totalCommands}</li>
+                                <li><strong>Last Active:</strong> ${formatTime(details.data.lastActivity)}</li>
+                                <li><strong>Joined:</strong> ${formatDate(details.data.joinedAt)}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-3">Recent Commands</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-dark">
+                            <thead>
+                                <tr>
+                                    <th>Command</th>
+                                    <th>User</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${details.data.recentCommands?.map(cmd => `
+                                    <tr>
+                                        <td>${cmd.command}</td>
+                                        <td>${cmd.user}</td>
+                                        <td>${formatTime(cmd.timestamp)}</td>
+                                    </tr>
+                                `).join('') || '<tr><td colspan="3">No recent commands</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                new bootstrap.Modal(document.getElementById('serverDetailsModal')).show();
+            }
+        } catch (error) {
+            console.error('Error loading server details:', error);
+            showNotification('Error loading server details', 'error');
+        }
+    }
+
+    function refreshData() {
+        loadDashboardData();
+        showNotification('Data refreshed', 'success');
+    }
+
+    function showBulkActions() {
+        // Implement bulk actions functionality
+        showNotification('Bulk actions feature coming soon', 'info');
+    }
+
+    function showNotification(message, type = 'info') {
+        const colors = {
+            success: 'var(--discord-green)',
+            error: 'var(--discord-red)',
+            warning: 'var(--discord-yellow)',
+            info: 'var(--discord-blurple)'
+        };
+        
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            transition: all 0.3s ease;
+            max-width: 400px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            background: ${colors[type] || colors.info};
+        `;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'} me-2"></i>
+                ${message}
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
+    }
+    </script>
+</body>
+</html>
