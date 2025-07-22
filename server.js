@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const db = require('./firebase.js');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 // Discord OAuth2 configuration
