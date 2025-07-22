@@ -531,11 +531,11 @@
                     <span class="status-badge status-${getServerStatus(server)}">${getServerStatus(server)}</span>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-outline-info btn-action" onclick="showServerDetails('${server.id}')">
-                        <i class="fas fa-info-circle"></i>
+                    <button class="btn btn-sm btn-outline-info btn-action"
+                        onclick="showServerDetails('${server.id}')"><i class="fas fa-info-circle"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="showRemoveModal('${server.id}', '${server.name}')">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <button class="btn btn-sm btn-outline-danger btn-action"
+                        onclick="showRemoveModal('${server.id}', '${server.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')"><i class="fas fa-sign-out-alt"></i>
                     </button>
                 </td>
             </tr>
