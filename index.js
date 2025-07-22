@@ -2612,13 +2612,13 @@ client.on('interactionCreate', async interaction => {
           }
 
           embed.addFields(
-            { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\`', inline: false },
-            { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806>\`${robloxData.rap}\`, inline: false },
-            { name: "**User ID**", value: `<:member_IDS:1393888535412740096>\`${robloxData.userId}\`', inline: false }
+            { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
+            { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806>\`${robloxData.rap}\``, inline: false },
+            { name: "**User ID**", value: `<:member_IDS:1393888535412740096>\`${robloxData.userId}\``, inline: false },
           );
         } else {
           embed.addFields(
-            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\`', inline: false },
+            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false },
             { name: ' Display Name', value: `\`${userData.displayName}\``, inline: true },
             { name: '<:yes:1393890949960306719> Status', value: '`Active`', inline: true }
           );
@@ -2722,9 +2722,9 @@ client.on('interactionCreate', async interaction => {
           }
 
           embed.addFields(
-            { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\`', inline: false },
-            { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806> \`${robloxData.rap}\`', inline: false },
-            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\`', inline: false }
+            { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
+            { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806> \`${robloxData.rap}\``, inline: false },
+            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false }
           );
         }
 
