@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - INC BOT</title>
     
-    <!-- Bootstrap CSS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -242,7 +242,7 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
+    
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="/">
@@ -282,7 +282,7 @@
                     </div>
                 </div>
 
-                <!-- Bot Statistics -->
+                
                 <div class="row mb-4">
                     <div class="col-md-3">
                         <div class="stat-card">
@@ -380,7 +380,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Activities -->
+                
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="card modern-card">
@@ -406,7 +406,7 @@
         </div>
     </div>
 
-    <!-- Remove Server Modal -->
+    
     <div class="modal fade" id="removeServerModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content bg-dark">
@@ -439,7 +439,7 @@
         </div>
     </div>
 
-    <!-- Server Details Modal -->
+    
     <div class="modal fade" id="serverDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark">
@@ -457,7 +457,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -618,7 +618,7 @@
         
         const reason = document.getElementById('removalReason').value;
         
-        // Show loading state
+        
         const modal = bootstrap.Modal.getInstance(document.getElementById('removeServerModal'));
         const removeButton = document.querySelector('#removeServerModal .btn-danger');
         const originalText = removeButton.innerHTML;
