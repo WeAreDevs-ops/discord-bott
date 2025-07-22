@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Roblox Tools Bot Dashboard' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Whitney:wght@400;500;600;700&family=Ginto:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --discord-blurple: #5865F2;
+            --discord-dark: #2C2F33;
+            --discord-darker: #23272A;
+            --discord-light: #99AAB5;
+            --discord-white: #FFFFFF;
+            --discord-greyple: #99AAB5;
+            --discord-dark-but-not-black: #2C2F33;
+            --discord-not-quite-black: #23272A;
+            --discord-green: #57F287;
+            --discord-yellow: #FEE75C;
+            --discord-fuchsia: #EB459E;
+            --discord-red: #ED4245;
+            --discord-bg-primary: #36393F;
+            --discord-bg-secondary: #2F3136;
+            --discord-bg-tertiary: #202225;
+            --discord-text-normal: #DCDDDE;
+            --discord-text-muted: #72767D;
+            --discord-interactive-normal: #B9BBBE;
+            --discord-interactive-hover: #DCDDDE;
+            --discord-interactive-active: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--discord-bg-tertiary) 0%, var(--discord-bg-primary) 100%);
+            min-height: 100vh;
+            font-family: 'Whitney', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--discord-text-normal);
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: var(--discord-bg-secondary) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            color: var(--discord-white) !important;
+            font-weight: 600;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--discord-blurple) !important;
+            transform: translateY(-1px);
+        }
+
+        .navbar-brand i {
+            color: var(--discord-blurple);
+            margin-right: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: var(--discord-interactive-normal) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .nav-link:hover {
+            color: var(--discord-interactive-hover) !important;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-menu {
+            background: var(--discord-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .dropdown-item {
+            color: var(--discord-text-normal);
+            transition: all 0.3s ease;
+            padding: 0.75rem 1rem;
+        }
+
+        .dropdown-item:hover {
+            background: var(--discord-blurple);
+            color: var(--discord-white);
+        }
+
+        .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--discord-bg-secondary);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: calc(100vh - 76px);
+            backdrop-filter: blur(20px);
+            position: relative;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(88, 101, 242, 0.05) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .sidebar .nav-link {
+            color: var(--discord-interactive-normal);
+            margin: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+            padding: 0.75rem 1rem !important;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(88, 101, 242, 0.1);
+            color: var(--discord-interactive-hover);
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: var(--discord-blurple);
+            color: var(--discord-white);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar h6 {
+            color: var(--discord-text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--discord-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--discord-blurple) 0%, #4752C4 100%);
+            border: none;
+            color: var(--discord-white);
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            color: var(--discord-text-normal);
+        }
+
+        .card-title {
+            color: var(--discord-text-normal);
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--discord-blurple) 0%, #4752C4 100%);
+            color: var(--discord-white);
+            box-shadow: 0 2px 10px rgba(88, 101, 242, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4752C4 0%, var(--discord-blurple) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--discord-green) 0%, #3BA55D 100%);
+            color: var(--discord-darker);
+            box-shadow: 0 2px 10px rgba(87, 242, 135, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--discord-red) 0%, #C73E1D 100%);
+            color: var(--discord-white);
+            box-shadow: 0 2px 10px rgba(237, 66, 69, 0.3);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--discord-blurple);
+            color: var(--discord-blurple);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--discord-blurple);
+            color: var(--discord-white);
+            border-color: var(--discord-blurple);
+        }
+
+        /* Forms */
+        .form-control, .form-select {
+            background: var(--discord-bg-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--discord-text-normal);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--discord-bg-primary);
+            border-color: var(--discord-blurple);
+            box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+            color: var(--discord-text-normal);
+        }
+
+        .form-control::placeholder {
+            color: var(--discord-text-muted);
+        }
+
+        .form-label {
+            color: var(--discord-text-normal);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-text {
+            color: var(--discord-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--discord-blurple);
+            border-color: var(--discord-blurple);
+        }
+
+        /* Alerts */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(87, 242, 135, 0.15) 0%, rgba(87, 242, 135, 0.05) 100%);
+            border-left: 4px solid var(--discord-green);
+            color: var(--discord-green);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(237, 66, 69, 0.15) 0%, rgba(237, 66, 69, 0.05) 100%);
+            border-left: 4px solid var(--discord-red);
+            color: var(--discord-red);
+        }
+
+        /* Tables */
+        .table {
+            color: var(--discord-text-normal);
+        }
+
+        .table th {
+            color: var(--discord-text-normal);
+            border-color: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) > td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Modals */
+        .modal-content {
+            background: var(--discord-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+        }
+
+        .modal-title {
+            color: var(--discord-text-normal);
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+        }
+
+        .btn-close {
+            filter: invert(1);
+            opacity: 0.6;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--discord-bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--discord-bg-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--discord-text-muted);
+        }
+
+        /* Avatar rounded */
+        .rounded-circle {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loading animations */
+        .loading-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 76px;
+                left: -100%;
+                width: 280px;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+        }
+
+        /* Custom Discord-like text styles */
+        .text-blurple { color: var(--discord-blurple); }
+        .text-green { color: var(--discord-green); }
+        .text-red { color: var(--discord-red); }
+        .text-yellow { color: var(--discord-yellow); }
+        .bg-discord-primary { background-color: var(--discord-bg-primary); }
+        .bg-discord-secondary { background-color: var(--discord-bg-secondary); }
+        .bg-discord-tertiary { background-color: var(--discord-bg-tertiary); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot"></i>
+                INC BOT
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <% if (user) { %>
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png" 
+                                     class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+                                <%= user.username %>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                            <a class="dropdown-item" href="/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <% if (user && user.id === process.env.ADMIN_ID) { %>
+                        <li>
+                            <a class="dropdown-item" href="/admin">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Admin Panel
+                            </a>
+                        </li>
+                        <% } %>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a class="nav-link" href="/auth/discord">
+                            <i class="fab fa-discord me-2"></i>
+                            Login with Discord
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <% if (typeof showSidebar !== 'undefined' && showSidebar && user) { %>
+                <div class="col-md-3 col-lg-2 sidebar">
+                    <div class="p-3">
+                        <h6 class="mb-3">Navigation</h6>
+                        <nav class="nav flex-column">
+                            <a class="nav-link" href="/dashboard">
+                                <i class="fas fa-home"></i>
+                                Dashboard
+                            </a>
+                            <% if (typeof guild !== 'undefined' && guild) { %>
+                                <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 1rem 0;">
+                                <h6 class="mb-2"><%= guild.name %></h6>
+                                <a class="nav-link" href="/guild/<%= guild.id %>">
+                                    <i class="fas fa-cog"></i>
+                                    General Settings
+                                </a>
+                                <a class="nav-link" href="/guild/<%= guild.id %>#welcome">
+                                    <i class="fas fa-door-open"></i>
+                                    Welcome Messages
+                                </a>
+                                <a class="nav-link" href="/guild/<%= guild.id %>#automod">
+                                    <i class="fas fa-shield-alt"></i>
+                                    Auto Moderation
+                                </a>
+                                <a class="nav-link" href="/guild/<%= guild.id %>#autorole">
+                                    <i class="fas fa-user-plus"></i>
+                                    Auto Role
+                                </a>
+                                <a class="nav-link" href="/guild/<%= guild.id %>#embeds">
+                                    <i class="fas fa-layer-group"></i>
+                                    Embed Management
+                                </a>
+                                <a class="nav-link" href="/guild/<%= guild.id %>#commands">
+                                    <i class="fas fa-terminal"></i>
+                                    Commands
+                                </a>
+                            <% } %>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-md-9 col-lg-10 main-content">
+                    <div class="fade-in-up">
+                        <%- body %>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="col-12 main-content">
+                    <div class="fade-in-up">
+                        <%- body %>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Sidebar navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle sidebar navigation clicks
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Add active class to clicked link
+                    this.classList.add('active');
+
+                    // Handle hash navigation for same-page sections
+                    const href = this.getAttribute('href');
+                    if (href && href.includes('#')) {
+                        e.preventDefault();
+                        const targetId = href.split('#')[1];
+                        const targetElement = document.getElementById(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                });
+            });
+
+            // Set active link based on current page
+            const currentPath = window.location.pathname;
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && (currentPath === href || currentPath.includes(href.split('#')[0]))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    <%- typeof additionalScripts !== 'undefined' ? additionalScripts : '' %>
+</body>
+</html>
