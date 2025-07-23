@@ -112,7 +112,7 @@ async function isBotInGuild(guildId) {
 
 function generateBotInviteLink(guildId) {
   const clientId = process.env.DISCORD_CLIENT_ID;
-  const permissions = '1073820728';
+  const permissions = '75804';
   const scope = 'bot%20applications.commands';
   const redirectUri = encodeURIComponent(DISCORD_REDIRECT_URI);
   
