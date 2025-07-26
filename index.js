@@ -3791,13 +3791,13 @@ client.on('interactionCreate', async interaction => {
       // Send confirmation to user
       const confirmationEmbed = new EmbedBuilder()
         .setColor(0x00ff88)
-        .setTitle('✅ Embed Created Successfully')
+        .setTitle('Embed Created Successfully')
         .setDescription(`Embed has been sent to ${targetChannel} and saved with ID: \`${embedId}\``)
         .addFields(
           { name: 'Embed ID', value: `\`${embedId}\``, inline: true },
           { name: 'Channel', value: `${targetChannel}`, inline: true },
           { name: 'Message ID', value: `\`${sentMessage.id}\``, inline: true },
-          { name: 'Status', value: '✅ Successfully sent to channel', inline: false }
+          { name: 'Status', value: 'Successfully sent to channel', inline: false }
         )
         .setTimestamp()
         .setFooter({
@@ -4934,7 +4934,7 @@ client.on('interactionCreate', async interaction => {
           .setTitle('Channel Restriction Status')
           .setDescription(`Status for ${channel}`)
           .addFields(
-            { name: 'Current Status', value: isCurrentlyRestricted ? 'Restricted (Commands Only)' : '✅ Unrestricted (Normal Messages)', inline: true },
+            { name: 'Current Status', value: isCurrentlyRestricted ? 'Restricted (Commands Only)' : 'Unrestricted (Normal Messages)', inline: true },
             { name: 'Total Restricted Channels', value: `${totalRestricted}`, inline: true },
             { name: 'Restricted Channels', value: restrictedChannelsList, inline: false }
           )
@@ -5230,7 +5230,7 @@ client.on('interactionCreate', async interaction => {
           const originalMessage = await targetChannel.messages.fetch(existingEmbed.messageId);
           await originalMessage.edit(messageOptions);
           updateSuccess = true;
-          updateMessage = `✅ Embed successfully updated in ${targetChannel}`;
+          updateMessage = `Embed successfully updated in ${targetChannel}`;
         } catch (error) {
           console.error('Error updating original message, sending new message:', error);
           try {
@@ -5239,9 +5239,9 @@ client.on('interactionCreate', async interaction => {
             updatedEmbedData.messageId = newMessage.id;
             await saveEmbed(interaction.guild.id, embedId, updatedEmbedData);
             updateSuccess = true;
-            updateMessage = `✅ Original message not found, sent new embed to ${targetChannel}`;
+            updateMessage = `Original message not found, sent new embed to ${targetChannel}`;
           } catch (sendError) {
-            updateMessage = `⚠️ Failed to update or send new message: ${sendError.message}`;
+            updateMessage = `Failed to update or send new message: ${sendError.message}`;
           }
         }
       } else {
@@ -5251,9 +5251,9 @@ client.on('interactionCreate', async interaction => {
           updatedEmbedData.messageId = newMessage.id;
           await saveEmbed(interaction.guild.id, embedId, updatedEmbedData);
           updateSuccess = true;
-          updateMessage = `✅ Embed sent to ${targetChannel} (no original message found)`;
+          updateMessage = `Embed sent to ${targetChannel} (no original message found)`;
         } catch (error) {
-          updateMessage = `⚠️ Failed to send embed: ${error.message}`;
+          updateMessage = `Failed to send embed: ${error.message}`;
         }
       }
 
@@ -5267,7 +5267,7 @@ client.on('interactionCreate', async interaction => {
           { name: 'Updated by', value: `${interaction.user.tag}`, inline: true },
           { name: 'Originally created by', value: `<@${existingEmbed.createdBy}>`, inline: true },
           { name: 'Channel', value: `${targetChannel}`, inline: true },
-          { name: 'Status', value: updateSuccess ? '✅ Embed updated successfully' : '⚠️ Update failed', inline: false }
+          { name: 'Status', value: updateSuccess ? 'Embed updated successfully' : 'Update failed', inline: false }
         )
         .setTimestamp()
         .setFooter({
