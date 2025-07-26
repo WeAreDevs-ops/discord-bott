@@ -8,6 +8,7 @@ const db = require('./firebase.js');
 const { validateGuildId, validateChannelId, sanitizeInput } = require('./utils.js');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 
