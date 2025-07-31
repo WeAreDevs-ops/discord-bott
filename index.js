@@ -1656,6 +1656,18 @@ client.on('guildMemberRemove', async member => {
 });
 
 client.on('messageCreate', async message => {
+  // Ignore DMs completely to prevent crashes
+  if (!message.guild) {
+    if (!message.author.bot && message.content.startsWith('!')) {
+      try {
+        await message.reply('<:no:1393890945929318542> This bot only works in servers, not in DMs. Please use these commands in a server where the bot is present.');
+      } catch (error) {
+        console.error('Error sending DM response:', error);
+      }
+    }
+    return;
+  }
+
   // Auto-moderation system
   if (!message.author.bot && message.guild) {
     // Reload settings to get latest automod and restriction data
@@ -2069,6 +2081,14 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName, user } = interaction;
+
+  // Check if command is being used in DMs
+  if (!interaction.guild) {
+    return interaction.reply({
+      content: '<:no:1393890945929318542> This bot only works in servers, not in DMs. Please use these commands in a server where the bot is present.',
+      ephemeral: true
+    });
+  }
 
   // Reload guild settings before processing commands to ensure we have latest data
   await reloadGuildSettings(interaction.guild.id);
