@@ -56,44 +56,50 @@ let sessionConfig = {
   }
 };
 
-// Check if Firebase is properly initialized before using FirebaseStore
-const requiredEnvVars = ['GOOGLE_PROJECT_ID', 'GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'FIREBASE_DB_URL'];
-const hasFirebaseConfig = requiredEnvVars.every(varName => process.env[varName]);
+// Initialize session store
+async function initializeSessionStore() {
+  // Check if Firebase is properly initialized before using FirebaseStore
+  const requiredEnvVars = ['GOOGLE_PROJECT_ID', 'GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'FIREBASE_DB_URL'];
+  const hasFirebaseConfig = requiredEnvVars.every(varName => process.env[varName]);
 
-if (hasFirebaseConfig && db && typeof db.ref === 'function') {
-  try {
-    // Test Firebase connection before creating store
-    await db.ref('.info/connected').once('value');
-    
-    const FirebaseStore = require('connect-session-firebase')(session);
-    sessionConfig.store = new FirebaseStore({
-      database: db,
-      sessions: 'sessions',
-      reapCallback: function(err) {
-        if (err) {
-          console.error('Firebase session reap error:', err);
+  if (hasFirebaseConfig && db && typeof db.ref === 'function') {
+    try {
+      // Test Firebase connection before creating store
+      await db.ref('.info/connected').once('value');
+      
+      const FirebaseStore = require('connect-session-firebase')(session);
+      sessionConfig.store = new FirebaseStore({
+        database: db,
+        sessions: 'sessions',
+        reapCallback: function(err) {
+          if (err) {
+            console.error('Firebase session reap error:', err);
+          }
         }
-      }
-    });
-    
-    // Monitor Firebase connection
-    db.ref('.info/connected').on('value', (snapshot) => {
-      if (!snapshot.val()) {
-        console.log('⚠️ Firebase connection lost, sessions may not persist');
-      } else {
-        console.log('✅ Firebase connection restored');
-      }
-    });
-    
-    console.log('✅ Using Firebase session store');
-  } catch (error) {
-    console.log('⚠️ Firebase session store failed, falling back to memory store:', error.message);
+      });
+      
+      // Monitor Firebase connection
+      db.ref('.info/connected').on('value', (snapshot) => {
+        if (!snapshot.val()) {
+          console.log('⚠️ Firebase connection lost, sessions may not persist');
+        } else {
+          console.log('✅ Firebase connection restored');
+        }
+      });
+      
+      console.log('✅ Using Firebase session store');
+    } catch (error) {
+      console.log('⚠️ Firebase session store failed, falling back to memory store:', error.message);
+    }
+  } else {
+    console.log('⚠️ Firebase not configured, using memory session store');
   }
-} else {
-  console.log('⚠️ Firebase not configured, using memory session store');
+
+  app.use(session(sessionConfig));
 }
 
-app.use(session(sessionConfig));
+// Initialize session store
+initializeSessionStore();
 
 
 function requireAuth(req, res, next) {
