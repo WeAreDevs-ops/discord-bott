@@ -62,13 +62,32 @@ const hasFirebaseConfig = requiredEnvVars.every(varName => process.env[varName])
 
 if (hasFirebaseConfig && db && typeof db.ref === 'function') {
   try {
+    // Test Firebase connection before creating store
+    await db.ref('.info/connected').once('value');
+    
     const FirebaseStore = require('connect-session-firebase')(session);
     sessionConfig.store = new FirebaseStore({
-      database: db
+      database: db,
+      sessions: 'sessions',
+      reapCallback: function(err) {
+        if (err) {
+          console.error('Firebase session reap error:', err);
+        }
+      }
     });
+    
+    // Monitor Firebase connection
+    db.ref('.info/connected').on('value', (snapshot) => {
+      if (!snapshot.val()) {
+        console.log('⚠️ Firebase connection lost, sessions may not persist');
+      } else {
+        console.log('✅ Firebase connection restored');
+      }
+    });
+    
     console.log('✅ Using Firebase session store');
   } catch (error) {
-    console.log('⚠️ Firebase session store failed, falling back to memory store');
+    console.log('⚠️ Firebase session store failed, falling back to memory store:', error.message);
   }
 } else {
   console.log('⚠️ Firebase not configured, using memory session store');
@@ -1400,6 +1419,18 @@ async function deleteEmbed(guildId, embedId) {
     console.error('Error deleting embed:', error);
   }
 }
+
+// Global error handler for unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process, just log the error
+});
+
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Don't exit the process, just log the error
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌐 Dashboard server running on port ${PORT}`);
