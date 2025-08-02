@@ -45,13 +45,8 @@ app.use((req, res, next) => {
 });
 
 
-const FirebaseStore = require('connect-session-firebase')(session);
-
-// Session configuration
-app.use(session({
-  store: new FirebaseStore({
-    database: db
-  }),
+// Session configuration - only use FirebaseStore if Firebase is properly initialized
+let sessionConfig = {
   secret: process.env.SESSION_SECRET || require('crypto').randomBytes(64).toString('hex'),
   resave: false,
   saveUninitialized: false,
@@ -59,7 +54,27 @@ app.use(session({
     secure: false, 
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-}));
+};
+
+// Check if Firebase is properly initialized before using FirebaseStore
+const requiredEnvVars = ['GOOGLE_PROJECT_ID', 'GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'FIREBASE_DB_URL'];
+const hasFirebaseConfig = requiredEnvVars.every(varName => process.env[varName]);
+
+if (hasFirebaseConfig && db && typeof db.ref === 'function') {
+  try {
+    const FirebaseStore = require('connect-session-firebase')(session);
+    sessionConfig.store = new FirebaseStore({
+      database: db
+    });
+    console.log('✅ Using Firebase session store');
+  } catch (error) {
+    console.log('⚠️ Firebase session store failed, falling back to memory store');
+  }
+} else {
+  console.log('⚠️ Firebase not configured, using memory session store');
+}
+
+app.use(session(sessionConfig));
 
 
 function requireAuth(req, res, next) {
