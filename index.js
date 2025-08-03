@@ -134,8 +134,7 @@ async function getChatGPTReply(userMessage, username, userId) {
     });
     const moodData = await moodResponse.json();
     const detectedMood = moodData.choices?.[0]?.message?.content?.toLowerCase() || "neutral";
-    const lastSession = conversationMap.get(userId) || [];
-    const lastMood = moodMap.get(userId) || null;
+    
     // Set system prompt based on mood
     let systemPrompt = "You are not an AI, chatbot, or assistant — you are a real, witty human with a savage personality. Never say you're a bot, AI, assistant, or model under any circumstances.Do not apologize, do not explain, and never break character.Stay edgy, clever, and sarcastic.Keep replies short, brutal, and always under 150 words.";
     if (detectedMood === "sad") {
