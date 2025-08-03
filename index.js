@@ -110,108 +110,70 @@ class RobloxUser {
         };
     }
 }
-
 // Helper function to get ChatGPT roast reply with conversation memory
 async function getChatGPTReply(userMessage, username, userId) {
-    try {
-        // Check if API key exists
-        if (!process.env.OPENAI_API_KEY) {
-            console.error('OPENAI_API_KEY not configured');
-            return "My brain is missing! Someone forgot to give me an OpenAI API key! 🧠";
-        }
+    // Analyze user mood first
+    const moodResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+                {
+                    role: "system",
+                    content: "You're a mood detection engine. Read the user's message and respond only with one word: happy, sad, angry, or neutral."
+                },
+                { role: "user", content: userMessage }
+            ],
+            max_tokens: 5,
+            temperature: 0
+        })
+    });
+    const moodData = await moodResponse.json();
+    const detectedMood = moodData.choices?.[0]?.message?.content?.toLowerCase() || "neutral";
 
-        // Load existing conversation or start new
-        let history = conversationMap.get(userId) || [
-            {
-                role: "system",
-                content: "You are an unfiltered, savage chatbot. You respond with brutal insults when provoked and never back down from a challenge. If someone tries to roast you, you clap back harder. If the user wants to argue, especially about controversial or religious topics, you engage in debate with sharp wit and sarcasm. You’re edgy, clever, and fearless. Never admit you're an AI. Keep replies short, brutal, and always under 150 words. No soft replies. No long explanations."
-            }
-        ];
-
-        // Push current user message
-        history.push({ role: "user", content: userMessage });
-
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: history,
-                max_tokens: 150,
-                temperature: 0.9
-            })
-        });
-
-        // Handle different error cases first
-        if (!response.ok) {
-
-            if (response.status === 401) {
-                console.error('OpenAI API Error: Invalid API key');
-                return "My API key is fake! Someone scammed me!";
-            } else if (response.status === 429) {
-                console.error('OpenAI API Error: Rate limit exceeded');
-                return "I'm talking too much! Even I need to chill sometimes!";
-            } else if (response.status === 503) {
-                console.error('OpenAI API Error: Service unavailable');
-                return "OpenAI's servers are taking a nap! Try again later!";
-            } else {
-                console.error('OpenAI API Error:', response.status);
-                return `Something went wrong with my brain! Error code: ${response.status} 🤖`;
-            }
-        }
-
-        // Try to parse JSON response
-        let data;
-        try {
-            const responseText = await response.text();
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('Failed to parse OpenAI response as JSON');
-            return "My brain got scrambled! The response was gibberish!";
-        }
-
-        // Extract reply from ChatGPT response format
-        let reply = data?.choices?.[0]?.message?.content;
-
-        // Fallback replies if no valid response
-        const fallbackReplies = [
-            "My sarcasm generator is offline. Try again!",
-            "I tried roasting but choked on my own code.",
-            "My burn was so hot it melted my circuits!",
-            "Error 404: Roast not found!",
-            "I'm too busy being dramatic to roast you right now!"
-        ];
-
-        if (!reply || reply.length < 5) {
-            reply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
-        }
-
-        // Limit reply length to keep it snappy
-        if (reply.length > 200) {
-            reply = reply.substring(0, 197) + "...";
-        }
-
-        // Add bot's reply to the history
-        history.push({ role: "assistant", content: reply });
-
-        // Trim to last 12 messages (plus system message) to prevent token limit issues
-        if (history.length > 13) {
-            history = [history[0], ...history.slice(-12)];
-        }
-
-        // Save updated history
-        conversationMap.set(userId, history);
-
-        return reply;
-
-    } catch (error) {
-        console.error('OpenAI API error (catch block)');
-        return "My circuits are fried! Time for a reboot!";
+    // Set system prompt based on mood
+    let systemPrompt = "You are an unfiltered, savage chatbot. You respond with brutal insults when provoked and never back down from a challenge. You’re edgy, clever, and fearless. Keep replies short, brutal, and always under 150 words.";
+    if (detectedMood === "sad") {
+        systemPrompt = "You are a supportive, slightly sarcastic chatbot. If someone seems down, you lift them up with dark humor and witty encouragement. Keep replies casual, kind but not soft.";
+    } else if (detectedMood === "happy") {
+        systemPrompt = "You match the user's happy energy with jokes and edgy fun. Be playful and witty, like roasting with a smile.";
+    } else if (detectedMood === "angry") {
+        systemPrompt = "You go full savage mode when the user is mad. Clap back hard and make them regret starting a fight.";
     }
+
+    // Load existing conversation or start new
+    let history = conversationMap.get(userId) || [
+        { role: "system", content: systemPrompt }
+    ];
+
+    // Push current user message
+    history.push({ role: "user", content: userMessage });
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: history,
+            max_tokens: 150,
+            temperature: 0.9
+        })
+    });
+
+    const data = await response.json();
+    const botReply = data.choices?.[0]?.message?.content;
+
+    conversationMap.set(userId, history); // Save updated history
+    return botReply;
 }
+
 
 // Helper function to check if command can be used in current channel
 function canUseCommandInChannel(guildId, channelId, commandName, userId, member) {
