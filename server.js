@@ -56,17 +56,16 @@ let sessionConfig = {
   }
 };
 
-// Initialize session store
-async function initializeSessionStore() {
+
+
+// Initialize session middleware synchronously
+function initializeSessionStoreSync() {
   // Check if Firebase is properly initialized before using FirebaseStore
   const requiredEnvVars = ['GOOGLE_PROJECT_ID', 'GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'FIREBASE_DB_URL'];
   const hasFirebaseConfig = requiredEnvVars.every(varName => process.env[varName]);
 
   if (hasFirebaseConfig && db && typeof db.ref === 'function') {
     try {
-      // Test Firebase connection before creating store
-      await db.ref('.info/connected').once('value');
-      
       const FirebaseStore = require('connect-session-firebase')(session);
       sessionConfig.store = new FirebaseStore({
         database: db,
@@ -78,7 +77,7 @@ async function initializeSessionStore() {
         }
       });
       
-      // Monitor Firebase connection
+      // Monitor Firebase connection asynchronously
       db.ref('.info/connected').on('value', (snapshot) => {
         if (!snapshot.val()) {
           console.log('⚠️ Firebase connection lost, sessions may not persist');
@@ -95,11 +94,12 @@ async function initializeSessionStore() {
     console.log('⚠️ Firebase not configured, using memory session store');
   }
 
+  // Apply session middleware immediately
   app.use(session(sessionConfig));
 }
 
-// Initialize session store
-initializeSessionStore();
+// Initialize session store synchronously
+initializeSessionStoreSync();
 
 
 function requireAuth(req, res, next) {
