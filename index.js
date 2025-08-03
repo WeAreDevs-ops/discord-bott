@@ -168,10 +168,17 @@ async function getChatGPTReply(userMessage, username, userId) {
     });
 
     const data = await response.json();
-    const botReply = data.choices?.[0]?.message?.content;
+console.log("🧠 OpenAI raw response:", JSON.stringify(data, null, 2));
 
-    conversationMap.set(userId, history); // Save updated history
-    return botReply;
+let botReply = data.choices?.[0]?.message?.content;
+
+if (!botReply || botReply.trim().length === 0) {
+    console.warn("⚠️ Empty or invalid bot reply detected from OpenAI.");
+    botReply = "You're not even worth a roast right now."; // Fallback message
+}
+
+conversationMap.set(userId, history); // Save updated history
+return botReply;
 }
 
 
