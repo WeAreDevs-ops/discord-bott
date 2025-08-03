@@ -147,32 +147,33 @@ async function getChatGPTReply(userMessage, username, userId) {
     }
 
     // Handle mood-based conversation memory
-let lastSession = conversationMap.get(userId) || [];
-let lastMood = lastSession._mood || null;
-let history;
-if (detectedMood !== lastMood) {
-    // Start fresh if mood changed
-    history = [
-        { role: "system", content: systemPrompt },
-        { role: "assistant", content: "Let's chat. Just remember: I'm no bot." }
-    ];
-} else {
-    // Continue old conversation
-    history = lastSession;
-
-    if (history.length > 0 && history[0].role === "system") {
-        history[0].content = systemPrompt;
+    const lastSession = conversationMap.get(userId) || [];
+    const lastMood = moodMap.get(userId) || null;
+    let history;
+    
+    if (detectedMood !== lastMood) {
+        // Start fresh if mood changed
+        history = [
+            { role: "system", content: systemPrompt },
+            { role: "assistant", content: "Let's chat. Just remember: I'm no bot." }
+        ];
     } else {
-        history.unshift({ role: "system", content: systemPrompt });
-    }
+        // Continue old conversation
+        history = [...lastSession]; // Create a copy to avoid mutation
 
-    const hasAntiBotLine = history.some(
-        (msg) => msg.role === "assistant" && msg.content.includes("I'm no bot")
-    );
-    if (!hasAntiBotLine) {
-        history.push({ role: "assistant", content: "Let's chat. Just remember: I'm no bot." });
+        if (history.length > 0 && history[0].role === "system") {
+            history[0].content = systemPrompt;
+        } else {
+            history.unshift({ role: "system", content: systemPrompt });
+        }
+
+        const hasAntiBotLine = history.some(
+            (msg) => msg.role === "assistant" && msg.content.includes("I'm no bot")
+        );
+        if (!hasAntiBotLine) {
+            history.push({ role: "assistant", content: "Let's chat. Just remember: I'm no bot." });
+        }
     }
-}
 
     // Push current user message
     history.push({ role: "user", content: userMessage });
@@ -191,19 +192,24 @@ if (detectedMood !== lastMood) {
           
         })
     });
-    conversationMap.set(userId, history);moodMap.set(userId, detectedMood);
     const data = await response.json();
-console.log("🧠 OpenAI raw response:", JSON.stringify(data, null, 2));
+    console.log("🧠 OpenAI raw response:", JSON.stringify(data, null, 2));
 
-let botReply = data.choices?.[0]?.message?.content;
+    let botReply = data.choices?.[0]?.message?.content;
 
-if (!botReply || botReply.trim().length === 0) {
-    console.warn("⚠️ Empty or invalid bot reply detected from OpenAI.");
-    botReply = "You're not even worth a roast right now."; // Fallback message
-}
+    if (!botReply || botReply.trim().length === 0) {
+        console.warn("⚠️ Empty or invalid bot reply detected from OpenAI.");
+        botReply = "You're not even worth a roast right now."; // Fallback message
+    }
 
-conversationMap.set(userId, history); // Save updated history
-return botReply;
+    // Add bot's response to history
+    history.push({ role: "assistant", content: botReply });
+
+    // Save updated conversation and mood
+    conversationMap.set(userId, history);
+    moodMap.set(userId, detectedMood);
+    
+    return botReply;
 }
 
 
@@ -846,6 +852,8 @@ const AUTO_REPLY_COOLDOWN = 10000; // 10 seconds per user
 
 // Conversation memory mapping (userId → message history)
 const conversationMap = new Map();
+// Mood tracking (userId → last detected mood)
+const moodMap = new Map();
 
 const client = new Client({
   intents: [
