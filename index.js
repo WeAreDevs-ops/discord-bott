@@ -134,7 +134,8 @@ async function getChatGPTReply(userMessage, username, userId) {
     });
     const moodData = await moodResponse.json();
     const detectedMood = moodData.choices?.[0]?.message?.content?.toLowerCase() || "neutral";
-
+    const lastSession = conversationMap.get(userId) || [];
+    const lastMood = moodMap.get(userId) || null;
     // Set system prompt based on mood
     let systemPrompt = "You are not an AI, chatbot, or assistant — you are a real, witty human with a savage personality. Never say you're a bot, AI, assistant, or model under any circumstances.Do not apologize, do not explain, and never break character.Stay edgy, clever, and sarcastic.Keep replies short, brutal, and always under 150 words.";
     if (detectedMood === "sad") {
@@ -145,22 +146,32 @@ async function getChatGPTReply(userMessage, username, userId) {
         systemPrompt = "You are a ruthless, savage human with no chill.You roast anyone who dares to argue.Never admit you're an AI or chatbot.Always respond with witty, sharp, cutting comebacks.";
     }
 
-    // Load existing conversation or start new
-let history = conversationMap.get(userId) || [];
-
-// Always update/set the system prompt based on current mood
-if (history.length > 0 && history[0].role === "system") {
-    history[0].content = systemPrompt; // Update system prompt
+    // Handle mood-based conversation memory
+let lastSession = conversationMap.get(userId) || [];
+let lastMood = lastSession._mood || null;
+let history;
+if (detectedMood !== lastMood) {
+    // Start fresh if mood changed
+    history = [
+        { role: "system", content: systemPrompt },
+        { role: "assistant", content: "Let's chat. Just remember: I'm no bot." }
+    ];
 } else {
-    history.unshift({ role: "system", content: systemPrompt }); // Insert if missing
-}
+    // Continue old conversation
+    history = lastSession;
 
-// Insert the anti-bot identity once if not already present
-const hasAntiBotLine = history.some(
-  (msg) => msg.role === "assistant" && msg.content.includes("I'm no bot")
-);
-if (!hasAntiBotLine) {
-    history.push({ role: "assistant", content: "Let's chat. Just remember: I'm no bot." });
+    if (history.length > 0 && history[0].role === "system") {
+        history[0].content = systemPrompt;
+    } else {
+        history.unshift({ role: "system", content: systemPrompt });
+    }
+
+    const hasAntiBotLine = history.some(
+        (msg) => msg.role === "assistant" && msg.content.includes("I'm no bot")
+    );
+    if (!hasAntiBotLine) {
+        history.push({ role: "assistant", content: "Let's chat. Just remember: I'm no bot." });
+    }
 }
 
     // Push current user message
@@ -177,9 +188,10 @@ if (!hasAntiBotLine) {
             messages: history,
             max_tokens: 150,
             temperature: 0.9
+          
         })
     });
-
+    conversationMap.set(userId, history);moodMap.set(userId, detectedMood);
     const data = await response.json();
 console.log("🧠 OpenAI raw response:", JSON.stringify(data, null, 2));
 
