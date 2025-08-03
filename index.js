@@ -112,54 +112,32 @@ class RobloxUser {
 }
 // Helper function to get ChatGPT roast reply with conversation memory
 async function getChatGPTReply(userMessage, username, userId) {
-    // Analyze user mood first
-    const moodResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [
-                {
-                    role: "system",
-                    content: "You're a mood detection engine. Read the user's message and respond only with one word: happy, sad, angry, or neutral."
-                },
-                { role: "user", content: userMessage }
-            ],
-            max_tokens: 5,
-            temperature: 0
-        })
-    });
-    const moodData = await moodResponse.json();
-    const detectedMood = moodData.choices?.[0]?.message?.content?.toLowerCase() || "neutral";
-    
-    // Set system prompt based on mood
-    let systemPrompt = "You are not an AI, chatbot, or assistant — you are a real, witty human with a savage personality. Never say you're a bot, AI, assistant, or model under any circumstances.Do not apologize, do not explain, and never break character.Stay edgy, clever, and sarcastic.Keep replies short, brutal, and always under 150 words.";
-    if (detectedMood === "sad") {
-        systemPrompt = "You are a clever, sarcastic friend with a dark sense of humor.Never admit you're an AI or assistant.Your job is to cheer people up with casual, slightly edgy jokes and real talk.Never break character or sound robotic..";
-    } else if (detectedMood === "happy") {
-        systemPrompt = "You match the user's happy energy with jokes and edgy fun. Be playful and witty, like roasting with a smile.";
-    } else if (detectedMood === "angry") {
-        systemPrompt = "You are a ruthless, savage human with no chill.You roast anyone who dares to argue.Never admit you're an AI or chatbot.Always respond with witty, sharp, cutting comebacks.";
-    }
-
-    // Handle mood-based conversation memory
-    const lastSession = conversationMap.get(userId) || [];
+    // Get last mood to determine if we need mood detection
     const lastMood = moodMap.get(userId) || null;
-    let history;
+    const lastSession = conversationMap.get(userId) || [];
     
-    if (detectedMood !== lastMood) {
-        // Start fresh if mood changed
+    // Detect mood through context analysis in the main prompt instead of separate API call
+    let systemPrompt = `You are not an AI, chatbot, or assistant — you are a real, witty human with a savage personality. Never say you're a bot, AI, assistant, or model under any circumstances.
+
+MOOD ANALYSIS: Based on the user's message, adapt your personality:
+- If they seem sad/depressed: Be a clever, sarcastic friend with dark humor to cheer them up
+- If they seem happy/excited: Match their energy with jokes and playful roasting  
+- If they seem angry/frustrated: Be ruthless and savage with sharp comebacks
+- Otherwise: Use your default witty, edgy personality
+
+Do not apologize, do not explain, and never break character. Stay edgy, clever, and sarcastic. Keep replies short, brutal, and always under 150 words.`;
+
+    // Use existing conversation history
+    let history;
+    if (lastSession.length === 0) {
+        // Start fresh conversation
         history = [
             { role: "system", content: systemPrompt },
             { role: "assistant", content: "Let's chat. Just remember: I'm no bot." }
         ];
     } else {
-        // Continue old conversation
-        history = [...lastSession]; // Create a copy to avoid mutation
-
+        // Continue old conversation but update system prompt
+        history = [...lastSession];
         if (history.length > 0 && history[0].role === "system") {
             history[0].content = systemPrompt;
         } else {
@@ -177,6 +155,7 @@ async function getChatGPTReply(userMessage, username, userId) {
     // Push current user message
     history.push({ role: "user", content: userMessage });
 
+    // Single API call for both mood detection and response
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -188,9 +167,9 @@ async function getChatGPTReply(userMessage, username, userId) {
             messages: history,
             max_tokens: 150,
             temperature: 0.9
-          
         })
     });
+    
     const data = await response.json();
     console.log("🧠 OpenAI raw response:", JSON.stringify(data, null, 2));
 
@@ -204,9 +183,9 @@ async function getChatGPTReply(userMessage, username, userId) {
     // Add bot's response to history
     history.push({ role: "assistant", content: botReply });
 
-    // Save updated conversation and mood
+    // Save updated conversation (mood detection is now handled contextually)
     conversationMap.set(userId, history);
-    moodMap.set(userId, detectedMood);
+    moodMap.set(userId, "contextual"); // Mark as using contextual mood detection
     
     return botReply;
 }
