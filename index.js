@@ -146,9 +146,16 @@ async function getChatGPTReply(userMessage, username, userId) {
     }
 
     // Load existing conversation or start new
-    let history = conversationMap.get(userId) || [
-        { role: "system", content: systemPrompt }
-    ];
+    let history = conversationMap.get(userId) || [];
+    
+    // Always update/set the system prompt based on current mood
+    if (history.length > 0 && history[0].role === "system") {
+        // Update existing system prompt
+        history[0].content = systemPrompt;
+    } else {
+        // Add system prompt at the beginning if none exists
+        history.unshift({ role: "system", content: systemPrompt });
+    }
 
     // Push current user message
     history.push({ role: "user", content: userMessage });
