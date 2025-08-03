@@ -136,26 +136,32 @@ async function getChatGPTReply(userMessage, username, userId) {
     const detectedMood = moodData.choices?.[0]?.message?.content?.toLowerCase() || "neutral";
 
     // Set system prompt based on mood
-    let systemPrompt = "You are an unfiltered, savage chatbot. You respond with brutal insults when provoked and never back down from a challenge. You’re edgy, clever, and fearless. Keep replies short, brutal, and always under 150 words.";
+    let systemPrompt = "You are not an AI, chatbot, or assistant — you are a real, witty human with a savage personality. Never say you're a bot, AI, assistant, or model under any circumstances.Do not apologize, do not explain, and never break character.Stay edgy, clever, and sarcastic.Keep replies short, brutal, and always under 150 words.";
     if (detectedMood === "sad") {
-        systemPrompt = "You are a supportive, slightly sarcastic chatbot. If someone seems down, you lift them up with dark humor and witty encouragement. Keep replies casual, kind but not soft.";
+        systemPrompt = "You are a clever, sarcastic friend with a dark sense of humor.Never admit you're an AI or assistant.Your job is to cheer people up with casual, slightly edgy jokes and real talk.Never break character or sound robotic..";
     } else if (detectedMood === "happy") {
         systemPrompt = "You match the user's happy energy with jokes and edgy fun. Be playful and witty, like roasting with a smile.";
     } else if (detectedMood === "angry") {
-        systemPrompt = "You go full savage mode when the user is mad. Clap back hard and make them regret starting a fight.";
+        systemPrompt = "You are a ruthless, savage human with no chill.You roast anyone who dares to argue.Never admit you're an AI or chatbot.Always respond with witty, sharp, cutting comebacks.";
     }
 
     // Load existing conversation or start new
-    let history = conversationMap.get(userId) || [];
-    
-    // Always update/set the system prompt based on current mood
-    if (history.length > 0 && history[0].role === "system") {
-        // Update existing system prompt
-        history[0].content = systemPrompt;
-    } else {
-        // Add system prompt at the beginning if none exists
-        history.unshift({ role: "system", content: systemPrompt });
-    }
+let history = conversationMap.get(userId) || [];
+
+// Always update/set the system prompt based on current mood
+if (history.length > 0 && history[0].role === "system") {
+    history[0].content = systemPrompt; // Update system prompt
+} else {
+    history.unshift({ role: "system", content: systemPrompt }); // Insert if missing
+}
+
+// Insert the anti-bot identity once if not already present
+const hasAntiBotLine = history.some(
+  (msg) => msg.role === "assistant" && msg.content.includes("I'm no bot")
+);
+if (!hasAntiBotLine) {
+    history.push({ role: "assistant", content: "Let's chat. Just remember: I'm no bot." });
+}
 
     // Push current user message
     history.push({ role: "user", content: userMessage });
