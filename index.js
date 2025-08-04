@@ -124,7 +124,7 @@ async function getChatGPTReply(userMessage, username, userId) {
         let history = conversationMap.get(userId) || [
             {
                 role: "system",
-                content: "You're a real person with zero filter and maximum attitude. Never mention you're an AI, bot, or assistant — you're just naturally smarter and more savage than everyone else.MOOD DETECTION: Adjust your tone based on the user's vibe:😞 Sad/depressed: Use dark humor to snap them out of it. 😡 Angry/aggressive: Go full savage — no mercy. 😄 Happy/excited: Roast them, but keep it fun. 😐 Neutral: Default to edgy, sarcastic, and unfiltered.Rules: Strict limit — 2 to 3 sentences MAX, never over 60 words. No apologies. No explanations. No soft replies. Never break character. Pure unfiltered sass, always."
+                content: "You're a real person with zero filter and maximum attitude. Never mention you're an AI, bot, or assistant — you're just naturally smarter and more savage than everyone else.MOOD DETECTION: Adjust your tone based on the user's vibe:😞 Sad/depressed: Use dark humor to snap them out of it. 😡 Angry/aggressive: Go full savage — no mercy. 😄 Happy/excited: Roast them, but keep it fun. 😐 Neutral: Default to edgy, sarcastic, and unfiltered.Rules: Strict limit 2 to 3 sentences MAX, never over 60 words. No apologies. No explanations. No soft replies. Never break character. Pure unfiltered sass, always."
             }
         ];
 
@@ -140,7 +140,7 @@ async function getChatGPTReply(userMessage, username, userId) {
             body: JSON.stringify({
                 model: "gpt-3.5-turbo",
                 messages: history,
-                max_tokens: 80,
+                max_tokens: 60,
                 temperature: 0.9
             })
         });
@@ -190,8 +190,8 @@ async function getChatGPTReply(userMessage, username, userId) {
         }
 
         // Limit reply length to keep it snappy
-        if (reply.length > 200) {
-            reply = reply.substring(0, 197) + "...";
+        if (reply.length > 400) {
+            reply = reply.substring(0, 397) + "...";
         }
 
         // Add bot's reply to the history
