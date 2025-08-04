@@ -1611,7 +1611,7 @@ client.on('guildMemberAdd', async member => {
       .setDescription(formattedMessage)
       .setTimestamp()
       .setFooter({
-        text: `time arrived | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
+        text: `Welcome to ${member.guild.name}`,
         iconURL: member.guild.iconURL()
       });
 
@@ -1666,7 +1666,7 @@ client.on('guildMemberRemove', async member => {
       .setDescription(formattedMessage)
       .setTimestamp()
       .setFooter({
-        text: `time departed | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
+        text: `Goodbye from ${member.guild.name}`,
         iconURL: member.guild.iconURL()
       });
 
@@ -4002,7 +4002,7 @@ client.on('interactionCreate', async interaction => {
           .setDescription(exampleMessage)
           .setTimestamp()
           .setFooter({
-            text: `time arrived | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
+            text: `Welcome to ${interaction.guild.name}`,
             iconURL: interaction.guild.iconURL()
           });
 
@@ -4194,7 +4194,7 @@ client.on('interactionCreate', async interaction => {
           .setDescription(exampleMessage)
           .setTimestamp()
           .setFooter({
-            text: `time departed | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
+            text: `Goodbye from ${interaction.guild.name}`,
             iconURL: interaction.guild.iconURL()
           });
 
