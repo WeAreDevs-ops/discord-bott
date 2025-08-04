@@ -1243,6 +1243,11 @@ client.on('ready', async () => {
           .setRequired(false)
       )
       .addStringOption(option =>
+        option.setName('image')
+          .setDescription('Image URL for welcome embed (optional)')
+          .setRequired(false)
+      )
+      .addStringOption(option =>
         option.setName('mode')
           .setDescription('Set mode for multiple messages')
           .setRequired(false)
@@ -1265,6 +1270,11 @@ client.on('ready', async () => {
       .addStringOption(option =>
         option.setName('message')
           .setDescription('Leave message (use {username} for name, {server} for server name)')
+          .setRequired(false)
+      )
+      .addStringOption(option =>
+        option.setName('image')
+          .setDescription('Image URL for leave embed (optional)')
           .setRequired(false)
       )
       .addStringOption(option =>
@@ -1594,13 +1604,21 @@ client.on('guildMemberAdd', async member => {
 
     const welcomeEmbed = new EmbedBuilder()
       .setColor(0x00ff88)
+      .setAuthor({
+        name: member.user.displayName || member.user.username,
+        iconURL: member.user.displayAvatarURL({ size: 128 })
+      })
       .setDescription(formattedMessage)
-      .setThumbnail(member.user.displayAvatarURL({ size: 128 }))
       .setTimestamp()
       .setFooter({
-        text: `Welcome to ${member.guild.name}`,
+        text: `time arrived | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
         iconURL: member.guild.iconURL()
       });
+
+    // Add custom image if set
+    if (settings.welcomeImage) {
+      welcomeEmbed.setImage(settings.welcomeImage);
+    }
 
     await welcomeChannel.send({ embeds: [welcomeEmbed] });
   } catch (error) {
@@ -1641,13 +1659,21 @@ client.on('guildMemberRemove', async member => {
 
     const leaveEmbed = new EmbedBuilder()
       .setColor(0xff6b6b)
+      .setAuthor({
+        name: member.user.displayName || member.user.username,
+        iconURL: member.user.displayAvatarURL({ size: 128 })
+      })
       .setDescription(formattedMessage)
-      .setThumbnail(member.user.displayAvatarURL({ size: 128 }))
       .setTimestamp()
       .setFooter({
-        text: `Goodbye from ${member.guild.name}`,
+        text: `time departed | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
         iconURL: member.guild.iconURL()
       });
+
+    // Add custom image if set
+    if (settings.leaveImage) {
+      leaveEmbed.setImage(settings.leaveImage);
+    }
 
     await leaveChannel.send({ embeds: [leaveEmbed] });
   } catch (error) {
@@ -3906,6 +3932,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'setwelcome') {
     const channel = interaction.options.getChannel('channel');
     const message = interaction.options.getString('message');
+    const image = interaction.options.getString('image');
     const mode = interaction.options.getString('mode') || 'single';
     commandStats.setwelcome++;
 
@@ -3914,6 +3941,18 @@ client.on('interactionCreate', async interaction => {
         content: '<:no:1393890945929318542> Please select a text channel.',
         ephemeral: true
       });
+    }
+
+    // Validate image URL if provided
+    if (image) {
+      try {
+        new URL(image);
+      } catch {
+        return interaction.reply({
+          content: '<:no:1393890945929318542> Invalid image URL provided.',
+          ephemeral: true
+        });
+      }
     }
 
     // Get or create guild settings
@@ -3928,6 +3967,11 @@ client.on('interactionCreate', async interaction => {
     // Initialize welcomeMessages array if it doesn't exist
     if (!settings.welcomeMessages) {
       settings.welcomeMessages = ['Welcome {user} to {server}! You are the {membercount} member!'];
+    }
+
+    // Store image URL in settings
+    if (image) {
+      settings.welcomeImage = image;
     }
 
     let embed;
@@ -3951,13 +3995,21 @@ client.on('interactionCreate', async interaction => {
 
         const exampleEmbed = new EmbedBuilder()
           .setColor(0x00ff88)
+          .setAuthor({
+            name: interaction.user.displayName || interaction.user.username,
+            iconURL: interaction.user.displayAvatarURL({ size: 128 })
+          })
           .setDescription(exampleMessage)
-          .setThumbnail(interaction.user.displayAvatarURL({ size: 128 }))
           .setTimestamp()
           .setFooter({
-            text: `Welcome to ${interaction.guild.name}`,
+            text: `time arrived | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
             iconURL: interaction.guild.iconURL()
           });
+
+        // Add image if provided
+        if (image || settings.welcomeImage) {
+          exampleEmbed.setImage(image || settings.welcomeImage);
+        }
 
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
@@ -3966,6 +4018,7 @@ client.on('interactionCreate', async interaction => {
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
             { name: 'Mode', value: 'Single message', inline: true },
+            { name: 'Image', value: image ? 'Custom image set' : 'No image', inline: true },
             { name: 'Variables', value: '`{user}` - User\'s display name (bold)\n`{username}` - User\'s username\n`{displayname}` - User\'s display name\n`{mention}` - Mentions the user\n`{server}` - Server name\n`{membercount}` - Member count with ordinal suffix', inline: false }
           )
           .setTimestamp()
@@ -4071,6 +4124,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'setleave') {
     const channel = interaction.options.getChannel('channel');
     const message = interaction.options.getString('message');
+    const image = interaction.options.getString('image');
     const mode = interaction.options.getString('mode') || 'single';
     commandStats.setleave++;
 
@@ -4079,6 +4133,18 @@ client.on('interactionCreate', async interaction => {
         content: '<:no:1393890945929318542> Please select a text channel.',
         ephemeral: true
       });
+    }
+
+    // Validate image URL if provided
+    if (image) {
+      try {
+        new URL(image);
+      } catch {
+        return interaction.reply({
+          content: '<:no:1393890945929318542> Invalid image URL provided.',
+          ephemeral: true
+        });
+      }
     }
 
     // Get or create guild settings
@@ -4093,6 +4159,11 @@ client.on('interactionCreate', async interaction => {
     // Initialize leaveMessages array if it doesn't exist
     if (!settings.leaveMessages) {
       settings.leaveMessages = ['{username} has left {server}. We\'ll miss you! 👋'];
+    }
+
+    // Store image URL in settings
+    if (image) {
+      settings.leaveImage = image;
     }
 
     let embed;
@@ -4116,13 +4187,21 @@ client.on('interactionCreate', async interaction => {
 
         const exampleEmbed = new EmbedBuilder()
           .setColor(0xff6b6b)
+          .setAuthor({
+            name: interaction.user.displayName || interaction.user.username,
+            iconURL: interaction.user.displayAvatarURL({ size: 128 })
+          })
           .setDescription(exampleMessage)
-          .setThumbnail(interaction.user.displayAvatarURL({ size: 128 }))
           .setTimestamp()
           .setFooter({
-            text: `Goodbye from ${interaction.guild.name}`,
+            text: `time departed | Today at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
             iconURL: interaction.guild.iconURL()
           });
+
+        // Add image if provided
+        if (image || settings.leaveImage) {
+          exampleEmbed.setImage(image || settings.leaveImage);
+        }
 
         embed = new EmbedBuilder()
           .setColor(0xff6b6b)
@@ -4131,6 +4210,7 @@ client.on('interactionCreate', async interaction => {
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
             { name: 'Mode', value: 'Single message', inline: true },
+            { name: 'Image', value: image ? 'Custom image set' : 'No image', inline: true },
             { name: 'Variables', value: '`{user}` - User\'s display name (bold)\n`{username}` - User\'s username\n`{displayname}` - User\'s display name\n`{mention}` - Mentions the user\n`{server}` - Server name\n`{membercount}` - Member count with ordinal suffix', inline: false }
           )
           .setTimestamp()
