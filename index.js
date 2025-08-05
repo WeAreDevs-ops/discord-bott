@@ -4104,7 +4104,7 @@ client.on('interactionCreate', async interaction => {
         
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
-          ..setTitle('Messages Cleared')
+          .setTitle('Messages Cleared')
           .setDescription('All welcome messages have been cleared and reset to default.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
