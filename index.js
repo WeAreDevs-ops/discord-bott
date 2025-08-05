@@ -307,7 +307,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             await member.ban({ reason });
 
             const embed = new EmbedBuilder()
-                .setColor(0xef4444)
+                .setColor(0x2C2F33)
                 .setTitle('User Banned')
                 .setDescription(`**${member.user.tag}** has been banned from the server.`)
                 .addFields(
@@ -365,7 +365,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             await member.kick(reason);
 
             const embed = new EmbedBuilder()
-                .setColor(0xfacc15)
+                .setColor(0x2C2F33)
                 .setTitle('User Kicked')
                 .setDescription(`**${member.user.tag}** has been kicked from the server.`)
                 .addFields(
@@ -429,7 +429,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             await member.timeout(timeoutDuration, reason);
 
             const embed = new EmbedBuilder()
-                .setColor(0xff6b6b)
+                .setColor(0x2C2F33)
                 .setTitle('User Muted')
                 .setDescription(`**${member.user.tag}** has been muted for ${duration} minutes.`)
                 .addFields(
@@ -480,7 +480,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             await member.timeout(null, reason);
 
             const embed = new EmbedBuilder()
-                .setColor(0x4caf50)
+                .setColor(0x2C2F33)
                 .setTitle('User Unmuted')
                 .setDescription(`**${member.user.tag}** has been unmuted.`)
                 .addFields(
@@ -534,7 +534,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             // Send DM to the warned user
             try {
                 const dmEmbed = new EmbedBuilder()
-                    .setColor(0xfacc15)
+                    .setColor(0x2C2F33)
                     .setTitle('Warning Received')
                     .setDescription(`You have received a warning in **${guild.name}**.`)
                     .addFields(
@@ -549,7 +549,7 @@ async function handlePrefixModerationCommand(message, command, args) {
             }
 
             const embed = new EmbedBuilder()
-                .setColor(0xfacc15)
+                .setColor(0x2C2F33)
                 .setTitle('User Warned')
                 .setDescription(`**${member.user.tag}** has been warned.`)
                 .addFields(
@@ -934,7 +934,7 @@ function startStatusMonitoring() {
       const memoryMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
 
       const statusEmbed = new EmbedBuilder()
-        .setColor(0x00d4ff)
+        .setColor(0x2C2F33)
         .setTitle('Bot Status Monitor')
         .setDescription('Automated status report')
         .addFields(
@@ -1045,7 +1045,7 @@ client.on('ready', async () => {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder()
       .setName('kick')
-      .setDescription('Kick a user from the server (Admin/Owner only)')
+      .setDescription('Kick a user from the server')
       .addUserOption(option =>
         option.setName('user')
           .setDescription('User to kick')
@@ -1059,7 +1059,7 @@ client.on('ready', async () => {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder()
       .setName('mute')
-      .setDescription('Timeout/mute a user (Admin/Owner only)')
+      .setDescription('Timeout/mute a user')
       .addUserOption(option =>
         option.setName('user')
           .setDescription('User to mute')
@@ -1080,7 +1080,7 @@ client.on('ready', async () => {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder()
       .setName('unmute')
-      .setDescription('Remove timeout/unmute a user (Admin/Owner only)')
+      .setDescription('Remove timeout/unmute a user')
       .addUserOption(option =>
         option.setName('user')
           .setDescription('User to unmute')
@@ -1094,7 +1094,7 @@ client.on('ready', async () => {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder()
       .setName('warn')
-      .setDescription('Warn a user (Admin/Owner only)')
+      .setDescription('Warn a user')
       .addUserOption(option =>
         option.setName('user')
           .setDescription('User to warn')
@@ -1108,7 +1108,7 @@ client.on('ready', async () => {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     new SlashCommandBuilder()
       .setName('commandassign')
-      .setDescription('Assign a command to a specific channel (Bot/Server Owner only)')
+      .setDescription('Assign a command to a specific channel')
       .addStringOption(option =>
         option.setName('mode')
           .setDescription('Assignment mode')
@@ -1603,7 +1603,7 @@ client.on('guildMemberAdd', async member => {
       .replace(/{membercount}/g, `**${memberCountWithSuffix}**`);
 
     const welcomeEmbed = new EmbedBuilder()
-      .setColor(0x00ff88)
+      .setColor(0x2C2F33)
       .setAuthor({
         name: member.user.displayName || member.user.username,
         iconURL: member.user.displayAvatarURL({ size: 128 })
@@ -1658,7 +1658,7 @@ client.on('guildMemberRemove', async member => {
       .replace(/{membercount}/g, `**${memberCountWithSuffix}**`);
 
     const leaveEmbed = new EmbedBuilder()
-      .setColor(0xff6b6b)
+      .setColor(0x2C2F33)
       .setAuthor({
         name: member.user.displayName || member.user.username,
         iconURL: member.user.displayAvatarURL({ size: 128 })
@@ -1863,7 +1863,7 @@ client.on('messageCreate', async message => {
           .slice(0, 10); // Top 10 commands
 
         const embed = new EmbedBuilder()
-          .setColor(0x0ea5e9)
+          .setColor(0x2C2F33)
           .setTitle(`📊 ${targetUser === message.author ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
           .setDescription(`Statistical overview for ${targetUser.tag}`)
           .setThumbnail(targetUser.displayAvatarURL())
@@ -1918,7 +1918,7 @@ client.on('messageCreate', async message => {
       await message.delete();
 
       const warningEmbed = new EmbedBuilder()
-        .setColor(0xff6b6b)
+        .setColor(0x2C2F33)
         .setTitle('Restricted Channel')
         .setDescription(`<@${message.author.id}> This channel is restricted to commands only.`)
         .addFields(
@@ -2011,7 +2011,7 @@ client.on('messageCreate', async message => {
         .slice(0, 10); // Top 10 commands
 
       const embed = new EmbedBuilder()
-        .setColor(0x0ea5e9)
+        .setColor(0x2C2F33)
         .setTitle(`${targetUser === message.author ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
         .setDescription(`Statistical overview for ${targetUser.tag}`)
         .setThumbnail(targetUser.displayAvatarURL())
@@ -2204,7 +2204,7 @@ client.on('interactionCreate', async interaction => {
       const data = await res.json();
 
       const embed = new EmbedBuilder()
-        .setColor(data.status === "success" ? 0x00ff88 : 0xff4757)
+        .setColor(data.status === "success" ? 0x2C2F33 : 0x2C2F33)
         .setTitle("Email Bypass (2008 Method)")
         .setDescription("Bypass results from Menhera")
         .addFields(
@@ -2261,7 +2261,7 @@ client.on('interactionCreate', async interaction => {
       const data = await res.json();
 
       const embed = new EmbedBuilder()
-        .setColor(data.status === "success" ? 0x00ff88 : 0xff4757)
+        .setColor(data.status === "success" ? 0x2C2F33 : 0x2C2F33)
         .setTitle("Age Bypass (13+ to Under 13)")
         .setDescription("Bypass results from Menhera")
         .addFields(
@@ -2315,7 +2315,7 @@ client.on('interactionCreate', async interaction => {
 
       if (!data.redemptionResult || !data.redemptionResult.success) {
         const errorEmbed = new EmbedBuilder()
-          .setColor(0xef4444)
+          .setColor(0x2C2F33)
           .setTitle("<:no:1393890945929318542> Unable to refresh your cookie.")
           .setDescription("Roblox might have rejected the cookie or the backend failed.")
           .setFooter({
@@ -2331,7 +2331,7 @@ client.on('interactionCreate', async interaction => {
       const robloxData = await getRobloxUserData(cookie);
 
       const publicEmbed = new EmbedBuilder()
-        .setColor(0x00d4ff)
+        .setColor(0x2C2F33)
         .setTitle(robloxData ? `${robloxData.username}` : "<:yes:1393890949960306719> Cookie Refreshed Successfully!")
           .setDescription("<:refresh:1397203318060880065> **Cookie Refresh Service**")
         .setTimestamp()
@@ -2374,7 +2374,7 @@ client.on('interactionCreate', async interaction => {
       await interaction.followUp({ embeds: [publicEmbed] }); // public message
 
       const privateEmbed = new EmbedBuilder()
-        .setColor(0x0ea5e9)
+        .setColor(0x2C2F33)
         .setTitle("Your New .ROBLOSECURITY Cookie")
         .setDescription(`\`\`\`${refreshed}\`\`\``)
         .addFields(
@@ -2394,7 +2394,7 @@ client.on('interactionCreate', async interaction => {
     } catch (err) {
       console.error('Refresh API error (sanitized)');
       const embed = new EmbedBuilder()
-        .setColor(0xfacc15)
+        .setColor(0x2C2F33)
         .setTitle("<:no:1393890945929318542> Request Failed")
         .setDescription("Failed to connect to refresh API. Please try again later.")
         .setFooter({
@@ -2409,7 +2409,7 @@ client.on('interactionCreate', async interaction => {
     commandStats.help++;
 
     const helpEmbed = new EmbedBuilder()
-      .setColor(0x0ea5e9)
+      .setColor(0x2C2F33)
       .setTitle('Roblox Tools Bot - Help')
       .setDescription('Here are all available commands and their descriptions:')
       .addFields(
@@ -2520,7 +2520,7 @@ client.on('interactionCreate', async interaction => {
     const totalCommands = Object.values(commandStats).reduce((a, b) => a + b, 0);
 
     const statsEmbed = new EmbedBuilder()
-      .setColor(0x22c55e)
+      .setColor(0x2C2F33)
       .setTitle('Bot Statistics')
       .setDescription('Current bot performance and usage stats')
       .addFields(
@@ -2636,7 +2636,7 @@ client.on('interactionCreate', async interaction => {
         const robloxData = await getRobloxUserData(cookie);
 
         const embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle(robloxData ? `${robloxData.username}` : '<:yes:1393890949960306719> Cookie Valid!')
           .setDescription(`**Cookie Validation Complete**\nAuthenticated for user: **${userData.name}**`)
           .setTimestamp()
@@ -2667,7 +2667,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.followUp({ embeds: [embed] });
       } else {
         const embed = new EmbedBuilder()
-          .setColor(0xef4444)
+          .setColor(0x2C2F33)
           .setTitle('<:no:1393890945929318542> Cookie Invalid')
           .setDescription('The provided cookie is invalid or expired.')
           .setTimestamp()
@@ -2680,7 +2680,7 @@ client.on('interactionCreate', async interaction => {
       }
     } catch (error) {
       const embed = new EmbedBuilder()
-        .setColor(0xfacc15)
+        .setColor(0x2C2F33)
         .setTitle('<:no:1393890945929318542> Validation Failed')
         .setDescription('Unable to validate cookie due to network error.')
         .setTimestamp()
@@ -2778,7 +2778,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.followUp({ embeds: [embed] });
       } else {
         const embed = new EmbedBuilder()
-          .setColor(0xef4444)
+          .setColor(0x2C2F33)
           .setTitle('<:no:1393890945929318542> Cookie Expired')
           .setDescription('The cookie is already invalid or expired.')
           .setTimestamp()
@@ -2791,7 +2791,7 @@ client.on('interactionCreate', async interaction => {
       }
     } catch (error) {
       const embed = new EmbedBuilder()
-        .setColor(0xfacc15)
+        .setColor(0x2C2F33)
         .setTitle('<:no:1393890945929318542> Check Failed')
         .setDescription('Unable to check cookie expiry due to network error.')
         .setTimestamp()
@@ -2831,7 +2831,7 @@ client.on('interactionCreate', async interaction => {
         const userData = await userRes.json();
         if (!userData.data || userData.data.length === 0) {
           const embed = new EmbedBuilder()
-            .setColor(0xef4444)
+            .setColor(0x2C2F33)
             .setTitle('<:no:1393890945929318542> User Not Found')
             .setDescription('No user found with that username.')
             .setTimestamp()
@@ -2856,7 +2856,7 @@ client.on('interactionCreate', async interaction => {
 
       if (userRes.status !== 200) {
         const embed = new EmbedBuilder()
-          .setColor(0xef4444)
+          .setColor(0x2C2F33)
           .setTitle('<:no:1393890945929318542> User Not Found')
           .setDescription('No user found with that ID.')
           .setTimestamp()
@@ -2869,7 +2869,7 @@ client.on('interactionCreate', async interaction => {
       }
 
       const embed = new EmbedBuilder()
-        .setColor(0x0ea5e9)
+        .setColor(0x2C2F33)
         .setTitle(`${userInfo.displayName} (@${userInfo.name})`)
         .setDescription(userInfo.description || 'No description available')
         .addFields(
@@ -2894,7 +2894,7 @@ client.on('interactionCreate', async interaction => {
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
       const embed = new EmbedBuilder()
-        .setColor(0xfacc15)
+        .setColor(0x2C2F33)
         .setTitle('<:no:1393890945929318542> Lookup Failed')
         .setDescription('Unable to lookup profile due to network error.')
         .setTimestamp()
@@ -2962,7 +2962,7 @@ client.on('interactionCreate', async interaction => {
       await member.ban({ reason });
 
       const embed = new EmbedBuilder()
-        .setColor(0xef4444)
+        .setColor(0x2C2F33)
         .setTitle('User Banned')
         .setDescription(`**${targetUser.tag}** has been banned from the server.`)
         .addFields(
@@ -3048,7 +3048,7 @@ client.on('interactionCreate', async interaction => {
       await member.kick(reason);
 
       const embed = new EmbedBuilder()
-        .setColor(0xfacc15)
+        .setColor(0x2C2F33)
         .setTitle('User Kicked')
         .setDescription(`**${targetUser.tag}** has been kicked from the server.`)
         .addFields(
@@ -3134,7 +3134,7 @@ client.on('interactionCreate', async interaction => {
       await member.timeout(timeoutDuration, reason);
 
       const embed = new EmbedBuilder()
-        .setColor(0xff6b6b)
+        .setColor(0x2C2F33)
         .setTitle('User Muted')
         .setDescription(`**${targetUser.tag}** has been muted for ${duration} minutes.`)
         .addFields(
@@ -3204,7 +3204,7 @@ client.on('interactionCreate', async interaction => {
       await member.timeout(null, reason);
 
       const embed = new EmbedBuilder()
-        .setColor(0x4caf50)
+        .setColor(0x2C2F33)
         .setTitle('User Unmuted')
         .setDescription(`**${targetUser.tag}** has been unmuted.`)
         .addFields(
@@ -3272,7 +3272,7 @@ client.on('interactionCreate', async interaction => {
       // Send DM to the warned user
       try {
         const dmEmbed = new EmbedBuilder()
-          .setColor(0xfacc15)
+          .setColor(0x2C2F33)
           .setTitle('Warning Received')
           .setDescription(`You have received a warning in **${interaction.guild.name}**.`)
           .addFields(
@@ -3287,7 +3287,7 @@ client.on('interactionCreate', async interaction => {
       }
 
       const embed = new EmbedBuilder()
-        .setColor(0xfacc15)
+        .setColor(0x2C2F33)
         .setTitle('User Warned')
         .setDescription(`**${targetUser.tag}** has been warned.`)
         .addFields(
@@ -3359,7 +3359,7 @@ client.on('interactionCreate', async interaction => {
       }
 
       const embed = new EmbedBuilder()
-        .setColor(0x00d4ff)
+        .setColor(0x2C2F33)
         .setTitle(`Available Channels for /${commandName}`)
         .setDescription(`Select any channel below to assign **/${commandName}** to it.\nCurrently assigned to: ${assignmentText}`)
         .setTimestamp()
@@ -3442,7 +3442,7 @@ client.on('interactionCreate', async interaction => {
       const allAssignedChannels = guildAssignments[commandName].map(id => `<#${id}>`).join(', ');
 
       const embed = new EmbedBuilder()
-        .setColor(0x00d4ff)
+        .setColor(0x2C2F33)
         .setTitle('Command Assignment Updated')
         .setDescription(`Command **/${commandName}** has been assigned to ${targetChannel}.`)
         .addFields(
@@ -3516,7 +3516,7 @@ client.on('interactionCreate', async interaction => {
       }
 
       const embed = new EmbedBuilder()
-        .setColor(0xff6b6b)
+        .setColor(0x2C2F33)
         .setTitle('Command Assignment Removed')
         .setDescription(`Command **/${commandName}** has been removed from ${targetChannel}.`)
         .addFields(
@@ -3544,7 +3544,7 @@ client.on('interactionCreate', async interaction => {
       await saveCommandAssignments(interaction.guild.id, guildAssignments);
 
       const embed = new EmbedBuilder()
-        .setColor(0xff6b6b)
+        .setColor(0x2C2F33)
         .setTitle('All Command Assignments Removed')
         .setDescription(`Command **/${commandName}** has been removed from all assigned channels.`)
         .addFields(
@@ -3596,7 +3596,7 @@ client.on('interactionCreate', async interaction => {
     }
 
     // Parse color input
-    let color = 0x0099ff; // Default blue color
+    let color = 0x2C2F33; 
     if (colorInput) {
       // Handle hex colors
       if (colorInput.startsWith('#')) {
@@ -3836,7 +3836,7 @@ client.on('interactionCreate', async interaction => {
 
       // Send confirmation to user
       const confirmationEmbed = new EmbedBuilder()
-        .setColor(0x00ff88)
+        .setColor(0x2C2F33)
         .setTitle('Embed Created Successfully')
         .setDescription(`Embed has been sent to ${targetChannel} and saved with ID: \`${embedId}\``)
         .addFields(
@@ -3893,7 +3893,7 @@ client.on('interactionCreate', async interaction => {
       .slice(0, 10); // Top 10 commands
 
     const embed = new EmbedBuilder()
-      .setColor(0x0ea5e9)
+      .setColor(0x2C2F33)
       .setTitle(`${targetUser === interaction.user ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
       .setDescription(`Statistical overview for ${targetUser.tag}`)
       .setThumbnail(targetUser.displayAvatarURL())
@@ -3994,7 +3994,7 @@ client.on('interactionCreate', async interaction => {
           .replace(/{membercount}/g, `**343rd**`);
 
         const exampleEmbed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setAuthor({
             name: interaction.user.displayName || interaction.user.username,
             iconURL: interaction.user.displayAvatarURL({ size: 128 })
@@ -4012,7 +4012,7 @@ client.on('interactionCreate', async interaction => {
         }
 
         embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Welcome Message Settings Updated')
           .setDescription('Welcome message configuration has been saved. Here\'s how it will look:')
           .addFields(
@@ -4058,7 +4058,7 @@ client.on('interactionCreate', async interaction => {
         const messageList = messagesToAdd.map((msg, index) => `**${index + 1}.** ${msg}`).join('\n');
 
         embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Welcome Messages Added')
           .setDescription(`Added ${messagesToAdd.length} new welcome message${messagesToAdd.length > 1 ? 's' : ''} to rotation. You now have ${settings.welcomeMessages.length} total messages.`)
           .addFields(
@@ -4079,7 +4079,7 @@ client.on('interactionCreate', async interaction => {
         const welcomeMessagesList = settings.welcomeMessages.map((msg, index) => `**${index + 1}.** ${msg}`).join('\n\n');
         
         embed = new EmbedBuilder()
-          .setColor(0x0ea5e9)
+          .setColor(0x2C2F33)
           .setTitle('Welcome Messages List')
           .setDescription(welcomeMessagesList || 'No welcome messages configured.')
           .addFields(
@@ -4103,8 +4103,8 @@ client.on('interactionCreate', async interaction => {
         await saveGuildSettings(interaction.guild.id, settings);
         
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
-          .setTitle('Welcome Messages Cleared')
+          .setColor(0x2C2F33)
+          ..setTitle('Messages Cleared')
           .setDescription('All welcome messages have been cleared and reset to default.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
@@ -4186,7 +4186,7 @@ client.on('interactionCreate', async interaction => {
           .replace(/{membercount}/g, `**342nd**`);
 
         const exampleEmbed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setAuthor({
             name: interaction.user.displayName || interaction.user.username,
             iconURL: interaction.user.displayAvatarURL({ size: 128 })
@@ -4204,7 +4204,7 @@ client.on('interactionCreate', async interaction => {
         }
 
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Leave Message Settings Updated')
           .setDescription('Leave message configuration has been saved. Here\'s how it will look:')
           .addFields(
@@ -4250,7 +4250,7 @@ client.on('interactionCreate', async interaction => {
         const messageList = messagesToAdd.map((msg, index) => `**${index + 1}.** ${msg}`).join('\n');
 
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Leave Messages Added')
           .setDescription(`Added ${messagesToAdd.length} new leave message${messagesToAdd.length > 1 ? 's' : ''} to rotation. You now have ${settings.leaveMessages.length} total messages.`)
           .addFields(
@@ -4271,7 +4271,7 @@ client.on('interactionCreate', async interaction => {
         const leaveMessagesList = settings.leaveMessages.map((msg, index) => `**${index + 1}.** ${msg}`).join('\n\n');
         
         embed = new EmbedBuilder()
-          .setColor(0x0ea5e9)
+          .setColor(0x2C2F33)
           .setTitle('Leave Messages List')
           .setDescription(leaveMessagesList || 'No leave messages configured.')
           .addFields(
@@ -4295,7 +4295,7 @@ client.on('interactionCreate', async interaction => {
         await saveGuildSettings(interaction.guild.id, settings);
         
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Leave Messages Cleared')
           .setDescription('All leave messages have been cleared and reset to default.')
           .addFields(
@@ -4356,7 +4356,7 @@ client.on('interactionCreate', async interaction => {
         autoMod.badWordFilter = true;
         await saveAutoModSettings(interaction.guild.id, autoMod);
         embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Bad Word Filter Enabled')
           .setDescription('Automatic inappropriate content detection is now active.');
         break;
@@ -4365,7 +4365,7 @@ client.on('interactionCreate', async interaction => {
         autoMod.badWordFilter = false;
         await saveAutoModSettings(interaction.guild.id, autoMod);
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Bad Word Filter Disabled')
           .setDescription('Automatic inappropriate content detection is now inactive.');
         break;
@@ -4400,7 +4400,7 @@ client.on('interactionCreate', async interaction => {
           }
           
           embed = new EmbedBuilder()
-            .setColor(0x00ff88)
+            .setColor(0x2C2F33)
             .setTitle('Bad Words Added')
             .setDescription(description);
         } else {
@@ -4442,7 +4442,7 @@ client.on('interactionCreate', async interaction => {
           }
           
           embed = new EmbedBuilder()
-            .setColor(0xff6b6b)
+            .setColor(0x2C2F33)
             .setTitle('Bad Words Removed')
             .setDescription(description);
         } else {
@@ -4460,7 +4460,7 @@ client.on('interactionCreate', async interaction => {
           'No bad words configured';
         
         embed = new EmbedBuilder()
-          .setColor(0x0ea5e9)
+          .setColor(0x2C2F33)
           .setTitle('Bad Words List')
           .setDescription(wordList)
           .addFields(
@@ -4470,7 +4470,7 @@ client.on('interactionCreate', async interaction => {
 
       case 'show':
         embed = new EmbedBuilder()
-          .setColor(0x0ea5e9)
+          .setColor(0x2C2F33)
           .setTitle('Auto-Moderation Settings')
           .setDescription('Current auto-moderation configuration')
           .addFields(
@@ -4546,7 +4546,7 @@ client.on('interactionCreate', async interaction => {
         await member.roles.add(role);
 
         const embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Role Added')
           .setDescription(`Successfully added the **${role.name}** role to ${targetUser.tag}.`)
           .addFields(
@@ -4596,7 +4596,7 @@ client.on('interactionCreate', async interaction => {
         }
 
         const embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Role Added to All Members')
           .setDescription(`Finished adding the **${role.name}** role to server members.`)
           .addFields(
@@ -4672,7 +4672,7 @@ client.on('interactionCreate', async interaction => {
         await saveAutoRoleSettings(interaction.guild.id, role.id);
 
         embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Auto Role Configured')
           .setDescription(`New members will automatically receive the **${role.name}** role when they join the server.`)
           .addFields(
@@ -4705,7 +4705,7 @@ client.on('interactionCreate', async interaction => {
         await deleteAutoRoleSettings(interaction.guild.id);
 
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Auto Role Removed')
           .setDescription('Auto role assignment has been disabled. New members will no longer automatically receive a role.')
           .addFields(
@@ -4727,7 +4727,7 @@ client.on('interactionCreate', async interaction => {
         
         if (!autoRoleId) {
           embed = new EmbedBuilder()
-            .setColor(0x6b7280)
+            .setColor(0x2C2F33)
             .setTitle('Auto Role Status')
             .setDescription('No auto role is currently configured.')
             .addFields(
@@ -4748,7 +4748,7 @@ client.on('interactionCreate', async interaction => {
             await deleteAutoRoleSettings(interaction.guild.id);
             
             embed = new EmbedBuilder()
-              .setColor(0xff6b6b)
+              .setColor(0x2C2F33)
               .setTitle('Auto Role Status')
               .setDescription('The configured auto role was deleted. Auto role has been disabled.')
               .addFields(
@@ -4766,7 +4766,7 @@ client.on('interactionCreate', async interaction => {
                             autoRole.position < botMember.roles.highest.position;
 
             embed = new EmbedBuilder()
-              .setColor(canAssign ? 0x00ff88 : 0xfacc15)
+              .setColor(canAssign ? 0x2C2F33 : 0x2C2F33)
               .setTitle('Auto Role Status')
               .setDescription('Auto role assignment is currently active.')
               .addFields(
@@ -4850,7 +4850,7 @@ client.on('interactionCreate', async interaction => {
         await member.roles.remove(role);
 
         const embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Role Removed')
           .setDescription(`Successfully removed the **${role.name}** role from ${targetUser.tag}.`)
           .addFields(
@@ -4900,7 +4900,7 @@ client.on('interactionCreate', async interaction => {
         }
 
         const embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Role Removed from All Members')
           .setDescription(`Finished removing the **${role.name}** role from server members.`)
           .addFields(
@@ -4974,7 +4974,7 @@ client.on('interactionCreate', async interaction => {
         await saveRestrictedChannels(interaction.guild.id, Array.from(guildRestrictedChannels));
 
         embed = new EmbedBuilder()
-          .setColor(0xff6b6b)
+          .setColor(0x2C2F33)
           .setTitle('Channel Restricted')
           .setDescription(`${channel} is now restricted to commands only.`)
           .addFields(
@@ -5005,7 +5005,7 @@ client.on('interactionCreate', async interaction => {
         await saveRestrictedChannels(interaction.guild.id, Array.from(guildRestrictedChannels));
 
         embed = new EmbedBuilder()
-          .setColor(0x00ff88)
+          .setColor(0x2C2F33)
           .setTitle('Channel Unrestricted')
           .setDescription(`${channel} is now unrestricted and allows normal messages.`)
           .addFields(
@@ -5030,7 +5030,7 @@ client.on('interactionCreate', async interaction => {
           'No channels are currently restricted';
 
         embed = new EmbedBuilder()
-          .setColor(isCurrentlyRestricted ? 0xff6b6b : 0x0ea5e9)
+          .setColor(isCurrentlyRestricted ? 0x2C2F33 : 0x2C2F33)
           .setTitle('Channel Restriction Status')
           .setDescription(`Status for ${channel}`)
           .addFields(
@@ -5056,7 +5056,7 @@ client.on('interactionCreate', async interaction => {
     const memberCount = interaction.guild.memberCount;
 
     const embed = new EmbedBuilder()
-      .setColor(0x0ea5e9)
+      .setColor(0x2C2F33)
       .setTitle('Server Member Count')
       .setDescription(`Total members: **${memberCount.toLocaleString()}**`)
       .setThumbnail(interaction.guild.iconURL() || null)
@@ -5135,7 +5135,7 @@ client.on('interactionCreate', async interaction => {
     };
 
     // Parse color input
-    let color = 0x0099ff; // Default blue color
+    let color = 0x2C2F33; // Default blue color
     if (updatedEmbedData.color) {
       // Handle hex colors
       if (updatedEmbedData.color.startsWith('#')) {
@@ -5359,7 +5359,7 @@ client.on('interactionCreate', async interaction => {
 
       // Create update confirmation embed
       const updateEmbed = new EmbedBuilder()
-        .setColor(updateSuccess ? 0x00ff88 : 0xfacc15)
+        .setColor(updateSuccess ? 0x2C2F33 : 0x2C2F33)
         .setTitle('Embed Update Complete')
         .setDescription(updateMessage)
         .addFields(
