@@ -69,22 +69,22 @@ function initializeSessionStoreSync() {
       const FirebaseStore = require('connect-session-firebase')(session);
       sessionConfig.store = new FirebaseStore({
         database: db,
-        sessions: 'sessions',
-        reapCallback: function(err) {
-          if (err) {
-            console.error('Firebase session reap error:', err);
-          }
-        }
+        sessions: 'sessions'
+        // Remove reapCallback to prevent function call errors
       });
       
-      // Monitor Firebase connection asynchronously
-      db.ref('.info/connected').on('value', (snapshot) => {
-        if (!snapshot.val()) {
-          console.log('⚠️ Firebase connection lost, sessions may not persist');
-        } else {
-          console.log('✅ Firebase connection restored');
-        }
-      });
+      // Monitor Firebase connection asynchronously with error handling
+      try {
+        db.ref('.info/connected').on('value', (snapshot) => {
+          if (!snapshot.val()) {
+            console.log('⚠️ Firebase connection lost, sessions may not persist');
+          } else {
+            console.log('✅ Firebase connection restored');
+          }
+        });
+      } catch (connectionError) {
+        console.log('⚠️ Firebase connection monitoring failed:', connectionError.message);
+      }
       
       console.log('✅ Using Firebase session store');
     } catch (error) {
