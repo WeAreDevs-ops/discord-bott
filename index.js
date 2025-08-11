@@ -2217,6 +2217,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:yes:1393890949960306719> Bypass request completed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
       console.error('Bypass2008 error:', error);
@@ -2235,6 +2239,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:no:1393890945929318542> Bypass request failed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
   }
@@ -2274,6 +2282,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:yes:1393890949960306719> Bypass request completed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
       console.error('Bypass13plus error:', error);
@@ -2292,6 +2304,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:no:1393890945929318542> Bypass request failed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
   }
@@ -2664,6 +2680,10 @@ client.on('interactionCreate', async interaction => {
           );
         }
 
+        // Send confirmation message as ephemeral
+        await interaction.followUp({ content: '<:yes:1393890949960306719> Cookie validation completed and sent to channel!', ephemeral: true });
+        
+        // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       } else {
         const embed = new EmbedBuilder()
@@ -2676,6 +2696,10 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
+        // Send confirmation message as ephemeral
+        await interaction.followUp({ content: '<:no:1393890945929318542> Cookie validation failed and sent to channel!', ephemeral: true });
+        
+        // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       }
     } catch (error) {
@@ -2689,6 +2713,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:no:1393890945929318542> Cookie validation failed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
   }
@@ -2775,6 +2803,10 @@ client.on('interactionCreate', async interaction => {
           { name: 'Recommendation', value: reliability >= 90 ? 'No action needed' : 'Consider refreshing', inline: true }
         );
 
+        // Send confirmation message as ephemeral
+        await interaction.followUp({ content: '<:yes:1393890949960306719> Cookie expiry check completed and sent to channel!', ephemeral: true });
+        
+        // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       } else {
         const embed = new EmbedBuilder()
@@ -2787,6 +2819,10 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
+        // Send confirmation message as ephemeral
+        await interaction.followUp({ content: '<:no:1393890945929318542> Cookie expiry check failed and sent to channel!', ephemeral: true });
+        
+        // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       }
     } catch (error) {
@@ -2800,6 +2836,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:no:1393890945929318542> Cookie expiry check failed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
   }
@@ -2840,6 +2880,10 @@ client.on('interactionCreate', async interaction => {
               iconURL: interaction.user.displayAvatarURL()
             });
 
+          // Send confirmation message as ephemeral
+          await interaction.followUp({ content: '<:no:1393890945929318542> Profile lookup failed and sent to channel!', ephemeral: true });
+          
+          // Send the actual embed as public message
           return interaction.followUp({ embeds: [embed] });
         }
         userId = userData.data[0].id;
@@ -2865,6 +2909,10 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
+        // Send confirmation message as ephemeral
+        await interaction.followUp({ content: '<:no:1393890945929318542> Profile lookup failed and sent to channel!', ephemeral: true });
+        
+        // Send the actual embed as public message
         return interaction.followUp({ embeds: [embed] });
       }
 
@@ -2891,6 +2939,10 @@ client.on('interactionCreate', async interaction => {
         embed.setThumbnail(avatarInfo.data[0].imageUrl);
       }
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:yes:1393890949960306719> Profile lookup completed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
       const embed = new EmbedBuilder()
@@ -2903,6 +2955,10 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:no:1393890945929318542> Profile lookup failed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
   }
