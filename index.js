@@ -2311,6 +2311,9 @@ client.on('interactionCreate', async interaction => {
       cookie = cookie.substring(warningPrefix.length);
     }
 
+    // Defer the reply to allow processing time
+    await interaction.deferReply();
+
     try {
       const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
       const data = await res.json();
@@ -2325,8 +2328,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        // Send only the public embed, no ephemeral confirmation
-        return interaction.reply({ embeds: [errorEmbed] });
+        return interaction.editReply({ embeds: [errorEmbed] });
       }
 
       const refreshed = data.redemptionResult.refreshedCookie;
@@ -2376,7 +2378,7 @@ client.on('interactionCreate', async interaction => {
       );
 
       // Send the public embed as the main reply
-      await interaction.reply({ embeds: [publicEmbed] });
+      await interaction.editReply({ embeds: [publicEmbed] });
 
       // Send the private cookie as a follow-up
       const privateEmbed = new EmbedBuilder()
@@ -2408,8 +2410,7 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send only the public embed, no ephemeral confirmation
-      await interaction.reply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
     }
   }
 
