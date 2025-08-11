@@ -2330,12 +2330,6 @@ client.on('interactionCreate', async interaction => {
 
       const refreshed = data.redemptionResult.refreshedCookie;
 
-      // Send ephemeral confirmation first
-      await interaction.reply({
-        content: '<:yes:1393890949960306719> Cookie refresh service completed successfully! Your new cookie has been generated and sent privately.',
-        ephemeral: true
-      });
-
       // Get Roblox user data for the public embed
       const robloxData = await getRobloxUserData(cookie);
 
@@ -2379,10 +2373,16 @@ client.on('interactionCreate', async interaction => {
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
       );
 
-      // Send the public embed as a follow-up
-      await interaction.followUp({ embeds: [publicEmbed] });
+      // Send the public embed directly to the channel (separate from command)
+      await interaction.channel.send({ embeds: [publicEmbed] });
 
-      // Send the private cookie as another follow-up
+      // Send ephemeral confirmation to user
+      await interaction.reply({
+        content: '<:yes:1393890949960306719> Cookie refresh service completed successfully! Check above for the public result and below for your private cookie.',
+        ephemeral: true
+      });
+
+      // Send the private cookie as a follow-up
       const privateEmbed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle("Your New .ROBLOSECURITY Cookie")
