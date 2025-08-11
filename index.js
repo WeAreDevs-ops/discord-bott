@@ -2323,9 +2323,6 @@ client.on('interactionCreate', async interaction => {
       cookie = cookie.substring(warningPrefix.length);
     }
 
-    // Send ephemeral confirmation first
-    await interaction.reply({ content: '<:yes:1393890949960306719> Processing refresh request...', ephemeral: true });
-
     try {
       const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
       const data = await res.json();
@@ -2340,11 +2337,8 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
         
-        // Send confirmation message as ephemeral
-        await interaction.followUp({ content: '<:no:1393890945929318542> Refresh request failed and sent to channel!', ephemeral: true });
-        
-        // Send the actual embed as public message
-        return interaction.followUp({ embeds: [errorEmbed] });
+        // Send only the public embed, no ephemeral confirmation
+        return interaction.reply({ embeds: [errorEmbed] });
       }
 
       const refreshed = data.redemptionResult.refreshedCookie;
@@ -2393,11 +2387,8 @@ client.on('interactionCreate', async interaction => {
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
       );
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:yes:1393890949960306719> Refresh request completed and sent to channel!', ephemeral: true });
-      
-      // Send the public embed as public message
-      await interaction.followUp({ embeds: [publicEmbed] });
+      // Send the public embed as the main reply
+      await interaction.reply({ embeds: [publicEmbed] });
 
       // Send the private cookie as a follow-up
       const privateEmbed = new EmbedBuilder()
@@ -2429,11 +2420,8 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
       
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:no:1393890945929318542> Refresh request failed and sent to channel!', ephemeral: true });
-      
-      // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      // Send only the public embed, no ephemeral confirmation
+      await interaction.reply({ embeds: [embed] });
     }
   }
 
