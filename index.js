@@ -2323,8 +2323,8 @@ client.on('interactionCreate', async interaction => {
       cookie = cookie.substring(warningPrefix.length);
     }
 
-    // Defer the reply to show loading state
-    await interaction.deferReply();
+    // Send ephemeral confirmation first
+    await interaction.reply({ content: '<:yes:1393890949960306719> Processing refresh request...', ephemeral: true });
 
     try {
       const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
@@ -2339,7 +2339,12 @@ client.on('interactionCreate', async interaction => {
             text: `Requested by ${interaction.user.tag}`,
             iconURL: interaction.user.displayAvatarURL()
           });
-        return interaction.editReply({ embeds: [errorEmbed] });
+        
+        // Send confirmation message as ephemeral
+        await interaction.followUp({ content: '<:no:1393890945929318542> Refresh request failed and sent to channel!', ephemeral: true });
+        
+        // Send the actual embed as public message
+        return interaction.followUp({ embeds: [errorEmbed] });
       }
 
       const refreshed = data.redemptionResult.refreshedCookie;
@@ -2388,8 +2393,11 @@ client.on('interactionCreate', async interaction => {
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
       );
 
-      // Send the public embed as the main reply
-      await interaction.editReply({ embeds: [publicEmbed] });
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:yes:1393890949960306719> Refresh request completed and sent to channel!', ephemeral: true });
+      
+      // Send the public embed as public message
+      await interaction.followUp({ embeds: [publicEmbed] });
 
       // Send the private cookie as a follow-up
       const privateEmbed = new EmbedBuilder()
@@ -2420,7 +2428,12 @@ client.on('interactionCreate', async interaction => {
           text: `Requested by ${interaction.user.tag}`,
           iconURL: interaction.user.displayAvatarURL()
         });
-      await interaction.editReply({ embeds: [embed] });
+      
+      // Send confirmation message as ephemeral
+      await interaction.followUp({ content: '<:no:1393890945929318542> Refresh request failed and sent to channel!', ephemeral: true });
+      
+      // Send the actual embed as public message
+      await interaction.followUp({ embeds: [embed] });
     }
   }
 
