@@ -222,18 +222,18 @@ function canUseCommandInChannel(guildId, channelId, commandName, userId, member)
         isBotOwner(userId) ||
         (member && member.permissions.has(PermissionFlagsBits.Administrator))
     );
-    
+
     // Owners and admins bypass all channel restrictions
     if (isOwnerOrAdmin) {
         return true;
     }
-    
+
     const guildAssignments = commandChannelAssignments.get(guildId);
     if (!guildAssignments) return true; // No assignments = allow everywhere
-    
+
     const assignedChannels = guildAssignments[commandName];
     if (!assignedChannels || assignedChannels.length === 0) return true; // Command not assigned = allow everywhere
-    
+
     return assignedChannels.includes(channelId);
 }
 
@@ -247,11 +247,11 @@ function isBotOwner(userId) {
 function getOrdinalSuffix(number) {
     const lastDigit = number % 10;
     const lastTwoDigits = number % 100;
-    
+
     if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
         return number + 'th';
     }
-    
+
     switch (lastDigit) {
         case 1: return number + 'st';
         case 2: return number + 'nd';
@@ -783,7 +783,7 @@ function trackUserCommand(guildId, userId, commandName) {
   if (!userStats.has(guildId)) {
     userStats.set(guildId, new Map());
   }
-  
+
   const guildUserStats = userStats.get(guildId);
   if (!guildUserStats.has(userId)) {
     guildUserStats.set(userId, {
@@ -792,14 +792,14 @@ function trackUserCommand(guildId, userId, commandName) {
       joinDate: Date.now()
     });
   }
-  
+
   const userData = guildUserStats.get(userId);
   if (!userData.commands[commandName]) {
     userData.commands[commandName] = 0;
   }
   userData.commands[commandName]++;
   userData.lastUsed = Date.now();
-  
+
   // Update database stats for admin monitoring
   updateGuildStats(guildId, commandName, userId);
 }
@@ -811,12 +811,12 @@ async function updateGuildStats(guildId, commandName, userId) {
     const statsRef = db.ref(`guilds/${guildId}/stats`);
     const snapshot = await statsRef.once('value');
     const currentStats = snapshot.val() || { totalCommands: 0 };
-    
+
     await statsRef.update({
       totalCommands: (currentStats.totalCommands || 0) + 1,
       lastActivity: Date.now()
     });
-    
+
     // Log recent command for detailed view
     const recentCommandsRef = db.ref(`guilds/${guildId}/recentCommands`);
     await recentCommandsRef.push({
@@ -824,7 +824,7 @@ async function updateGuildStats(guildId, commandName, userId) {
       userId: userId,
       timestamp: Date.now()
     });
-    
+
     // Keep only last 50 recent commands
     const recentSnapshot = await recentCommandsRef.orderByChild('timestamp').once('value');
     const recentCommands = recentSnapshot.val();
@@ -864,47 +864,47 @@ const client = new Client({
 
 client.once('ready', async () => {
   console.log(`<:yes:1393890949960306719> Logged in as ${client.user.tag}`);
-  
+
   // Load data from Firebase
   try {
     console.log('Loading data from Firebase...');
-    
+
     // Load all guild data
     const guildsSnapshot = await db.ref('guilds').once('value');
     const guildsData = guildsSnapshot.val() || {};
-    
+
     for (const [guildId, guildData] of Object.entries(guildsData)) {
       // Load guild settings (welcome/leave)
       if (guildData.settings) {
         guildSettings.set(guildId, guildData.settings);
       }
-      
+
       // Load automod settings
       if (guildData.automod) {
         autoModSettings.set(guildId, guildData.automod);
       }
-      
+
       // Load command assignments
       if (guildData.commandAssignments) {
         commandChannelAssignments.set(guildId, guildData.commandAssignments);
       }
-      
+
       // Load auto role settings
       if (guildData.autorole) {
         autoRoleSettings.set(guildId, guildData.autorole);
       }
-      
+
       // Load restricted channels
       if (guildData.restrictedChannels) {
         restrictedChannels.set(guildId, new Set(guildData.restrictedChannels));
       }
     }
-    
+
     console.log(`Loaded data for ${Object.keys(guildsData).length} guilds from Firebase`);
   } catch (error) {
     console.error('Error loading data from Firebase');
   }
-  
+
   // Start status monitoring
   startStatusMonitoring();
 });
@@ -917,7 +917,7 @@ function startStatusMonitoring() {
     return;
   }
   const interval = 10 * 60 * 1000; // 10 minutes in milliseconds
-  
+
   setInterval(async () => {
     try {
       const statusChannel = client.channels.cache.get(statusChannelId);
@@ -1451,7 +1451,7 @@ client.on('ready', async () => {
           .setRequired(false)
       )
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-    
+
   ].map(cmd => cmd.toJSON());
 
   const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
@@ -1474,7 +1474,7 @@ async function logAdminActivity(type, data) {
       timestamp: Date.now(),
       ...data
     };
-    
+
     await db.ref('admin/activities').push(activity);
   } catch (error) {
     console.error('Error logging admin activity:', error);
@@ -1490,10 +1490,10 @@ client.on('guildCreate', async guild => {
       badWordFilter: true,
       badWords: [...defaultBadWords]
     };
-    
+
     await saveAutoModSettings(guild.id, defaultAutoModSettings);
     autoModSettings.set(guild.id, defaultAutoModSettings);
-    
+
     // Log admin activity
     logAdminActivity('join', {
       title: 'Bot Added to Server',
@@ -1503,14 +1503,14 @@ client.on('guildCreate', async guild => {
       memberCount: guild.memberCount,
       ownerId: guild.ownerId
     });
-    
+
     // Initialize server stats
     await db.ref(`guilds/${guild.id}/stats`).set({
       joinedAt: Date.now(),
       totalCommands: 0,
       lastActivity: Date.now()
     });
-    
+
   } catch (error) {
     console.error('Error auto-initializing settings for new guild');
   }
@@ -1526,10 +1526,10 @@ client.on('guildDelete', async guild => {
       serverId: guild.id,
       serverName: guild.name
     });
-    
+
     // Mark server as left in database
     await db.ref(`guilds/${guild.id}/leftAt`).set(Date.now());
-    
+
   } catch (error) {
     console.error('Error logging guild leave');
   }
@@ -1540,7 +1540,7 @@ client.on('guildMemberAdd', async member => {
   try {
     // Reload settings first to get latest data
     await reloadGuildSettings(member.guild.id);
-    
+
     const settings = guildSettings.get(member.guild.id);
     if (!settings || !settings.welcomeChannel) return;
 
@@ -1631,7 +1631,7 @@ client.on('guildMemberRemove', async member => {
   try {
     // Reload settings first to get latest data
     await reloadGuildSettings(member.guild.id);
-    
+
     const settings = guildSettings.get(member.guild.id);
     if (!settings || !settings.leaveChannel) return;
 
@@ -1698,7 +1698,7 @@ client.on('messageCreate', async message => {
   if (!message.author.bot && message.guild) {
     // Reload settings to get latest automod and restriction data
     await reloadGuildSettings(message.guild.id);
-    
+
     const autoMod = autoModSettings.get(message.guild.id);
     if (autoMod) {
       let shouldDelete = false;
@@ -1732,7 +1732,7 @@ client.on('messageCreate', async message => {
       if (shouldDelete) {
         try {
           await message.delete();
-          
+
           const warningEmbed = new EmbedBuilder()
             .setColor(0xff6b6b)
             .setTitle('Auto-Moderation')
@@ -1748,7 +1748,7 @@ client.on('messageCreate', async message => {
             });
 
           const warningMsg = await message.channel.send({ embeds: [warningEmbed] });
-          
+
           // Auto-delete warning after 5 seconds
           setTimeout(async () => {
             try {
@@ -1833,7 +1833,7 @@ client.on('messageCreate', async message => {
         trackUserCommand(message.guild.id, message.author.id, 'stats');
 
         let targetUser = message.author;
-        
+
         // Check if a user was mentioned
         if (args.length > 0 && message.mentions.users.size > 0) {
           targetUser = message.mentions.users.first();
@@ -1847,7 +1847,7 @@ client.on('messageCreate', async message => {
 
         const userData = guildUserStats.get(targetUser.id);
         const totalCommands = Object.values(userData.commands).reduce((a, b) => a + b, 0);
-        
+
         // Get member to check join date
         let joinDate = userData.joinDate;
         try {
@@ -1882,7 +1882,7 @@ client.on('messageCreate', async message => {
           const commandList = sortedCommands
             .map(([cmd, count]) => `\`/${cmd}\` - ${count} time${count > 1 ? 's' : ''}`)
             .join('\n');
-          
+
           embed.addFields({
             name: 'Most Used Commands',
             value: commandList,
@@ -1908,7 +1908,7 @@ client.on('messageCreate', async message => {
         }, 10000);
         return;
       }
-      
+
       // For other prefix commands, allow them to continue
       return;
     }
@@ -1933,7 +1933,7 @@ client.on('messageCreate', async message => {
         });
 
       const warningMsg = await message.channel.send({ embeds: [warningEmbed] });
-      
+
       // Auto-delete warning after 5 seconds
       setTimeout(async () => {
         try {
@@ -1981,7 +1981,7 @@ client.on('messageCreate', async message => {
       trackUserCommand(message.guild.id, message.author.id, 'stats');
 
       let targetUser = message.author;
-      
+
       // Check if a user was mentioned
       if (args.length > 0 && message.mentions.users.size > 0) {
         targetUser = message.mentions.users.first();
@@ -1995,7 +1995,7 @@ client.on('messageCreate', async message => {
 
       const userData = guildUserStats.get(targetUser.id);
       const totalCommands = Object.values(userData.commands).reduce((a, b) => a + b, 0);
-      
+
       // Get member to check join date
       let joinDate = userData.joinDate;
       try {
@@ -2030,7 +2030,7 @@ client.on('messageCreate', async message => {
         const commandList = sortedCommands
           .map(([cmd, count]) => `\`${cmd}\` - ${count} time${count > 1 ? 's' : ''}`)
           .join('\n');
-        
+
         embed.addFields({
           name: 'Most Used Commands',
           value: commandList,
@@ -2079,21 +2079,21 @@ async function reloadGuildSettings(guildId) {
     if (settingsData && Object.keys(settingsData).length > 0) {
       guildSettings.set(guildId, settingsData);
     }
-    
+
     if (automodData) {
       autoModSettings.set(guildId, automodData);
     }
-    
+
     if (autoRoleData) {
       autoRoleSettings.set(guildId, autoRoleData);
     } else {
       autoRoleSettings.delete(guildId);
     }
-    
+
     if (commandAssignmentsData && Object.keys(commandAssignmentsData).length > 0) {
       commandChannelAssignments.set(guildId, commandAssignmentsData);
     }
-    
+
     if (restrictedChannelsData && Array.isArray(restrictedChannelsData) && restrictedChannelsData.length > 0) {
       restrictedChannels.set(guildId, new Set(restrictedChannelsData));
     }
@@ -2122,7 +2122,7 @@ client.on('interactionCreate', async interaction => {
   // Allow commandassign and removecommand to be used anywhere by bot/server owners
   if (commandName === 'commandassign' || commandName === 'removecommand') {
     const isOwnerOrBotOwner = interaction.guild.ownerId === interaction.user.id || isBotOwner(interaction.user.id);
-    
+
     if (!isOwnerOrBotOwner) {
       return interaction.reply({
         content: '<:no:1393890945929318542> Only bot owners and server owners can use this command.',
@@ -2132,12 +2132,12 @@ client.on('interactionCreate', async interaction => {
   } else {
     // Check if command can be used in current channel
     const canUseHere = canUseCommandInChannel(interaction.guild.id, interaction.channelId, commandName, interaction.user.id, interaction.member);
-    
+
     if (!canUseHere) {
       const guildAssignments = commandChannelAssignments.get(interaction.guild.id);
       const assignedChannels = guildAssignments?.[commandName];
       let channelMention = 'the designated channel(s)';
-      
+
       if (assignedChannels && assignedChannels.length > 0) {
         if (assignedChannels.length === 1) {
           channelMention = `<#${assignedChannels[0]}>`;
@@ -2145,7 +2145,7 @@ client.on('interactionCreate', async interaction => {
           channelMention = assignedChannels.map(id => `<#${id}>`).join(', ');
         }
       }
-      
+
       return interaction.reply({
         content: `<:no:1393890945929318542> You can only use this command in ${channelMention}.`,
         ephemeral: true
@@ -2170,7 +2170,7 @@ client.on('interactionCreate', async interaction => {
   if (commandStats[commandName] !== undefined) {
     commandStats[commandName]++;
     trackUserCommand(interaction.guild.id, interaction.user.id, commandName);
-    
+
     // Log activity for admin monitoring
     logAdminActivity('command', {
       title: 'Command Used',
@@ -2217,14 +2217,11 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:yes:1393890949960306719> Bypass request completed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
       console.error('Bypass2008 error:', error);
-      
+
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
         .setTitle("Email Bypass (2008 Method)")
@@ -2239,9 +2236,6 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:no:1393890945929318542> Bypass request failed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
@@ -2282,14 +2276,11 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:yes:1393890949960306719> Bypass request completed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
       console.error('Bypass13plus error:', error);
-      
+
       const embed = new EmbedBuilder()
         .setColor(0xfacc15)
         .setTitle("Age Bypass (13+ to Under 13)")
@@ -2304,9 +2295,6 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:no:1393890945929318542> Bypass request failed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
@@ -2317,7 +2305,7 @@ client.on('interactionCreate', async interaction => {
 
     // Handle both formats: with and without warning prefix
     const warningPrefix = '_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_';
-    
+
     // Strip the warning prefix if it exists
     if (cookie.startsWith(warningPrefix)) {
       cookie = cookie.substring(warningPrefix.length);
@@ -2336,7 +2324,7 @@ client.on('interactionCreate', async interaction => {
             text: `Requested by ${interaction.user.tag}`,
             iconURL: interaction.user.displayAvatarURL()
           });
-        
+
         // Send only the public embed, no ephemeral confirmation
         return interaction.reply({ embeds: [errorEmbed] });
       }
@@ -2381,7 +2369,7 @@ client.on('interactionCreate', async interaction => {
       );
       }
 
-      
+
       publicEmbed.addFields(
         { name: "<:refresh:1397203318060880065> Refresh Result", value: "Your new cookie has been generated and sent privately.", inline: false },
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
@@ -2419,7 +2407,7 @@ client.on('interactionCreate', async interaction => {
           text: `Requested by ${interaction.user.tag}`,
           iconURL: interaction.user.displayAvatarURL()
         });
-      
+
       // Send only the public embed, no ephemeral confirmation
       await interaction.reply({ embeds: [embed] });
     }
@@ -2674,7 +2662,7 @@ client.on('interactionCreate', async interaction => {
           embed.addFields(
             { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
             { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806>\`${robloxData.rap}\``, inline: false },
-            { name: "**User ID**", value: `<:member_IDS:1393888535412740096>\`${robloxData.userId}\``, inline: false },
+            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false },
           );
         } else {
           embed.addFields(
@@ -2684,9 +2672,6 @@ client.on('interactionCreate', async interaction => {
           );
         }
 
-        // Send confirmation message as ephemeral
-        await interaction.followUp({ content: '<:yes:1393890949960306719> Cookie validation completed and sent to channel!', ephemeral: true });
-        
         // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       } else {
@@ -2700,9 +2685,6 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        // Send confirmation message as ephemeral
-        await interaction.followUp({ content: '<:no:1393890945929318542> Cookie validation failed and sent to channel!', ephemeral: true });
-        
         // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       }
@@ -2717,9 +2699,6 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:no:1393890945929318542> Cookie validation failed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
@@ -2807,9 +2786,6 @@ client.on('interactionCreate', async interaction => {
           { name: 'Recommendation', value: reliability >= 90 ? 'No action needed' : 'Consider refreshing', inline: true }
         );
 
-        // Send confirmation message as ephemeral
-        await interaction.followUp({ content: '<:yes:1393890949960306719> Cookie expiry check completed and sent to channel!', ephemeral: true });
-        
         // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       } else {
@@ -2823,9 +2799,6 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        // Send confirmation message as ephemeral
-        await interaction.followUp({ content: '<:no:1393890945929318542> Cookie expiry check failed and sent to channel!', ephemeral: true });
-        
         // Send the actual embed as public message
         await interaction.followUp({ embeds: [embed] });
       }
@@ -2840,9 +2813,6 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:no:1393890945929318542> Cookie expiry check failed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
@@ -2884,9 +2854,6 @@ client.on('interactionCreate', async interaction => {
               iconURL: interaction.user.displayAvatarURL()
             });
 
-          // Send confirmation message as ephemeral
-          await interaction.followUp({ content: '<:no:1393890945929318542> Profile lookup failed and sent to channel!', ephemeral: true });
-          
           // Send the actual embed as public message
           return interaction.followUp({ embeds: [embed] });
         }
@@ -2913,9 +2880,6 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        // Send confirmation message as ephemeral
-        await interaction.followUp({ content: '<:no:1393890945929318542> Profile lookup failed and sent to channel!', ephemeral: true });
-        
         // Send the actual embed as public message
         return interaction.followUp({ embeds: [embed] });
       }
@@ -2943,9 +2907,6 @@ client.on('interactionCreate', async interaction => {
         embed.setThumbnail(avatarInfo.data[0].imageUrl);
       }
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:yes:1393890949960306719> Profile lookup completed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {
@@ -2959,9 +2920,6 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send confirmation message as ephemeral
-      await interaction.followUp({ content: '<:no:1393890945929318542> Profile lookup failed and sent to channel!', ephemeral: true });
-      
       // Send the actual embed as public message
       await interaction.followUp({ embeds: [embed] });
     }
@@ -3387,7 +3345,7 @@ client.on('interactionCreate', async interaction => {
 
     // Double-check permissions (already checked above, but good practice)
     const isOwnerOrBotOwner = interaction.guild.ownerId === interaction.user.id || isBotOwner(interaction.user.id);
-    
+
     if (!isOwnerOrBotOwner) {
       return interaction.reply({
         content: '<:no:1393890945929318542> Only bot owners and server owners can use this command.',
@@ -3529,7 +3487,7 @@ client.on('interactionCreate', async interaction => {
 
     // Double-check permissions (already checked above, but good practice)
     const isOwnerOrBotOwner = interaction.guild.ownerId === interaction.user.id || isBotOwner(interaction.user.id);
-    
+
     if (!isOwnerOrBotOwner) {
       return interaction.reply({
         content: '<:no:1393890945929318542> Only bot owners and server owners can use this command.',
@@ -3596,7 +3554,7 @@ client.on('interactionCreate', async interaction => {
       // Remove from all channels
       const removedCount = guildAssignments[commandName].length;
       const removedChannels = guildAssignments[commandName].map(id => `<#${id}>`).join(', ');
-      
+
       // Clear all assignments
       guildAssignments[commandName] = [];
 
@@ -3693,7 +3651,7 @@ client.on('interactionCreate', async interaction => {
           'maroon': 0x800000,
           'olive': 0x808000
         };
-        
+
         const lowerColor = colorInput.toLowerCase();
         if (colorNames[lowerColor]) {
           color = colorNames[lowerColor];
@@ -3749,7 +3707,7 @@ client.on('interactionCreate', async interaction => {
         try {
           // Split buttons by | separator
           const buttonPairs = buttonsInput.split('|');
-          
+
           if (buttonPairs.length > 5) {
             return interaction.reply({
               content: '<:no:1393890945929318542> Maximum 5 buttons allowed.',
@@ -3798,7 +3756,7 @@ client.on('interactionCreate', async interaction => {
           for (const pair of buttonPairs) {
             try {
               const parsed = parseEmojiAndButton(pair);
-              
+
               if (!parsed.label || !parsed.url) {
                 return interaction.reply({
                   content: '<:no:1393890945929318542> Invalid button format. Use: "Label,URL" or "<:emoji:id> Label,URL" or "<a:emoji:id> Label,URL"',
@@ -3856,7 +3814,7 @@ client.on('interactionCreate', async interaction => {
       const messageOptions = { 
         embeds: [embed]
       };
-      
+
       if (actionRows.length > 0) {
         messageOptions.components = actionRows;
       }
@@ -3865,7 +3823,7 @@ client.on('interactionCreate', async interaction => {
       let sentMessage;
       try {
         sentMessage = await targetChannel.send(messageOptions);
-        
+
       } catch (error) {
         console.error('Error sending embed to channel:', error);
         return interaction.reply({
@@ -3937,7 +3895,7 @@ client.on('interactionCreate', async interaction => {
 
     const userData = guildUserStats.get(targetUser.id);
     const totalCommands = Object.values(userData.commands).reduce((a, b) => a + b, 0);
-    
+
     // Get member to check join date
     let joinDate = userData.joinDate;
     try {
@@ -3972,7 +3930,7 @@ client.on('interactionCreate', async interaction => {
       const commandList = sortedCommands
         .map(([cmd, count]) => `\`/${cmd}\` - ${count} time${count > 1 ? 's' : ''}`)
         .join('\n');
-      
+
       embed.addFields({
         name: 'Most Used Commands',
         value: commandList,
@@ -4041,10 +3999,10 @@ client.on('interactionCreate', async interaction => {
         if (message) {
           settings.welcomeMessages = [message];
         }
-        
+
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
-        
+
         const exampleMessage = (message || settings.welcomeMessages[0])
           .replace(/{user}/g, `<@${interaction.user.id}>`)
           .replace(/{username}/g, interaction.user.username)
@@ -4101,7 +4059,7 @@ client.on('interactionCreate', async interaction => {
 
         // Split by comma and clean up each message
         const messagesToAdd = message.split(',').map(msg => msg.trim()).filter(msg => msg.length > 0);
-        
+
         if (messagesToAdd.length === 0) {
           return interaction.reply({
             content: '<:no:1393890945929318542> No valid messages found. Please provide at least one message.',
@@ -4111,7 +4069,7 @@ client.on('interactionCreate', async interaction => {
 
         // Add all messages to the array
         settings.welcomeMessages.push(...messagesToAdd);
-        
+
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
 
@@ -4137,7 +4095,7 @@ client.on('interactionCreate', async interaction => {
 
       case 'list':
         const welcomeMessagesList = settings.welcomeMessages.map((msg, index) => `**${index + 1}.** ${msg}`).join('\n\n');
-        
+
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('Welcome Messages List')
@@ -4158,10 +4116,10 @@ client.on('interactionCreate', async interaction => {
 
       case 'clear':
         settings.welcomeMessages = ['Welcome {user} to {server}! You are the {membercount} member!'];
-        
+
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
-        
+
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('Messages Cleared')
@@ -4233,10 +4191,10 @@ client.on('interactionCreate', async interaction => {
         if (message) {
           settings.leaveMessages = [message];
         }
-        
+
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
-        
+
         const exampleMessage = (message || settings.leaveMessages[0])
           .replace(/{user}/g, `<@${interaction.user.id}>`)
           .replace(/{username}/g, interaction.user.username)
@@ -4293,7 +4251,7 @@ client.on('interactionCreate', async interaction => {
 
         // Split by comma and clean up each message
         const messagesToAdd = message.split(',').map(msg => msg.trim()).filter(msg => msg.length > 0);
-        
+
         if (messagesToAdd.length === 0) {
           return interaction.reply({
             content: '<:no:1393890945929318542> No valid messages found. Please provide at least one message.',
@@ -4303,7 +4261,7 @@ client.on('interactionCreate', async interaction => {
 
         // Add all messages to the array
         settings.leaveMessages.push(...messagesToAdd);
-        
+
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
 
@@ -4329,7 +4287,7 @@ client.on('interactionCreate', async interaction => {
 
       case 'list':
         const leaveMessagesList = settings.leaveMessages.map((msg, index) => `**${index + 1}.** ${msg}`).join('\n\n');
-        
+
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('Leave Messages List')
@@ -4350,10 +4308,10 @@ client.on('interactionCreate', async interaction => {
 
       case 'clear':
         settings.leaveMessages = ['{username} has left {server}. We\'ll miss you! '];
-        
+
         // Save to Firebase
         await saveGuildSettings(interaction.guild.id, settings);
-        
+
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('Leave Messages Cleared')
@@ -4437,12 +4395,12 @@ client.on('interactionCreate', async interaction => {
             ephemeral: true
           });
         }
-        
+
         // Split by comma and clean up each word
         const wordsToAdd = word.split(',').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
         const newWords = [];
         const existingWords = [];
-        
+
         for (const wordToAdd of wordsToAdd) {
           if (!autoMod.badWords.includes(wordToAdd)) {
             autoMod.badWords.push(wordToAdd);
@@ -4451,14 +4409,14 @@ client.on('interactionCreate', async interaction => {
             existingWords.push(wordToAdd);
           }
         }
-        
+
         if (newWords.length > 0) {
           await saveAutoModSettings(interaction.guild.id, autoMod);
           let description = `Added ${newWords.length} word${newWords.length > 1 ? 's' : ''} to the bad words list:\n${newWords.map(w => `\`${w}\``).join(', ')}`;
           if (existingWords.length > 0) {
             description += `\n\nSkipped ${existingWords.length} word${existingWords.length > 1 ? 's' : ''} (already exists):\n${existingWords.map(w => `\`${w}\``).join(', ')}`;
           }
-          
+
           embed = new EmbedBuilder()
             .setColor(0x2C2F33)
             .setTitle('Bad Words Added')
@@ -4478,12 +4436,12 @@ client.on('interactionCreate', async interaction => {
             ephemeral: true
           });
         }
-        
+
         // Split by comma and clean up each word
         const wordsToRemove = word.split(',').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
         const removedWords = [];
         const notFoundWords = [];
-        
+
         for (const wordToRemove of wordsToRemove) {
           const index = autoMod.badWords.indexOf(wordToRemove);
           if (index > -1) {
@@ -4493,14 +4451,14 @@ client.on('interactionCreate', async interaction => {
             notFoundWords.push(wordToRemove);
           }
         }
-        
+
         if (removedWords.length > 0) {
           await saveAutoModSettings(interaction.guild.id, autoMod);
           let description = `Removed ${removedWords.length} word${removedWords.length > 1 ? 's' : ''} from the bad words list:\n${removedWords.map(w => `\`${w}\``).join(', ')}`;
           if (notFoundWords.length > 0) {
             description += `\n\nCouldn't find ${notFoundWords.length} word${notFoundWords.length > 1 ? 's' : ''}:\n${notFoundWords.map(w => `\`${w}\``).join(', ')}`;
           }
-          
+
           embed = new EmbedBuilder()
             .setColor(0x2C2F33)
             .setTitle('Bad Words Removed')
@@ -4518,7 +4476,7 @@ client.on('interactionCreate', async interaction => {
           autoMod.badWords.slice(0, 20).map(w => `\`${w}\``).join(', ') + 
           (autoMod.badWords.length > 20 ? ` +${autoMod.badWords.length - 20} more` : '') :
           'No bad words configured';
-        
+
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('Bad Words List')
@@ -4595,7 +4553,7 @@ client.on('interactionCreate', async interaction => {
 
       try {
         const member = await interaction.guild.members.fetch(targetUser.id);
-        
+
         if (member.roles.cache.has(role.id)) {
           return interaction.reply({
             content: `<:no:1393890945929318542> ${targetUser.tag} already has the ${role.name} role.`,
@@ -4639,7 +4597,7 @@ client.on('interactionCreate', async interaction => {
 
         for (const [, member] of members) {
           if (member.user.bot) continue; // Skip bots
-          
+
           try {
             if (!member.roles.cache.has(role.id)) {
               await member.roles.add(role);
@@ -4650,7 +4608,7 @@ client.on('interactionCreate', async interaction => {
           } catch (error) {
             errorCount++;
           }
-          
+
           // Small delay to avoid rate limits
           await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -4784,7 +4742,7 @@ client.on('interactionCreate', async interaction => {
 
       case 'status':
         const autoRoleId = autoRoleSettings.get(interaction.guild.id);
-        
+
         if (!autoRoleId) {
           embed = new EmbedBuilder()
             .setColor(0x2C2F33)
@@ -4801,12 +4759,12 @@ client.on('interactionCreate', async interaction => {
             });
         } else {
           const autoRole = interaction.guild.roles.cache.get(autoRoleId);
-          
+
           if (!autoRole) {
             // Role was deleted, clean up
             autoRoleSettings.delete(interaction.guild.id);
             await deleteAutoRoleSettings(interaction.guild.id);
-            
+
             embed = new EmbedBuilder()
               .setColor(0x2C2F33)
               .setTitle('Auto Role Status')
@@ -4899,7 +4857,7 @@ client.on('interactionCreate', async interaction => {
 
       try {
         const member = await interaction.guild.members.fetch(targetUser.id);
-        
+
         if (!member.roles.cache.has(role.id)) {
           return interaction.reply({
             content: `<:no:1393890945929318542> ${targetUser.tag} doesn't have the ${role.name} role.`,
@@ -4943,7 +4901,7 @@ client.on('interactionCreate', async interaction => {
 
         for (const [, member] of members) {
           if (member.user.bot) continue; // Skip bots
-          
+
           try {
             if (member.roles.cache.has(role.id)) {
               await member.roles.remove(role);
@@ -4954,7 +4912,7 @@ client.on('interactionCreate', async interaction => {
           } catch (error) {
             errorCount++;
           }
-          
+
           // Small delay to avoid rate limits
           await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -5217,7 +5175,7 @@ client.on('interactionCreate', async interaction => {
           'gray': 0x808080, 'grey': 0x808080, 'silver': 0xc0c0c0, 'gold': 0xffd700,
           'navy': 0x000080, 'teal': 0x008080, 'maroon': 0x800000, 'olive': 0x808000
         };
-        
+
         const lowerColor = updatedEmbedData.color.toLowerCase();
         if (colorNames[lowerColor]) {
           color = colorNames[lowerColor];
@@ -5273,7 +5231,7 @@ client.on('interactionCreate', async interaction => {
         try {
           // Split buttons by | separator
           const buttonPairs = updatedEmbedData.buttons.split('|');
-          
+
           if (buttonPairs.length > 5) {
             return interaction.reply({
               content: '<:no:1393890945929318542> Maximum 5 buttons allowed.',
@@ -5321,7 +5279,7 @@ client.on('interactionCreate', async interaction => {
           for (const pair of buttonPairs) {
             try {
               const parsed = parseEmojiAndButton(pair);
-              
+
               if (!parsed.label || !parsed.url) {
                 return interaction.reply({
                   content: '<:no:1393890945929318542> Invalid button format. Use: "Label,URL" or "<:emoji:id> Label,URL" or "<a:emoji:id> Label,URL"',
