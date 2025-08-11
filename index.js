@@ -1808,7 +1808,7 @@ client.on('messageCreate', async message => {
         return message.reply('<:no:1393890945929318542> Only server owners and administrators can use moderation commands.');
       }
 
-      
+
 
       // For other prefix commands, allow them to continue
       return;
@@ -1876,7 +1876,7 @@ client.on('messageCreate', async message => {
       return;
     }
 
-    
+
   }
 });
 
@@ -3290,7 +3290,7 @@ client.on('interactionCreate', async interaction => {
         inline: false
       });
 
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     } else {
       // Assign mode - assign to specific channel
       if (!targetChannel) {
@@ -3354,7 +3354,7 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     }
   }
 
@@ -3427,7 +3427,7 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     } else {
       // Remove from all channels
       const removedCount = guildAssignments[commandName].length;
@@ -3456,7 +3456,7 @@ client.on('interactionCreate', async interaction => {
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed], ephemeral: true });
     }
   }
 
@@ -3858,8 +3858,8 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
-        await interaction.followUp({ embeds: [exampleEmbed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.followUp({ embeds: [exampleEmbed], ephemeral: true });
         break;
 
       case 'add':
@@ -3903,7 +3903,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'list':
@@ -3924,7 +3924,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'clear':
@@ -3947,7 +3947,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
     }
   }
@@ -4050,8 +4050,8 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
-        await interaction.followUp({ embeds: [exampleEmbed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.followUp({ embeds: [exampleEmbed], ephemeral: true });
         break;
 
       case 'add':
@@ -4095,7 +4095,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'list':
@@ -4116,7 +4116,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'clear':
@@ -4139,7 +4139,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
     }
   }
@@ -4319,7 +4319,7 @@ client.on('interactionCreate', async interaction => {
         iconURL: interaction.user.displayAvatarURL()
       });
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ embeds: [embed], ephemeral: true });
   }
 
   if (interaction.commandName === 'addrole') {
@@ -4391,7 +4391,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
       } catch (error) {
         console.error('Add role error:', error);
         await interaction.reply({
@@ -4443,7 +4443,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.followUp({ embeds: [embed] });
+        await interaction.followUp({ embeds: [embed], ephemeral: true });
       } catch (error) {
         console.error('Add role to all error:', error);
         await interaction.followUp({
@@ -4517,7 +4517,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'remove':
@@ -4550,7 +4550,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'status':
@@ -4621,7 +4621,7 @@ client.on('interactionCreate', async interaction => {
           }
         }
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
     }
   }
@@ -4695,7 +4695,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
       } catch (error) {
         console.error('Remove role error:', error);
         await interaction.reply({
@@ -4747,7 +4747,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.followUp({ embeds: [embed] });
+        await interaction.followUp({ embeds: [embed], ephemeral: true });
       } catch (error) {
         console.error('Remove role from all error:', error);
         await interaction.followUp({
@@ -4821,7 +4821,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'unrestrict':
@@ -4850,7 +4850,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
 
       case 'status':
@@ -4875,7 +4875,7 @@ client.on('interactionCreate', async interaction => {
             iconURL: interaction.user.displayAvatarURL()
           });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         break;
     }
   }
