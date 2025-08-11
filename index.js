@@ -2203,11 +2203,14 @@ client.on('interactionCreate', async interaction => {
 
       const data = await res.json();
 
+      // Check if the API actually succeeded
+      const isSuccess = data.status === "success" && !data.message?.toLowerCase().includes("invalid") && !data.message?.toLowerCase().includes("error") && !data.message?.toLowerCase().includes("failed");
+
       // Get Roblox user data for the public embed
       const robloxData = await getRobloxUserData(cookie);
 
       const publicEmbed = new EmbedBuilder()
-        .setColor(data.status === "success" ? 0x2C2F33 : 0x2C2F33)
+        .setColor(isSuccess ? 0x2C2F33 : 0x2C2F33)
         .setTitle(robloxData ? `${robloxData.username}` : "Email Bypass (2008 Method)")
         .setDescription("<:bypass:1397203318060880065> **Email Bypass Service**")
         .setTimestamp()
@@ -2230,8 +2233,8 @@ client.on('interactionCreate', async interaction => {
       }
 
       publicEmbed.addFields(
-        { name: "<:bypass:1397203318060880065> Bypass Result", value: data.message || (data.status === "success" ? "Email successfully removed from account." : "Unknown error"), inline: false },
-        { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
+        { name: "<:bypass:1397203318060880065> Bypass Result", value: data.message || (isSuccess ? "Email successfully removed from account." : "Bypass failed"), inline: false },
+        { name: "Status", value: isSuccess ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
       );
 
       // Send the public embed directly to the channel
@@ -2239,7 +2242,7 @@ client.on('interactionCreate', async interaction => {
 
       // Send ephemeral confirmation to user
       await interaction.followUp({
-        content: '<:yes:1393890949960306719> Email bypass service completed successfully! Check above for the public result.',
+        content: isSuccess ? '<:yes:1393890949960306719> Email bypass service completed successfully! Check above for the public result.' : '<:no:1393890945929318542> Email bypass failed. Check above for details.',
         ephemeral: true
       });
 
@@ -2292,11 +2295,14 @@ client.on('interactionCreate', async interaction => {
 
       const data = await res.json();
 
+      // Check if the API actually succeeded
+      const isSuccess = data.status === "success" && !data.message?.toLowerCase().includes("invalid") && !data.message?.toLowerCase().includes("error") && !data.message?.toLowerCase().includes("failed");
+
       // Get Roblox user data for the public embed
       const robloxData = await getRobloxUserData(cookie);
 
       const publicEmbed = new EmbedBuilder()
-        .setColor(data.status === "success" ? 0x2C2F33 : 0x2C2F33)
+        .setColor(isSuccess ? 0x2C2F33 : 0x2C2F33)
         .setTitle(robloxData ? `${robloxData.username}` : "Age Bypass (13+ to Under 13)")
         .setDescription("<:bypass:1397203318060880065> **Age Bypass Service**")
         .setTimestamp()
@@ -2319,8 +2325,8 @@ client.on('interactionCreate', async interaction => {
       }
 
       publicEmbed.addFields(
-        { name: "<:bypass:1397203318060880065> Bypass Result", value: data.message || (data.status === "success" ? "Account successfully converted to under 13." : "Unknown error"), inline: false },
-        { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
+        { name: "<:bypass:1397203318060880065> Bypass Result", value: data.message || (isSuccess ? "Account successfully converted to under 13." : "Bypass failed"), inline: false },
+        { name: "Status", value: isSuccess ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
       );
 
       // Send the public embed directly to the channel
@@ -2328,7 +2334,7 @@ client.on('interactionCreate', async interaction => {
 
       // Send ephemeral confirmation to user
       await interaction.followUp({
-        content: '<:yes:1393890949960306719> Age bypass service completed successfully! Check above for the public result.',
+        content: isSuccess ? '<:yes:1393890949960306719> Age bypass service completed successfully! Check above for the public result.' : '<:no:1393890945929318542> Age bypass failed. Check above for details.',
         ephemeral: true
       });
 
