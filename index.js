@@ -583,8 +583,6 @@ let commandStats = {
   bypass2008: 0,
   bypass13plus: 0,
   refreshcookie: 0,
-  help: 0,
-  botstats: 0,
   validatecookie: 0,
   cookieexpiry: 0,
   profilelookup: 0,
@@ -1127,7 +1125,6 @@ client.on('ready', async () => {
             { name: 'cookieexpiry', value: 'cookieexpiry' },
             { name: 'profilelookup', value: 'profilelookup' },
             { name: 'help', value: 'help' },
-            { name: 'botstats', value: 'botstats' },
             { name: 'embedcreate', value: 'embedcreate' }
           )
       )
@@ -1152,7 +1149,6 @@ client.on('ready', async () => {
             { name: 'cookieexpiry', value: 'cookieexpiry' },
             { name: 'profilelookup', value: 'profilelookup' },
             { name: 'help', value: 'help' },
-            { name: 'botstats', value: 'botstats' },
             { name: 'embedcreate', value: 'embedcreate' }
           )
       )
@@ -1812,87 +1808,7 @@ client.on('messageCreate', async message => {
         return message.reply('<:no:1393890945929318542> Only server owners and administrators can use moderation commands.');
       }
 
-      // Handle !stats command for regular users
-      if (command === 'stats') {
-        commandStats.stats++;
-        trackUserCommand(message.guild.id, message.author.id, 'stats');
-
-        let targetUser = message.author;
-
-        // Check if a user was mentioned
-        if (args.length > 0 && message.mentions.users.size > 0) {
-          targetUser = message.mentions.users.first();
-        }
-
-        // Get user stats from the database
-        const guildUserStats = userStats.get(message.guild.id);
-        if (!guildUserStats || !guildUserStats.has(targetUser.id)) {
-          return message.reply(`<:no:1393890945929318542> No command usage data found for ${targetUser === message.author ? 'you' : targetUser.username}.`);
-        }
-
-        const userData = guildUserStats.get(targetUser.id);
-        const totalCommands = Object.values(userData.commands).reduce((a, b) => a + b, 0);
-
-        // Get member to check join date
-        let joinDate = userData.joinDate;
-        try {
-          const member = await message.guild.members.fetch(targetUser.id);
-          joinDate = member.joinedTimestamp;
-        } catch (error) {
-          // Use stored join date if member fetch fails
-        }
-
-        // Sort commands by usage
-        const sortedCommands = Object.entries(userData.commands)
-          .sort(([,a], [,b]) => b - a)
-          .slice(0, 10); // Top 10 commands
-
-        const embed = new EmbedBuilder()
-          .setColor(0x2C2F33)
-          .setTitle(`📊 ${targetUser === message.author ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
-          .setDescription(`Statistical overview for ${targetUser.tag}`)
-          .setThumbnail(targetUser.displayAvatarURL())
-          .addFields(
-            { name: 'Total Commands Used', value: `${totalCommands}`, inline: true },
-            { name: 'Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
-            { name: 'Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
-          )
-          .setTimestamp()
-          .setFooter({
-            text: `Requested by ${message.author.tag}`,
-            iconURL: message.author.displayAvatarURL()
-          });
-
-        if (sortedCommands.length > 0) {
-          const commandList = sortedCommands
-            .map(([cmd, count]) => `\`/${cmd}\` - ${count} time${count > 1 ? 's' : ''}`)
-            .join('\n');
-
-          embed.addFields({
-            name: 'Most Used Commands',
-            value: commandList,
-            inline: false
-          });
-        } else {
-          embed.addFields({
-            name: 'Most Used Commands',
-            value: 'No commands used yet',
-            inline: false
-          });
-        }
-
-        const reply = await message.reply({ embeds: [embed] });
-
-        // Auto-delete after 10 seconds
-        setTimeout(async () => {
-          try {
-            await reply.delete();
-          } catch (error) {
-            console.error('Error deleting stats message:', error);
-          }
-        }, 10000);
-        return;
-      }
+      
 
       // For other prefix commands, allow them to continue
       return;
@@ -1960,87 +1876,7 @@ client.on('messageCreate', async message => {
       return;
     }
 
-    // Handle !stats command
-    if (command === 'stats') {
-      commandStats.stats++;
-      trackUserCommand(message.guild.id, message.author.id, 'stats');
-
-      let targetUser = message.author;
-
-      // Check if a user was mentioned
-      if (args.length > 0 && message.mentions.users.size > 0) {
-        targetUser = message.mentions.users.first();
-      }
-
-      // Get user stats from the database
-      const guildUserStats = userStats.get(message.guild.id);
-      if (!guildUserStats || !guildUserStats.has(targetUser.id)) {
-        return message.reply(`<:no:1393890945929318542> No command usage data found for ${targetUser === message.author ? 'you' : targetUser.username}.`);
-      }
-
-      const userData = guildUserStats.get(targetUser.id);
-      const totalCommands = Object.values(userData.commands).reduce((a, b) => a + b, 0);
-
-      // Get member to check join date
-      let joinDate = userData.joinDate;
-      try {
-        const member = await message.guild.members.fetch(targetUser.id);
-        joinDate = member.joinedTimestamp;
-      } catch (error) {
-        // Use stored join date if member fetch fails
-      }
-
-      // Sort commands by usage
-      const sortedCommands = Object.entries(userData.commands)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10); // Top 10 commands
-
-      const embed = new EmbedBuilder()
-        .setColor(0x2C2F33)
-        .setTitle(`${targetUser === message.author ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
-        .setDescription(`Statistical overview for ${targetUser.tag}`)
-        .setThumbnail(targetUser.displayAvatarURL())
-        .addFields(
-          { name: 'Total Commands Used', value: `${totalCommands}`, inline: true },
-          { name: 'Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
-          { name: 'Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
-        )
-        .setTimestamp()
-        .setFooter({
-          text: `Requested by ${message.author.tag}`,
-          iconURL: message.author.displayAvatarURL()
-        });
-
-      if (sortedCommands.length > 0) {
-        const commandList = sortedCommands
-          .map(([cmd, count]) => `\`${cmd}\` - ${count} time${count > 1 ? 's' : ''}`)
-          .join('\n');
-
-        embed.addFields({
-          name: 'Most Used Commands',
-          value: commandList,
-          inline: false
-        });
-      } else {
-        embed.addFields({
-          name: 'Most Used Commands',
-          value: 'No commands used yet',
-          inline: false
-        });
-      }
-
-      const reply = await message.reply({ embeds: [embed] });
-
-      // Auto-delete after 10 seconds
-      setTimeout(async () => {
-        try {
-          await reply.delete();
-        } catch (error) {
-          console.error('Error deleting stats message:', error);
-        }
-      }, 10000);
-      return;
-    }
+    
   }
 });
 
@@ -4099,7 +3935,7 @@ client.on('interactionCreate', async interaction => {
 
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
-          .setTitle('Messages Cleared')
+          .setTitle('Welcome Messages Cleared')
           .setDescription('All welcome messages have been cleared and reset to default.')
           .addFields(
             { name: 'Channel', value: `${channel}`, inline: true },
