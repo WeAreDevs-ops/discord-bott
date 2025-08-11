@@ -760,13 +760,134 @@ async function deleteEmbed(guildId, embedId) {
 // Default bad words list
 const defaultBadWords = [
   'badword1', 'badword2', 'spam', 'scam', 'hack', 'free robux', 'discord.gg',
+  'nitro', 'free nitro', 'gift', 'steam', 'hack', 'bot', 'selfbot',
   // Add more words as needed - keeping it minimal for example
 ];
 
-// Helper function to detect links
+// Rate limiting system for enhanced spam detection
+const userMessageRates = new Map(); // userId -> { messages: [], links: [], lastMessage: null }
+const RATE_LIMIT_WINDOW = 10000; // 10 seconds
+const MAX_MESSAGES_PER_WINDOW = 3;
+const MAX_LINKS_PER_WINDOW = 1;
+
+// Clean up old rate limit data periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [userId, data] of userMessageRates.entries()) {
+    // Remove messages older than rate limit window
+    data.messages = data.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+    data.links = data.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+    
+    // Remove users with no recent activity
+    if (data.messages.length === 0 && data.links.length === 0 && (!data.lastMessage || now - data.lastMessage > RATE_LIMIT_WINDOW * 2)) {
+      userMessageRates.delete(userId);
+    }
+  }
+}, 30000); // Clean up every 30 seconds
+
+// Enhanced link detection function
 function containsLink(message) {
-  const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|discord\.gg\/[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/gi;
-  return linkRegex.test(message);
+  const patterns = [
+    // Standard URLs
+    /https?:\/\/[^\s]+/gi,
+    /www\.[^\s]+/gi,
+    
+    // Discord invites (various formats)
+    /discord\.gg\/[^\s]+/gi,
+    /discord\.com\/invite\/[^\s]+/gi,
+    /discordapp\.com\/invite\/[^\s]+/gi,
+    
+    // Obfuscated links
+    /[a-zA-Z0-9-]+\s*\.\s*[a-zA-Z]{2,}/gi, // spaced dots
+    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.] instead of .
+    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.) instead of .
+    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT instead of .
+    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot] instead of .
+    
+    // IP addresses
+    /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
+    
+    // Shortened URLs
+    /bit\.ly\/[^\s]+/gi,
+    /tinyurl\.com\/[^\s]+/gi,
+    /t\.co\/[^\s]+/gi,
+    /short\.link\/[^\s]+/gi,
+    
+    // Base64 encoded links (common in spam)
+    /[A-Za-z0-9+\/]{20,}={0,2}/g // Potential base64
+  ];
+  
+  return patterns.some(pattern => pattern.test(message));
+}
+
+// Enhanced spam detection
+function detectSpamPatterns(message, userId) {
+  const lowerMessage = message.toLowerCase();
+  let severity = 0;
+  const reasons = [];
+  
+  // Check for suspicious patterns
+  const suspiciousPatterns = [
+    { pattern: /(free|get|win).{0,10}(nitro|robux|v-?bucks|gift)/gi, weight: 3, reason: 'Free item scam pattern' },
+    { pattern: /click.{0,10}(here|link|this)/gi, weight: 2, reason: 'Click bait pattern' },
+    { pattern: /(urgent|limited|expires|hurry)/gi, weight: 1, reason: 'Urgency pattern' },
+    { pattern: /(.)\1{4,}/gi, weight: 1, reason: 'Repeated characters' },
+    { pattern: /[A-Z]{5,}/gi, weight: 1, reason: 'Excessive caps' },
+    { pattern: /(dm|pm|message).{0,10}me/gi, weight: 2, reason: 'DM request pattern' },
+    { pattern: /\b(everyone|here)\b.{0,20}@/gi, weight: 2, reason: 'Mass mention attempt' }
+  ];
+  
+  for (const { pattern, weight, reason } of suspiciousPatterns) {
+    if (pattern.test(message)) {
+      severity += weight;
+      reasons.push(reason);
+    }
+  }
+  
+  // Check rate limiting
+  const now = Date.now();
+  if (!userMessageRates.has(userId)) {
+    userMessageRates.set(userId, { messages: [], links: [], lastMessage: null });
+  }
+  
+  const userData = userMessageRates.get(userId);
+  
+  // Check for rapid messaging
+  if (userData.lastMessage && now - userData.lastMessage < 1000) { // Less than 1 second
+    severity += 2;
+    reasons.push('Rapid messaging');
+  }
+  
+  // Check for duplicate messages
+  if (userData.lastMessage && userData.lastMessage === message) {
+    severity += 3;
+    reasons.push('Duplicate message');
+  }
+  
+  // Update user data
+  userData.messages.push(now);
+  userData.lastMessage = message;
+  
+  if (containsLink(message)) {
+    userData.links.push(now);
+  }
+  
+  // Remove old entries
+  userData.messages = userData.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+  userData.links = userData.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+  
+  // Check rate limits
+  if (userData.messages.length > MAX_MESSAGES_PER_WINDOW) {
+    severity += 4;
+    reasons.push(`Rapid spam (${userData.messages.length} messages in 10s)`);
+  }
+  
+  if (userData.links.length > MAX_LINKS_PER_WINDOW) {
+    severity += 5;
+    reasons.push(`Link spam (${userData.links.length} links in 10s)`);
+  }
+  
+  return { severity, reasons };
 }
 
 // Helper function to detect bad words
@@ -1282,6 +1403,8 @@ client.on('ready', async () => {
             { name: 'Disable Link Filter', value: 'link_off' },
             { name: 'Enable Bad Word Filter', value: 'word_on' },
             { name: 'Disable Bad Word Filter', value: 'word_off' },
+            { name: 'Enable Anti-Spam Protection', value: 'antispam_on' },
+            { name: 'Disable Anti-Spam Protection', value: 'antispam_off' },
             { name: 'Add Bad Word', value: 'add_word' },
             { name: 'Remove Bad Word', value: 'remove_word' },
             { name: 'List Bad Words', value: 'list_words' },
@@ -1465,10 +1588,11 @@ async function logAdminActivity(type, data) {
 // Guild join event - auto-initialize settings when bot joins new server
 client.on('guildCreate', async guild => {
   try {
-    // Auto-initialize automod settings with defaults
+    // Auto-initialize automod settings with defaults including enhanced spam protection
     const defaultAutoModSettings = {
       linkFilter: true,
       badWordFilter: true,
+      antispam: true,
       badWords: [...defaultBadWords]
     };
 
@@ -1675,15 +1799,17 @@ client.on('messageCreate', async message => {
     return;
   }
 
-  // Auto-moderation system
+  // Enhanced auto-moderation system
   if (!message.author.bot && message.guild) {
     // Reload settings to get latest automod and restriction data
     await reloadGuildSettings(message.guild.id);
 
     const autoMod = autoModSettings.get(message.guild.id);
-    if (autoMod) {
+    if (autoMod && (autoMod.linkFilter || autoMod.badWordFilter || autoMod.antispam)) {
       let shouldDelete = false;
       let reason = '';
+      let timeoutDuration = 0;
+      let severity = 0;
 
       // Check if user is owner, admin, or bot owner - they bypass ALL auto-moderation
       const isOwnerOrAdmin = message.guild.ownerId === message.author.id || 
@@ -1697,16 +1823,37 @@ client.on('messageCreate', async message => {
       if (isOwnerOrAdmin) {
         // Continue without auto-moderation checks
       } else {
+        // Enhanced spam detection
+        const spamResult = detectSpamPatterns(message.content, message.author.id);
+        severity = spamResult.severity;
+
         // Check for links (only for regular users)
         if (autoMod.linkFilter && containsLink(message.content)) {
           shouldDelete = true;
-          reason = 'Link detected';
+          reason = 'Suspicious link detected';
+          severity += 2;
         }
 
         // Check for bad words (only for regular users)
         if (autoMod.badWordFilter && containsBadWords(message.content, autoMod.badWords)) {
           shouldDelete = true;
           reason = 'Inappropriate content detected';
+          severity += 1;
+        }
+
+        // Anti-spam detection
+        if (autoMod.antispam && severity > 0) {
+          shouldDelete = true;
+          if (!reason) {
+            reason = `Spam pattern detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
+          }
+        }
+
+        // Determine timeout duration based on severity
+        if (severity >= 8) {
+          timeoutDuration = 5 * 60 * 1000; // 5 minutes for critical
+        } else if (severity >= 5) {
+          timeoutDuration = 1 * 60 * 1000; // 1 minute for high severity
         }
       }
 
@@ -1714,33 +1861,89 @@ client.on('messageCreate', async message => {
         try {
           await message.delete();
 
+          // Apply timeout if severity is high enough
+          if (timeoutDuration > 0 && message.member) {
+            try {
+              await message.member.timeout(timeoutDuration, `Automod: ${reason}`);
+            } catch (timeoutError) {
+              console.log('Could not timeout user (insufficient permissions)');
+            }
+          }
+
+          // Determine embed color based on severity
+          let embedColor = 0xff6b6b; // Default red
+          let severityText = 'Low';
+          
+          if (severity >= 8) {
+            embedColor = 0x8b0000; // Dark red for critical
+            severityText = 'Critical';
+          } else if (severity >= 5) {
+            embedColor = 0xff4500; // Orange red for high
+            severityText = 'High';
+          } else if (severity >= 3) {
+            embedColor = 0xffa500; // Orange for medium
+            severityText = 'Medium';
+          }
+
           const warningEmbed = new EmbedBuilder()
-            .setColor(0xff6b6b)
-            .setTitle('Auto-Moderation')
+            .setColor(embedColor)
+            .setTitle('🛡️ Enhanced Auto-Moderation')
             .setDescription(`<@${message.author.id}> Your message was automatically deleted.`)
             .addFields(
               { name: 'Reason', value: reason, inline: true },
+              { name: 'Severity', value: `${severityText} (${severity})`, inline: true },
               { name: 'Channel', value: `<#${message.channel.id}>`, inline: true }
             )
             .setTimestamp()
             .setFooter({
-              text: `User ID: ${message.author.id}`,
+              text: `User ID: ${message.author.id} • Advanced spam protection`,
               iconURL: message.author.displayAvatarURL()
             });
 
+          if (timeoutDuration > 0) {
+            const minutes = Math.round(timeoutDuration / 60000);
+            warningEmbed.addFields({
+              name: 'Timeout Applied', 
+              value: `${minutes} minute${minutes > 1 ? 's' : ''}`, 
+              inline: true
+            });
+          }
+
           const warningMsg = await message.channel.send({ embeds: [warningEmbed] });
 
-          // Auto-delete warning after 5 seconds
+          // Log high/critical severity incidents for admin review
+          if (severity >= 5) {
+            try {
+              await logAdminActivity('automod_high_severity', {
+                title: 'High Severity Automod Action',
+                description: `User ${message.author.tag} triggered high severity automod in ${message.guild.name}`,
+                serverId: message.guild.id,
+                serverName: message.guild.name,
+                userId: message.author.id,
+                username: message.author.tag,
+                channelId: message.channel.id,
+                channelName: message.channel.name,
+                reason: reason,
+                severity: severity,
+                timeoutDuration: timeoutDuration,
+                messageContent: message.content.substring(0, 200)
+              });
+            } catch (error) {
+              console.error('Error logging high severity automod activity:', error);
+            }
+          }
+
+          // Auto-delete warning after 8 seconds for high severity, 5 seconds for others
           setTimeout(async () => {
             try {
               await warningMsg.delete();
             } catch (error) {
               console.error('Error deleting auto-mod warning:', error);
             }
-          }, 5000);
+          }, severity >= 5 ? 8000 : 5000);
 
         } catch (error) {
-          console.error('Error in auto-moderation:', error);
+          console.error('Error in enhanced auto-moderation:', error);
         }
         return; // Don't process the message further
       }
@@ -4201,6 +4404,27 @@ client.on('interactionCreate', async interaction => {
           .setDescription('Automatic inappropriate content detection is now inactive.');
         break;
 
+      case 'antispam_on':
+        autoMod.antispam = true;
+        await saveAutoModSettings(interaction.guild.id, autoMod);
+        embed = new EmbedBuilder()
+          .setColor(0x00ff88)
+          .setTitle('🛡️ Anti-Spam Protection Enabled')
+          .setDescription('Enhanced spam detection is now active. This will help prevent:\n• Link spam raids\n• Rapid message spam\n• Pattern-based scam messages\n• Selfbot/userbot attacks')
+          .addFields(
+            { name: 'Features', value: '• Rate limiting (3 msg/10s, 1 link/10s)\n• Duplicate message detection\n• Suspicious pattern recognition\n• Severity-based timeouts', inline: false }
+          );
+        break;
+
+      case 'antispam_off':
+        autoMod.antispam = false;
+        await saveAutoModSettings(interaction.guild.id, autoMod);
+        embed = new EmbedBuilder()
+          .setColor(0xff6b6b)
+          .setTitle('Anti-Spam Protection Disabled')
+          .setDescription('Enhanced spam detection is now inactive. Basic link and word filters may still be active.');
+        break;
+
       case 'add_word':
         if (!word) {
           return interaction.reply({
@@ -4300,15 +4524,36 @@ client.on('interactionCreate', async interaction => {
         break;
 
       case 'show':
+        // Count recent rate limit activity
+        const now = Date.now();
+        let activeUsers = 0;
+        let totalMessages = 0;
+        let totalLinks = 0;
+        
+        for (const [userId, data] of userMessageRates.entries()) {
+          const recentMessages = data.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+          const recentLinks = data.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+          
+          if (recentMessages.length > 0 || recentLinks.length > 0) {
+            activeUsers++;
+            totalMessages += recentMessages.length;
+            totalLinks += recentLinks.length;
+          }
+        }
+
         embed = new EmbedBuilder()
           .setColor(0x2C2F33)
-          .setTitle('Auto-Moderation Settings')
-          .setDescription('Current auto-moderation configuration')
+          .setTitle('🛡️ Auto-Moderation Settings')
+          .setDescription('Current auto-moderation configuration and statistics')
           .addFields(
             { name: 'Link Filter', value: autoMod.linkFilter ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
             { name: 'Bad Word Filter', value: autoMod.badWordFilter ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
+            { name: 'Anti-Spam Protection', value: autoMod.antispam ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
             { name: 'Bad Words Count', value: `${autoMod.badWords.length} words`, inline: true },
-            { name: 'Bypass Permissions', value: 'Administrators and Moderators can bypass link filter', inline: false }
+            { name: 'Active Rate Limits', value: `${activeUsers} users monitored`, inline: true },
+            { name: 'Recent Activity', value: `${totalMessages} msgs, ${totalLinks} links (10s)`, inline: true },
+            { name: 'Rate Limits', value: '• Max 3 messages per 10 seconds\n• Max 1 link per 10 seconds\n• Duplicate message detection', inline: false },
+            { name: 'Bypass Permissions', value: 'Server owners, bot owner, and administrators bypass all filters', inline: false }
           );
         break;
     }
