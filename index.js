@@ -806,7 +806,7 @@ function analyzeUnicodeComplexity(message) {
   // Flag high ratio of special characters to normal text
   const normalChars = message.replace(/[\u0000-\u007F]/g, '').length;
   const specialRatio = totalSpecialChars / (message.length || 1);
-  
+
   if (specialRatio > 0.3) {
     severity += Math.floor(specialRatio * 10);
     reasons.push('High special character density');
@@ -858,7 +858,7 @@ setInterval(() => {
     // Remove messages older than rate limit window
     data.messages = data.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
     data.links = data.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-    
+
     // Remove users with no recent activity
     if (data.messages.length === 0 && data.links.length === 0 && (!data.lastMessage || now - data.lastMessage > RATE_LIMIT_WINDOW * 2)) {
       userMessageRates.delete(userId);
@@ -872,28 +872,28 @@ function containsLink(message) {
     // Standard URLs
     /https?:\/\/[^\s]+/gi,
     /www\.[^\s]+/gi,
-    
+
     // Discord invites (various formats) - enhanced for raid detection
     /discord\.gg\/[^\s]+/gi,
     /discord\.com\/invite\/[^\s]+/gi,
     /discordapp\.com\/invite\/[^\s]+/gi,
     /disc\.gg\/[^\s]+/gi, // Alternative Discord invite shortener
-    
+
     // Obfuscated links
     /[a-zA-Z0-9-]+\s*\.\s*[a-zA-Z]{2,}/gi, // spaced dots
     /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.] instead of .
     /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.) instead of .
     /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT instead of .
     /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot] instead of .
-    
+
     // Obfuscated Discord invites
     /discord\s*\.\s*gg/gi,
     /disc\s*ord\s*\.\s*gg/gi,
     /d\s*i\s*s\s*c\s*o\s*r\s*d/gi,
-    
+
     // IP addresses
     /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
-    
+
     // Shortened URLs
     /bit\.ly\/[^\s]+/gi,
     /tinyurl\.com\/[^\s]+/gi,
@@ -901,11 +901,11 @@ function containsLink(message) {
     /short\.link\/[^\s]+/gi,
     /tiny\.cc\/[^\s]+/gi,
     /is\.gd\/[^\s]+/gi,
-    
+
     // Base64 encoded links (common in spam)
     /[A-Za-z0-9+\/]{20,}={0,2}/g // Potential base64
   ];
-  
+
   return patterns.some(pattern => pattern.test(message));
 }
 
@@ -918,7 +918,7 @@ function containsRaidInvite(message) {
     /link.{0,20}bio/gi, // "link in bio" pattern
     /server.{0,20}profile/gi // "server in profile" pattern
   ];
-  
+
   return raidInvitePatterns.some(pattern => pattern.test(message));
 }
 
@@ -927,7 +927,7 @@ function detectSpamPatterns(message, userId) {
   const lowerMessage = message.toLowerCase();
   let severity = 0;
   const reasons = [];
-  
+
   // Check for raid-specific patterns (highest priority)
   const raidPatterns = [
     { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 8, reason: 'Raid announcement detected' },
@@ -957,76 +957,76 @@ function detectSpamPatterns(message, userId) {
   const unicodePatterns = [
     // Mathematical Unicode fonts (bold, italic, script, etc.)
     { pattern: /[\u1D400-\u1D7FF]+/g, weight: 6, reason: 'Mathematical Unicode font abuse' },
-    
+
     // Letterlike symbols and Roman numerals
     { pattern: /[\u2100-\u214F]+/g, weight: 4, reason: 'Letterlike symbols abuse' },
-    
+
     // Fullwidth and halfwidth forms (Japanese/Chinese character width abuse)
     { pattern: /[\uFF00-\uFFEF]+/g, weight: 5, reason: 'Fullwidth character abuse' },
-    
+
     // Combining diacritical marks spam (excessive accents)
     { pattern: /[\u0300-\u036F]{3,}/g, weight: 7, reason: 'Combining diacritical marks spam' },
-    
+
     // Enclosed alphanumerics (circled, squared letters/numbers)
     { pattern: /[\u2460-\u24FF]+/g, weight: 4, reason: 'Enclosed alphanumeric abuse' },
-    
+
     // Box drawing characters abuse
     { pattern: /[\u2500-\u257F]{10,}/g, weight: 5, reason: 'Box drawing character spam' },
-    
+
     // Block elements abuse
     { pattern: /[\u2580-\u259F]{8,}/g, weight: 5, reason: 'Block element spam' },
-    
+
     // Geometric shapes abuse
     { pattern: /[\u25A0-\u25FF]{6,}/g, weight: 4, reason: 'Geometric shape spam' },
-    
+
     // Miscellaneous symbols abuse
     { pattern: /[\u2600-\u26FF]{8,}/g, weight: 4, reason: 'Miscellaneous symbol spam' },
-    
+
     // Dingbats abuse
     { pattern: /[\u2700-\u27BF]{6,}/g, weight: 4, reason: 'Dingbats symbol spam' },
-    
+
     // Superscript and subscript abuse
     { pattern: /[\u2070-\u209F]{4,}/g, weight: 5, reason: 'Superscript/subscript abuse' },
-    
+
     // Currency symbols abuse
     { pattern: /[\u20A0-\u20CF]{4,}/g, weight: 4, reason: 'Currency symbol spam' },
-    
+
     // Arabic presentation forms abuse
     { pattern: /[\uFB50-\uFDFF]{10,}/g, weight: 6, reason: 'Arabic presentation form abuse' },
-    
+
     // CJK (Chinese/Japanese/Korean) symbols abuse
     { pattern: /[\u3000-\u303F]{8,}/g, weight: 5, reason: 'CJK symbol spam' },
-    
+
     // Hiragana/Katakana abuse (when used excessively by non-Japanese speakers)
     { pattern: /[\u3040-\u309F\u30A0-\u30FF]{15,}/g, weight: 4, reason: 'Japanese character abuse' },
-    
+
     // Cyrillic abuse (when used to impersonate Latin characters)
     { pattern: /[\u0400-\u04FF]{10,}/g, weight: 5, reason: 'Cyrillic character abuse' },
-    
+
     // Armenian/Georgian abuse
     { pattern: /[\u0530-\u058F\u10A0-\u10FF]{8,}/g, weight: 6, reason: 'Armenian/Georgian character abuse' },
-    
+
     // Thai abuse
     { pattern: /[\u0E00-\u0E7F]{10,}/g, weight: 5, reason: 'Thai character abuse' },
-    
+
     // Hebrew abuse
     { pattern: /[\u0590-\u05FF]{10,}/g, weight: 5, reason: 'Hebrew character abuse' },
-    
+
     // Devanagari (Hindi) abuse
     { pattern: /[\u0900-\u097F]{10,}/g, weight: 5, reason: 'Devanagari character abuse' },
-    
+
     // Bengali abuse
     { pattern: /[\u0980-\u09FF]{10,}/g, weight: 5, reason: 'Bengali character abuse' },
-    
+
     // Various punctuation abuse
     { pattern: /[\u2000-\u206F]{6,}/g, weight: 4, reason: 'General punctuation spam' },
-    
+
     // Small form variants abuse
     { pattern: /[\uFE50-\uFE6F]{4,}/g, weight: 5, reason: 'Small form variant abuse' },
-    
+
     // Vertical forms abuse
     { pattern: /[\uFE10-\uFE1F]{4,}/g, weight: 5, reason: 'Vertical form abuse' },
-    
+
     // Spacing modifier letters abuse
     { pattern: /[\u02B0-\u02FF]{5,}/g, weight: 5, reason: 'Spacing modifier abuse' }
   ];
@@ -1035,13 +1035,13 @@ function detectSpamPatterns(message, userId) {
   const unicodeImpersonationPatterns = [
     // Latin lookalikes using Cyrillic
     { pattern: /[АВЕКМНОРСТХаеорсухАВЕКМНОРСТХ]/g, weight: 3, reason: 'Cyrillic Latin impersonation' },
-    
+
     // Mathematical bold/italic impersonation
     { pattern: /[𝐀-𝐳𝗔-𝘇𝘈-𝙯𝙰-𝚥]/g, weight: 4, reason: 'Mathematical font impersonation' },
-    
+
     // Greek letter impersonation
     { pattern: /[αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]/g, weight: 3, reason: 'Greek letter impersonation' },
-    
+
     // Subscript/superscript numbers mixed with normal text
     { pattern: /[₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹]/g, weight: 4, reason: 'Sub/superscript number abuse' }
   ];
@@ -1085,50 +1085,50 @@ function detectSpamPatterns(message, userId) {
       reasons.push(reason);
     }
   }
-  
+
   // Check rate limiting
   const now = Date.now();
   if (!userMessageRates.has(userId)) {
     userMessageRates.set(userId, { messages: [], links: [], lastMessage: null });
   }
-  
+
   const userData = userMessageRates.get(userId);
-  
+
   // Check for rapid messaging
   if (userData.lastMessage && now - userData.lastMessage < 1000) { // Less than 1 second
     severity += 2;
     reasons.push('Rapid messaging');
   }
-  
+
   // Check for duplicate messages
   if (userData.lastMessage && userData.lastMessage === message) {
     severity += 3;
     reasons.push('Duplicate message');
   }
-  
+
   // Update user data
   userData.messages.push(now);
   userData.lastMessage = message;
-  
+
   if (containsLink(message)) {
     userData.links.push(now);
   }
-  
+
   // Remove old entries
   userData.messages = userData.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
   userData.links = userData.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-  
+
   // Check rate limits
   if (userData.messages.length > MAX_MESSAGES_PER_WINDOW) {
     severity += 4;
     reasons.push(`Rapid spam (${userData.messages.length} messages in 10s)`);
   }
-  
+
   if (userData.links.length > MAX_LINKS_PER_WINDOW) {
     severity += 5;
     reasons.push(`Link spam (${userData.links.length} links in 10s)`);
   }
-  
+
   return { severity, reasons };
 }
 
@@ -2131,7 +2131,7 @@ client.on('messageCreate', async message => {
           // Determine embed color based on severity
           let embedColor = 0xff6b6b; // Default red
           let severityText = 'Low';
-          
+
           if (severity >= 8) {
             embedColor = 0x8b0000; // Dark red for critical
             severityText = 'Critical';
@@ -4808,11 +4808,11 @@ client.on('interactionCreate', async interaction => {
         let activeUsers = 0;
         let totalMessages = 0;
         let totalLinks = 0;
-        
+
         for (const [userId, data] of userMessageRates.entries()) {
           const recentMessages = data.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
           const recentLinks = data.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-          
+
           if (recentMessages.length > 0 || recentLinks.length > 0) {
             activeUsers++;
             totalMessages += recentMessages.length;
@@ -5758,4 +5758,4 @@ client.on('interactionCreate', async interaction => {
 client.login(process.env.BOT_TOKEN);
 
 // Export the client for use in other modules
-module.exports = { client };
+module.module.exports = { client };
