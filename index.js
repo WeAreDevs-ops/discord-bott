@@ -1978,7 +1978,6 @@ client.on('messageCreate', async message => {
         // Check if the message contains bot interaction patterns
         const userAppPatterns = [
           /\/\w+/g, // Slash commands
-          /<@\d{17,19}>/g, // Bot mentions
           /\bbots?\b.*\bcommands?\b/gi, // "bot command" patterns
           /\buser\s+app\b/gi, // "user app" mentions
           /\binstall.*bot\b/gi, // "install bot" patterns
@@ -1999,13 +1998,26 @@ client.on('messageCreate', async message => {
         const botMentions = message.content.match(/<@\d{17,19}>/g);
         if (botMentions) {
           for (const mention of botMentions) {
-            const botId = mention.replace(/[<@>]/g, '');
-            const botInGuild = message.guild.members.cache.has(botId);
+            const mentionedId = mention.replace(/[<@>]/g, '');
+            const memberInGuild = message.guild.members.cache.has(mentionedId);
             
-            if (!botInGuild) {
-              suspiciousActivity = true;
-              detectedPattern = 'Mentioning bot not in server';
-              break;
+            // Only flag if the mentioned ID is not in the server (likely an external bot)
+            // AND it's not a regular user who might have left
+            if (!memberInGuild) {
+              try {
+                // Try to fetch user info to see if it's a bot
+                const user = await message.client.users.fetch(mentionedId);
+                if (user.bot) {
+                  suspiciousActivity = true;
+                  detectedPattern = 'Mentioning bot not in server';
+                  break;
+                }
+              } catch (error) {
+                // If we can't fetch the user, it might be suspicious
+                suspiciousActivity = true;
+                detectedPattern = 'Mentioning unknown/invalid user';
+                break;
+              }
             }
           }
         }
