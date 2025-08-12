@@ -1977,13 +1977,56 @@ client.on('messageCreate', async message => {
       try {
         // Check if the message contains bot interaction patterns
         const userAppPatterns = [
-          /\/\w+/g, // Slash commands
-          /<@\d{17,19}>/g, // Bot mentions
-          /\bbots?\b.*\bcommands?\b/gi, // "bot command" patterns
-          /\buser\s+app\b/gi, // "user app" mentions
-          /\binstall.*bot\b/gi, // "install bot" patterns
-          /\bself.*bot\b/gi, // "selfbot" patterns
-          /\buserbot\b/gi, // "userbot" patterns
+          // Slash commands (all variations)
+          /^\/[a-zA-Z0-9_-]+/g, // Slash commands at start of message
+          /\s\/[a-zA-Z0-9_-]+/g, // Slash commands with space before
+          /^\/[a-zA-Z0-9_-]+\s+/g, // Slash commands with arguments
+          
+          // Bot mentions (comprehensive)
+          /<@!?\d{17,19}>/g, // Bot mentions with optional nickname format
+          /<@&\d{17,19}>/g, // Role mentions (sometimes used by bots)
+          
+          // Discord application commands
+          /^<\/[a-zA-Z0-9_-]+:\d+>/g, // Application command mentions
+          /\s<\/[a-zA-Z0-9_-]+:\d+>/g, // Application command mentions with space
+          
+          // Bot command prefixes (common ones)
+          /^[!.\-+=~`#$%^&*|\\]{1,3}[a-zA-Z0-9_-]+/g, // Common bot prefixes
+          /\s[!.\-+=~`#$%^&*|\\]{1,3}[a-zA-Z0-9_-]+/g, // Prefixed commands with space
+          
+          // User-installed app patterns
+          /\buser\s*(installed|app|application)\b/gi,
+          /\binstall.*\b(bot|app|application)\b/gi,
+          /\b(bot|app)\s*install\b/gi,
+          
+          // Selfbot/userbot patterns
+          /\b(self|user)bot\b/gi,
+          /\bbot\s*(on\s*)?(user|alt)\s*account\b/gi,
+          
+          // External service patterns
+          /\b(carl|mee6|dyno|dank|notsobot|mudae|groovy|rythm|hydra|pancake|yui|xenon|invite|tracker|statbot|arcane|pokecord|uwu|owo|tatsumaki|nekos|koya|mimu|unbelievaboat)\s*[!.\-+=~`#$%^&*|\\]/gi,
+          
+          // Command-like patterns that might be external
+          /\b(help|ping|info|stats|profile|balance|daily|work|rob|crime|hunt|fish|dig|chop|mine|level|rank|top|lb|leaderboard)\s*[!.\-+=~`#$%^&*|\\]/gi,
+          
+          // Bot interaction keywords
+          /\bbots?\b.*\b(command|cmd|prefix|usage|help)\b/gi,
+          /\b(command|cmd)\b.*\bbots?\b/gi,
+          
+          // External app mentions
+          /\b(external|outside|other)\s*(bot|app|command)\b/gi,
+          /\b(bot|app|command)\s*(from|outside|external)\b/gi,
+          
+          // Webhook-like patterns (sometimes used for external commands)
+          /webhook/gi,
+          /^https?:\/\/.*\/api\/webhooks\//gi,
+          
+          // API call patterns that might be external
+          /api\.(discord|bot)/gi,
+          /discord(app)?\.com\/api/gi,
+          
+          // Common bot framework patterns
+          /\b(discord\.py|discord\.js|jda|d4j|serenity|twilight)\b/gi
         ];
 
         let suspiciousActivity = false;
@@ -1995,16 +2038,41 @@ client.on('messageCreate', async message => {
           detectedPattern = 'Unauthorized slash command usage';
         }
 
-        // Check for bot mention patterns
-        const botMentions = message.content.match(/<@\d{17,19}>/g);
+        // Enhanced bot mention detection
+        const botMentions = message.content.match(/<@!?\d{17,19}>/g);
         if (botMentions) {
           for (const mention of botMentions) {
-            const botId = mention.replace(/[<@>]/g, '');
+            const botId = mention.replace(/[<@!>]/g, '');
             const botInGuild = message.guild.members.cache.has(botId);
             
             if (!botInGuild) {
               suspiciousActivity = true;
               detectedPattern = 'Mentioning bot not in server';
+              break;
+            }
+          }
+        }
+
+        // Check for application command mentions (newer Discord feature)
+        const appCommandMentions = message.content.match(/<\/[a-zA-Z0-9_-]+:\d+>/g);
+        if (appCommandMentions) {
+          suspiciousActivity = true;
+          detectedPattern = 'External application command usage';
+        }
+
+        // Check for common external bot command patterns
+        const commonExternalPatterns = [
+          /^[!.\-+=~`#$%^&*|\\]{1,3}[a-zA-Z]/g, // Any prefixed command
+          /\s[!.\-+=~`#$%^&*|\\]{1,3}[a-zA-Z]/g, // Prefixed command with space before
+        ];
+
+        for (const pattern of commonExternalPatterns) {
+          if (pattern.test(message.content)) {
+            // Additional check: make sure it's not a server-approved command
+            const isServerCommand = message.content.match(/^[!]\s*(ban|kick|mute|unmute|warn)\b/i);
+            if (!isServerCommand) {
+              suspiciousActivity = true;
+              detectedPattern = 'External bot command pattern detected';
               break;
             }
           }
@@ -2028,7 +2096,7 @@ client.on('messageCreate', async message => {
             // Log the incident
             await logAdminActivity('user_app_mute', {
               title: 'User App/Bot Auto-Mute',
-              description: `User ${message.author.tag} was automatically muted for 10 hours for unauthorized bot usage`,
+              description: `User ${message.author.tag} was automatically muted for 1 minute for unauthorized bot usage`,
               serverId: message.guild.id,
               serverName: message.guild.name,
               userId: message.author.id,
@@ -2044,10 +2112,10 @@ client.on('messageCreate', async message => {
             const muteEmbed = new EmbedBuilder()
               .setColor(0x8b0000)
               .setTitle('🚫 Unauthorized Bot Usage Detected')
-              .setDescription(`**${message.author.tag}** has been automatically muted for 10 hours for attempting to use unauthorized applications.`)
+              .setDescription(`**${message.author.tag}** has been automatically muted for 1 minute for attempting to use unauthorized applications.`)
               .addFields(
                 { name: '🛡️ Detection', value: detectedPattern, inline: true },
-                { name: '⚡ Action', value: '10 Hour Mute', inline: true },
+                { name: '⚡ Action', value: '1 Minute Mute', inline: true },
                 { name: '📋 Reason', value: 'User app/bot protection violation', inline: true },
                 { name: '⚠️ Policy', value: 'Only server-approved bots are allowed', inline: false }
               )
@@ -2068,31 +2136,31 @@ client.on('messageCreate', async message => {
               }
             }, 10000);
 
-            // Mute the user for 10 hours (10 * 60 * 60 * 1000 = 36,000,000 ms)
-            await message.member.timeout(10 * 60 * 60 * 1000, `Automated 10h mute: ${detectedPattern}. User app/bot protection violation.`);
+            // Mute the user for 60 seconds (60 * 1000 = 60,000 ms)
+            await message.member.timeout(60 * 1000, `Automated 60s mute: ${detectedPattern}. User app/bot protection violation.`);
 
-            console.log(`🔇 Auto-muted ${message.author.tag} for 10 hours for unauthorized bot usage: ${detectedPattern}`);
+            console.log(`🔇 Auto-muted ${message.author.tag} for 1 minute for unauthorized bot usage: ${detectedPattern}`);
             return; // Exit early, don't process further
           } catch (muteError) {
             console.error('Error muting user for unauthorized bot usage:', muteError);
             
-            // If 10-hour mute fails, try a shorter timeout
+            // If 1-minute mute fails, try a shorter timeout
             try {
-              await message.member.timeout(2 * 60 * 60 * 1000, `Failed 10h mute attempt: ${detectedPattern}`);
+              await message.member.timeout(30 * 1000, `Failed 1min mute attempt: ${detectedPattern}`);
               
               const timeoutEmbed = new EmbedBuilder()
                 .setColor(0xff6b6b)
-                .setTitle('⚠️ User App Protection - 2h Timeout Applied')
-                .setDescription(`**${message.author.tag}** has been timed out for 2 hours due to unauthorized bot usage (10h mute failed).`)
+                .setTitle('⚠️ User App Protection - 30s Timeout Applied')
+                .setDescription(`**${message.author.tag}** has been timed out for 30 seconds due to unauthorized bot usage (1min mute failed).`)
                 .addFields(
                   { name: 'Detection', value: detectedPattern, inline: true },
-                  { name: 'Action', value: '2h Timeout (10h mute failed)', inline: true }
+                  { name: 'Action', value: '30s Timeout (1min mute failed)', inline: true }
                 )
                 .setTimestamp();
 
               await message.channel.send({ embeds: [timeoutEmbed] });
             } catch (timeoutError) {
-              console.error('Both 10h mute and 2h timeout failed for user app detection:', timeoutError);
+              console.error('Both 1min mute and 30s timeout failed for user app detection:', timeoutError);
             }
           }
         }
@@ -4771,7 +4839,7 @@ client.on('interactionCreate', async interaction => {
           .setTitle('🚫 User App Protection Enabled')
           .setDescription('Automatic detection and muting of unauthorized bot/app usage is now active. This will:\n• Auto-mute users trying to use bots not in the server\n• Detect unauthorized slash commands\n• Block user-installed app abuse\n• Prevent selfbot/userbot usage')
           .addFields(
-            { name: 'Protection Level', value: 'HIGH - 10-hour mute for violations', inline: false },
+            { name: 'Protection Level', value: 'MODERATE - 1-minute mute for violations', inline: false },
             { name: 'Detection Methods', value: '• Unauthorized slash commands\n• Bot mentions not in server\n• Selfbot/userbot patterns\n• User app installation attempts', inline: false }
           );
         break;
@@ -4918,7 +4986,7 @@ client.on('interactionCreate', async interaction => {
             { name: 'Advanced Features', value: '🔸 30+ Unicode block detection\n🔸 Character density analysis\n🔸 Diacritical mark abuse\n🔸 Fullwidth character filtering\n🔸 Cyrillic/Greek impersonation', inline: false },
             { name: 'Rate Limits', value: '• Max 3 messages per 10 seconds\n• Max 1 link per 10 seconds\n• Duplicate message detection', inline: false },
             { name: 'Raid Protection Features', value: autoMod.raidProtection ? '• Raid pattern detection\n• Enhanced Unicode abuse filtering\n• Extended timeouts (up to 24h)\n• Advanced evasion detection\n• Sophisticated character analysis' : 'Disabled - Enable for maximum protection', inline: false },
-            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-mute for unauthorized slash commands (10h)\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• Immediate 10-hour timeout (no warnings)' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
+            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-mute for unauthorized slash commands (1min)\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• Immediate 1-minute timeout (no warnings)' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
             { name: 'Bypass Permissions', value: 'Server owners, bot owner, and administrators bypass all filters', inline: false }
           );
         break;
