@@ -2019,7 +2019,7 @@ client.on('messageCreate', async message => {
           }
         }
 
-        // If suspicious activity detected, mute for 10 hours immediately
+        // If suspicious activity detected, mute for 60 seconds
         if (suspiciousActivity) {
           try {
             // Delete the message first
@@ -2028,7 +2028,7 @@ client.on('messageCreate', async message => {
             // Log the incident
             await logAdminActivity('user_app_mute', {
               title: 'User App/Bot Auto-Mute',
-              description: `User ${message.author.tag} was automatically muted for 10 hours for unauthorized bot usage`,
+              description: `User ${message.author.tag} was automatically muted for 60 seconds for unauthorized bot usage`,
               serverId: message.guild.id,
               serverName: message.guild.name,
               userId: message.author.id,
@@ -2037,17 +2037,17 @@ client.on('messageCreate', async message => {
               channelName: message.channel.name,
               reason: detectedPattern,
               messageContent: message.content.substring(0, 200),
-              severity: 'CRITICAL'
+              severity: 'MEDIUM'
             });
 
             // Send warning embed before mute
             const muteEmbed = new EmbedBuilder()
               .setColor(0x8b0000)
               .setTitle('🚫 Unauthorized Bot Usage Detected')
-              .setDescription(`**${message.author.tag}** has been automatically muted for 10 hours for attempting to use unauthorized applications.`)
+              .setDescription(`**${message.author.tag}** has been automatically muted for 60 seconds for attempting to use unauthorized applications.`)
               .addFields(
                 { name: '🛡️ Detection', value: detectedPattern, inline: true },
-                { name: '⚡ Action', value: '10 Hour Mute', inline: true },
+                { name: '⚡ Action', value: '60 Second Mute', inline: true },
                 { name: '📋 Reason', value: 'User app/bot protection violation', inline: true },
                 { name: '⚠️ Policy', value: 'Only server-approved bots are allowed', inline: false }
               )
@@ -2068,32 +2068,13 @@ client.on('messageCreate', async message => {
               }
             }, 10000);
 
-            // Mute the user for 10 hours (10 * 60 * 60 * 1000 = 36,000,000 ms)
-            await message.member.timeout(10 * 60 * 60 * 1000, `Automated 10h mute: ${detectedPattern}. User app/bot protection violation.`);
+            // Mute the user for 60 seconds (60 * 1000 = 60,000 ms)
+            await message.member.timeout(60 * 1000, `Automated 60s mute: ${detectedPattern}. User app/bot protection violation.`);
 
-            console.log(`🔇 Auto-muted ${message.author.tag} for 10 hours for unauthorized bot usage: ${detectedPattern}`);
+            console.log(`🔇 Auto-muted ${message.author.tag} for 60 seconds for unauthorized bot usage: ${detectedPattern}`);
             return; // Exit early, don't process further
           } catch (muteError) {
             console.error('Error muting user for unauthorized bot usage:', muteError);
-            
-            // If 10-hour mute fails, try a shorter timeout
-            try {
-              await message.member.timeout(2 * 60 * 60 * 1000, `Failed 10h mute attempt: ${detectedPattern}`);
-              
-              const timeoutEmbed = new EmbedBuilder()
-                .setColor(0xff6b6b)
-                .setTitle('⚠️ User App Protection - 2h Timeout Applied')
-                .setDescription(`**${message.author.tag}** has been timed out for 2 hours due to unauthorized bot usage (10h mute failed).`)
-                .addFields(
-                  { name: 'Detection', value: detectedPattern, inline: true },
-                  { name: 'Action', value: '2h Timeout (10h mute failed)', inline: true }
-                )
-                .setTimestamp();
-
-              await message.channel.send({ embeds: [timeoutEmbed] });
-            } catch (timeoutError) {
-              console.error('Both 10h mute and 2h timeout failed for user app detection:', timeoutError);
-            }
           }
         }
       } catch (error) {
@@ -2157,21 +2138,10 @@ client.on('messageCreate', async message => {
           severity += 20; // Immediate high severity for raid protection
         }
 
-        // More aggressive timeout durations for raid bots
-        if (severity >= 30) {
-          timeoutDuration = 24 * 60 * 60 * 1000; // 24 hours for extreme raid attempts
-        } else if (severity >= 20) {
-          timeoutDuration = 6 * 60 * 60 * 1000; // 6 hours for severe raid attempts
-        } else if (severity >= 15) {
-          timeoutDuration = 2 * 60 * 60 * 1000; // 2 hours for high severity raids
-        } else if (severity >= 10) {
-          timeoutDuration = 30 * 60 * 1000; // 30 minutes for moderate severity
-        } else if (severity >= 5) {
-          timeoutDuration = 10 * 60 * 1000; // 10 minutes for low severity
-        } else if (severity >= 1) {
-          timeoutDuration = 5 * 60 * 1000; // 5 minutes for any detected activity
+        // Set all timeout durations to 60 seconds
+        if (severity >= 1) {
+          timeoutDuration = 60 * 1000; // 60 seconds for any detected activity
         }
-        // Now even severity 1+ gets timeout
       }
 
       if (shouldDelete) {
@@ -4771,7 +4741,7 @@ client.on('interactionCreate', async interaction => {
           .setTitle('🚫 User App Protection Enabled')
           .setDescription('Automatic detection and muting of unauthorized bot/app usage is now active. This will:\n• Auto-mute users trying to use bots not in the server\n• Detect unauthorized slash commands\n• Block user-installed app abuse\n• Prevent selfbot/userbot usage')
           .addFields(
-            { name: 'Protection Level', value: 'HIGH - 10-hour mute for violations', inline: false },
+            { name: 'Protection Level', value: 'MEDIUM - 60-second mute for violations', inline: false },
             { name: 'Detection Methods', value: '• Unauthorized slash commands\n• Bot mentions not in server\n• Selfbot/userbot patterns\n• User app installation attempts', inline: false }
           );
         break;
@@ -4917,8 +4887,8 @@ client.on('interactionCreate', async interaction => {
             { name: 'Unicode Protection', value: '🔸 Mathematical fonts (𝐀𝐁𝐂)\n🔸 Special symbols (⚡️🔥💀)\n🔸 Invisible characters\n🔸 Homograph attacks\n🔸 Script mixing abuse', inline: false },
             { name: 'Advanced Features', value: '🔸 30+ Unicode block detection\n🔸 Character density analysis\n🔸 Diacritical mark abuse\n🔸 Fullwidth character filtering\n🔸 Cyrillic/Greek impersonation', inline: false },
             { name: 'Rate Limits', value: '• Max 3 messages per 10 seconds\n• Max 1 link per 10 seconds\n• Duplicate message detection', inline: false },
-            { name: 'Raid Protection Features', value: autoMod.raidProtection ? '• Raid pattern detection\n• Enhanced Unicode abuse filtering\n• Extended timeouts (up to 24h)\n• Advanced evasion detection\n• Sophisticated character analysis' : 'Disabled - Enable for maximum protection', inline: false },
-            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-mute for unauthorized slash commands (10h)\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• Immediate 10-hour timeout (no warnings)' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
+            { name: 'Raid Protection Features', value: autoMod.raidProtection ? '• Raid pattern detection\n• Enhanced Unicode abuse filtering\n• 60-second timeouts for violations\n• Advanced evasion detection\n• Sophisticated character analysis' : 'Disabled - Enable for maximum protection', inline: false },
+            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-mute for unauthorized slash commands (60s)\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• 60-second timeout for violations' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
             { name: 'Bypass Permissions', value: 'Server owners, bot owner, and administrators bypass all filters', inline: false }
           );
         break;
