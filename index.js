@@ -757,13 +757,16 @@ async function deleteEmbed(guildId, embedId) {
   }
 }
 
-// Default bad words list with raid protection
+// Default bad words list with enhanced raid protection
 const defaultBadWords = [
   'badword1', 'badword2', 'spam', 'scam', 'hack', 'free robux', 'discord.gg',
   'nitro', 'free nitro', 'gift', 'steam', 'hack', 'bot', 'selfbot',
   'raid', 'raided', 'nuke', 'nuked', 'nuking', 'revenge', 'destroy server',
   'mass ping', 'everyone ping', 'server destroyer', 'free bot', 'raid bot',
-  'nuke bot', 'server nuker', 'mass dm', 'token grabber', 'token logger'
+  'nuke bot', 'server nuker', 'mass dm', 'token grabber', 'token logger',
+  'free-raid-server', 'give-premium', 'start nuking', 'wanna learn how to nuke',
+  'joining the server in my bio', 'we provide free', 'raided by revenge',
+  'revenge bot', 'annihilate server', 'destroy discord', 'mass ban', 'mass kick'
 ];
 
 // Rate limiting system focused only on link spam
@@ -921,14 +924,20 @@ function detectSpamPatterns(message, userId) {
   let severity = 0;
   const reasons = [];
 
-  // Only check for actual raid-specific patterns (highest priority)
+  // Enhanced raid-specific patterns (highest priority)
   const raidPatterns = [
-    { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 10, reason: 'Raid announcement detected' },
-    { pattern: /(want|wanna).{0,20}(learn|know).{0,20}(nuke|raid)/gi, weight: 10, reason: 'Raid recruitment message' },
-    { pattern: /free\s*bot.{0,30}(raid|nuke|without\s*admin)/gi, weight: 10, reason: 'Free raid bot offer' },
-    { pattern: /we\s*provide.{0,20}free\s*bot/gi, weight: 8, reason: 'Free bot service offer' },
-    { pattern: /without\s*admin(istrator)?\s*role/gi, weight: 10, reason: 'Admin bypass claim' },
-    { pattern: /\|\|.*?@(everyone|here).*?\|\|/gi, weight: 10, reason: 'Hidden ping attempt' }
+    { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 15, reason: 'Raid announcement detected' },
+    { pattern: /(want|wanna).{0,20}(learn|know).{0,20}(nuke|raid)/gi, weight: 15, reason: 'Raid recruitment message' },
+    { pattern: /free.{0,10}(raid|nuke).{0,10}server/gi, weight: 15, reason: 'Free raid server offer' },
+    { pattern: /\/\s*(free-raid-server|give-premium|premium|nuke|raid)/gi, weight: 15, reason: 'Raid bot slash commands detected' },
+    { pattern: /start\s*nuking/gi, weight: 15, reason: 'Nuke instruction detected' },
+    { pattern: /(join|joining).{0,30}(server|bio).{0,30}(provide|free|nuke|raid)/gi, weight: 15, reason: 'Bio server recruitment for raids' },
+    { pattern: /we\s*provide.{0,20}(free|raid|nuke)/gi, weight: 12, reason: 'Raid service advertisement' },
+    { pattern: /without\s*admin(istrator)?\s*role/gi, weight: 15, reason: 'Admin bypass claim' },
+    { pattern: /\|\|.*?@(everyone|here).*?\|\|/gi, weight: 15, reason: 'Hidden ping attempt' },
+    { pattern: /(revenge|destroy|annihilate).{0,20}(server|discord)/gi, weight: 12, reason: 'Server destruction threat' },
+    { pattern: /━{5,}|─{5,}|═{5,}/gi, weight: 8, reason: 'ASCII art border (common in raid messages)' },
+    { pattern: /(bot|user).{0,20}(revenge|retaliation|payback)/gi, weight: 10, reason: 'Revenge bot pattern' }
   ];
 
   // Only check for actual scam patterns
@@ -1941,27 +1950,38 @@ client.on('messageCreate', async message => {
           severity += 2;
         }
 
-        // Anti-spam detection - only trigger on HIGH severity (8+)
-        if (autoMod.antispam && spamResult.severity >= 8) {
+        // Anti-spam detection - trigger on MEDIUM severity (5+) for better raid protection
+        if (autoMod.antispam && spamResult.severity >= 5) {
           shouldDelete = true;
           if (!reason) {
-            reason = `Spam pattern detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
+            reason = `Suspicious activity detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
           }
           // Add raid-specific severity
-          if (spamResult.reasons.some(r => r.includes('Raid') || r.includes('raid'))) {
-            severity += 8;
+          if (spamResult.reasons.some(r => r.includes('Raid') || r.includes('raid') || r.includes('Nuke') || r.includes('nuke'))) {
+            severity += 10;
           }
         }
 
-        // Determine timeout duration based on severity (much more lenient)
-        if (severity >= 15) {
-          timeoutDuration = 10 * 60 * 1000; // 10 minutes for severe raid attempts
-        } else if (severity >= 12) {
-          timeoutDuration = 5 * 60 * 1000; // 5 minutes for high severity
-        } else if (severity >= 8) {
-          timeoutDuration = 2 * 60 * 1000; // 2 minutes for moderate severity
+        // Enhanced raid protection with immediate action
+        if (autoMod.raidProtection && spamResult.severity >= 10) {
+          shouldDelete = true;
+          if (!reason) {
+            reason = `Raid activity detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
+          }
+          severity += 15; // Immediate high severity for raid protection
         }
-        // No timeout for severity < 8
+
+        // Determine timeout duration based on severity (more aggressive for raids)
+        if (severity >= 20) {
+          timeoutDuration = 60 * 60 * 1000; // 1 hour for severe raid attempts
+        } else if (severity >= 15) {
+          timeoutDuration = 30 * 60 * 1000; // 30 minutes for high severity raids
+        } else if (severity >= 10) {
+          timeoutDuration = 10 * 60 * 1000; // 10 minutes for moderate severity
+        } else if (severity >= 5) {
+          timeoutDuration = 2 * 60 * 1000; // 2 minutes for low severity
+        }
+        // No timeout for severity < 5
       }
 
       if (shouldDelete) {
