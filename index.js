@@ -1559,6 +1559,8 @@ client.on('ready', async () => {
             { name: 'Disable Anti-Spam Protection', value: 'antispam_off' },
             { name: 'Enable Enhanced Raid Protection', value: 'raidprotection_on' },
             { name: 'Disable Enhanced Raid Protection', value: 'raidprotection_off' },
+            { name: 'Enable User App Protection', value: 'userapp_on' },
+            { name: 'Disable User App Protection', value: 'userapp_off' },
             { name: 'Add Bad Word', value: 'add_word' },
             { name: 'Remove Bad Word', value: 'remove_word' },
             { name: 'List Bad Words', value: 'list_words' },
@@ -1748,6 +1750,7 @@ client.on('guildCreate', async guild => {
       badWordFilter: true,
       antispam: true,
       raidProtection: true, // Enable raid protection by default for new servers
+      userAppProtection: true, // Enable user app protection by default for new servers
       badWords: [...defaultBadWords]
     };
 
@@ -1960,19 +1963,152 @@ client.on('messageCreate', async message => {
     await reloadGuildSettings(message.guild.id);
 
     const autoMod = autoModSettings.get(message.guild.id);
+    
+    // Check for user app/bot detection first (highest priority)
+    const isOwnerOrAdmin = message.guild.ownerId === message.author.id || 
+                          isBotOwner(message.author.id) ||
+                          (message.member && (
+                            message.member.permissions.has(PermissionFlagsBits.Administrator) ||
+                            message.member.permissions.has(PermissionFlagsBits.ModerateMembers)
+                          ));
+
+    // User app/bot detection - check for unauthorized bot usage
+    if (!isOwnerOrAdmin && autoMod && autoMod.userAppProtection) {
+      try {
+        // Check if the message contains bot interaction patterns
+        const userAppPatterns = [
+          /\/\w+/g, // Slash commands
+          /<@\d{17,19}>/g, // Bot mentions
+          /\bbots?\b.*\bcommands?\b/gi, // "bot command" patterns
+          /\buser\s+app\b/gi, // "user app" mentions
+          /\binstall.*bot\b/gi, // "install bot" patterns
+          /\bself.*bot\b/gi, // "selfbot" patterns
+          /\buserbot\b/gi, // "userbot" patterns
+        ];
+
+        let suspiciousActivity = false;
+        let detectedPattern = '';
+
+        // Check for slash command usage from non-server bots
+        if (message.content.startsWith('/')) {
+          suspiciousActivity = true;
+          detectedPattern = 'Unauthorized slash command usage';
+        }
+
+        // Check for bot mention patterns
+        const botMentions = message.content.match(/<@\d{17,19}>/g);
+        if (botMentions) {
+          for (const mention of botMentions) {
+            const botId = mention.replace(/[<@>]/g, '');
+            const botInGuild = message.guild.members.cache.has(botId);
+            
+            if (!botInGuild) {
+              suspiciousActivity = true;
+              detectedPattern = 'Mentioning bot not in server';
+              break;
+            }
+          }
+        }
+
+        // Check for other suspicious patterns
+        for (const pattern of userAppPatterns) {
+          if (pattern.test(message.content)) {
+            suspiciousActivity = true;
+            detectedPattern = `Suspicious pattern detected: ${pattern.source}`;
+            break;
+          }
+        }
+
+        // If suspicious activity detected, ban immediately
+        if (suspiciousActivity) {
+          try {
+            // Delete the message first
+            await message.delete();
+
+            // Log the incident
+            await logAdminActivity('user_app_ban', {
+              title: 'User App/Bot Auto-Ban',
+              description: `User ${message.author.tag} was automatically banned for unauthorized bot usage`,
+              serverId: message.guild.id,
+              serverName: message.guild.name,
+              userId: message.author.id,
+              username: message.author.tag,
+              channelId: message.channel.id,
+              channelName: message.channel.name,
+              reason: detectedPattern,
+              messageContent: message.content.substring(0, 200),
+              severity: 'CRITICAL'
+            });
+
+            // Send warning embed before ban
+            const banEmbed = new EmbedBuilder()
+              .setColor(0x8b0000)
+              .setTitle('🚫 Unauthorized Bot Usage Detected')
+              .setDescription(`**${message.author.tag}** has been automatically banned for attempting to use unauthorized applications.`)
+              .addFields(
+                { name: '🛡️ Detection', value: detectedPattern, inline: true },
+                { name: '⚡ Action', value: 'Immediate Ban', inline: true },
+                { name: '📋 Reason', value: 'User app/bot protection violation', inline: true },
+                { name: '⚠️ Policy', value: 'Only server-approved bots are allowed', inline: false }
+              )
+              .setTimestamp()
+              .setFooter({
+                text: `User ID: ${message.author.id} • Advanced Protection`,
+                iconURL: message.author.displayAvatarURL()
+              });
+
+            const warningMsg = await message.channel.send({ embeds: [banEmbed] });
+
+            // Auto-delete warning after 10 seconds
+            setTimeout(async () => {
+              try {
+                await warningMsg.delete();
+              } catch (error) {
+                console.error('Error deleting user app ban warning:', error);
+              }
+            }, 10000);
+
+            // Ban the user
+            await message.member.ban({ 
+              reason: `Automated ban: ${detectedPattern}. User app/bot protection violation.`,
+              deleteMessageDays: 1 
+            });
+
+            console.log(`🚫 Auto-banned ${message.author.tag} for unauthorized bot usage: ${detectedPattern}`);
+            return; // Exit early, don't process further
+          } catch (banError) {
+            console.error('Error banning user for unauthorized bot usage:', banError);
+            
+            // If ban fails, try timeout instead
+            try {
+              await message.member.timeout(24 * 60 * 60 * 1000, `Failed ban attempt: ${detectedPattern}`);
+              
+              const timeoutEmbed = new EmbedBuilder()
+                .setColor(0xff6b6b)
+                .setTitle('⚠️ User App Protection - Timeout Applied')
+                .setDescription(`**${message.author.tag}** has been timed out for 24 hours due to unauthorized bot usage.`)
+                .addFields(
+                  { name: 'Detection', value: detectedPattern, inline: true },
+                  { name: 'Action', value: '24h Timeout (Ban failed)', inline: true }
+                )
+                .setTimestamp();
+
+              await message.channel.send({ embeds: [timeoutEmbed] });
+            } catch (timeoutError) {
+              console.error('Both ban and timeout failed for user app detection:', timeoutError);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error in user app detection:', error);
+      }
+    }
+
     if (autoMod && (autoMod.linkFilter || autoMod.badWordFilter || autoMod.antispam)) {
       let shouldDelete = false;
       let reason = '';
       let timeoutDuration = 0;
       let severity = 0;
-
-      // Check if user is owner, admin, or bot owner - they bypass ALL auto-moderation
-      const isOwnerOrAdmin = message.guild.ownerId === message.author.id || 
-                            isBotOwner(message.author.id) ||
-                            (message.member && (
-                              message.member.permissions.has(PermissionFlagsBits.Administrator) ||
-                              message.member.permissions.has(PermissionFlagsBits.ModerateMembers)
-                            ));
 
       // Skip auto-moderation for owners and admins
       if (isOwnerOrAdmin) {
@@ -4630,6 +4766,28 @@ client.on('interactionCreate', async interaction => {
           .setDescription('Advanced raid detection is now inactive. Basic spam protection may still be active.');
         break;
 
+      case 'userapp_on':
+        autoMod.userAppProtection = true;
+        await saveAutoModSettings(interaction.guild.id, autoMod);
+        embed = new EmbedBuilder()
+          .setColor(0x00ff88)
+          .setTitle('🚫 User App Protection Enabled')
+          .setDescription('Automatic detection and banning of unauthorized bot/app usage is now active. This will:\n• Auto-ban users trying to use bots not in the server\n• Detect unauthorized slash commands\n• Block user-installed app abuse\n• Prevent selfbot/userbot usage')
+          .addFields(
+            { name: 'Protection Level', value: 'MAXIMUM - Immediate ban for violations', inline: false },
+            { name: 'Detection Methods', value: '• Unauthorized slash commands\n• Bot mentions not in server\n• Selfbot/userbot patterns\n• User app installation attempts', inline: false }
+          );
+        break;
+
+      case 'userapp_off':
+        autoMod.userAppProtection = false;
+        await saveAutoModSettings(interaction.guild.id, autoMod);
+        embed = new EmbedBuilder()
+          .setColor(0xff6b6b)
+          .setTitle('User App Protection Disabled')
+          .setDescription('Automatic detection of unauthorized bot/app usage is now inactive.');
+        break;
+
       case 'add_word':
         if (!word) {
           return interaction.reply({
@@ -4755,6 +4913,7 @@ client.on('interactionCreate', async interaction => {
             { name: 'Bad Word Filter', value: autoMod.badWordFilter ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
             { name: 'Anti-Spam Protection', value: autoMod.antispam ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
             { name: 'Enhanced Raid Protection', value: autoMod.raidProtection ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
+            { name: 'User App Protection', value: autoMod.userAppProtection ? '<:yes:1393890949960306719> Enabled' : '<:no:1393890945929318542> Disabled', inline: true },
             { name: 'Bad Words Count', value: `${autoMod.badWords.length} words`, inline: true },
             { name: 'Active Rate Limits', value: `${activeUsers} users monitored`, inline: true },
             { name: 'Recent Activity', value: `${totalMessages} msgs, ${totalLinks} links (10s)`, inline: true },
@@ -4762,6 +4921,7 @@ client.on('interactionCreate', async interaction => {
             { name: 'Advanced Features', value: '🔸 30+ Unicode block detection\n🔸 Character density analysis\n🔸 Diacritical mark abuse\n🔸 Fullwidth character filtering\n🔸 Cyrillic/Greek impersonation', inline: false },
             { name: 'Rate Limits', value: '• Max 3 messages per 10 seconds\n• Max 1 link per 10 seconds\n• Duplicate message detection', inline: false },
             { name: 'Raid Protection Features', value: autoMod.raidProtection ? '• Raid pattern detection\n• Enhanced Unicode abuse filtering\n• Extended timeouts (up to 24h)\n• Advanced evasion detection\n• Sophisticated character analysis' : 'Disabled - Enable for maximum protection', inline: false },
+            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-ban for unauthorized slash commands\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• Immediate ban (no warnings)' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
             { name: 'Bypass Permissions', value: 'Server owners, bot owner, and administrators bypass all filters', inline: false }
           );
         break;
