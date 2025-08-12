@@ -2041,21 +2041,13 @@ client.on('messageCreate', async message => {
             });
 
             // Send warning embed before mute
+            // Simple timeout message for user app violations
+            const simpleUserAppMessage = `<@${message.author.id}> has been timeout for violating server rules`;
+            
             const muteEmbed = new EmbedBuilder()
-              .setColor(0x8b0000)
-              .setTitle('🚫 Unauthorized Bot Usage Detected')
-              .setDescription(`**${message.author.tag}** has been automatically muted for 60 seconds for attempting to use unauthorized applications.`)
-              .addFields(
-                { name: '🛡️ Detection', value: detectedPattern, inline: true },
-                { name: '⚡ Action', value: '60 Second Mute', inline: true },
-                { name: '📋 Reason', value: 'User app/bot protection violation', inline: true },
-                { name: '⚠️ Policy', value: 'Only server-approved bots are allowed', inline: false }
-              )
-              .setTimestamp()
-              .setFooter({
-                text: `User ID: ${message.author.id} • Advanced Protection`,
-                iconURL: message.author.displayAvatarURL()
-              });
+              .setColor(0x2C2F33)
+              .setDescription(simpleUserAppMessage)
+              .setTimestamp();
 
             const warningMsg = await message.channel.send({ embeds: [muteEmbed] });
 
@@ -2172,29 +2164,13 @@ client.on('messageCreate', async message => {
             severityText = 'Medium';
           }
 
+          // Simple timeout message
+          const simpleMessage = `<@${message.author.id}> has been timeout for violating server rules`;
+          
           const warningEmbed = new EmbedBuilder()
-            .setColor(embedColor)
-            .setTitle('🛡️ Enhanced Auto-Moderation')
-            .setDescription(`<@${message.author.id}> Your message was automatically deleted.`)
-            .addFields(
-              { name: 'Reason', value: reason, inline: true },
-              { name: 'Severity', value: `${severityText} (${severity})`, inline: true },
-              { name: 'Channel', value: `<#${message.channel.id}>`, inline: true }
-            )
-            .setTimestamp()
-            .setFooter({
-              text: `User ID: ${message.author.id} • Advanced spam protection`,
-              iconURL: message.author.displayAvatarURL()
-            });
-
-          if (timeoutDuration > 0) {
-            const minutes = Math.round(timeoutDuration / 60000);
-            warningEmbed.addFields({
-              name: 'Timeout Applied', 
-              value: `${minutes} minute${minutes > 1 ? 's' : ''}`, 
-              inline: true
-            });
-          }
+            .setColor(0x2C2F33)
+            .setDescription(simpleMessage)
+            .setTimestamp();
 
           const warningMsg = await message.channel.send({ embeds: [warningEmbed] });
 
