@@ -841,7 +841,7 @@ function analyzeUnicodeComplexity(message) {
   }
 
   // Check for homograph attacks (characters that look similar to Latin)
-  const homographs = (message.match(/[АВЕКМНОРСТХаеорсух𝐀-𝐳𝗔-𝘇αβγδεζηθικλμνξοπρστυφχψω]/g) || []).length;
+  const homographs = (message.match(/[АВЕКМНОРСТХаеорсух𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇αβγδεζηθικλμνξοπρστυφχψω]/g) || []).length;
   if (homographs > 3) {
     severity += 6;
     reasons.push('Homograph attack detected');
