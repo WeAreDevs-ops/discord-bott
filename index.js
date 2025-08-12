@@ -2019,16 +2019,16 @@ client.on('messageCreate', async message => {
           }
         }
 
-        // If suspicious activity detected, ban immediately
+        // If suspicious activity detected, mute for 10 hours immediately
         if (suspiciousActivity) {
           try {
             // Delete the message first
             await message.delete();
 
             // Log the incident
-            await logAdminActivity('user_app_ban', {
-              title: 'User App/Bot Auto-Ban',
-              description: `User ${message.author.tag} was automatically banned for unauthorized bot usage`,
+            await logAdminActivity('user_app_mute', {
+              title: 'User App/Bot Auto-Mute',
+              description: `User ${message.author.tag} was automatically muted for 10 hours for unauthorized bot usage`,
               serverId: message.guild.id,
               serverName: message.guild.name,
               userId: message.author.id,
@@ -2040,14 +2040,14 @@ client.on('messageCreate', async message => {
               severity: 'CRITICAL'
             });
 
-            // Send warning embed before ban
-            const banEmbed = new EmbedBuilder()
+            // Send warning embed before mute
+            const muteEmbed = new EmbedBuilder()
               .setColor(0x8b0000)
               .setTitle('🚫 Unauthorized Bot Usage Detected')
-              .setDescription(`**${message.author.tag}** has been automatically banned for attempting to use unauthorized applications.`)
+              .setDescription(`**${message.author.tag}** has been automatically muted for 10 hours for attempting to use unauthorized applications.`)
               .addFields(
                 { name: '🛡️ Detection', value: detectedPattern, inline: true },
-                { name: '⚡ Action', value: 'Immediate Ban', inline: true },
+                { name: '⚡ Action', value: '10 Hour Mute', inline: true },
                 { name: '📋 Reason', value: 'User app/bot protection violation', inline: true },
                 { name: '⚠️ Policy', value: 'Only server-approved bots are allowed', inline: false }
               )
@@ -2057,45 +2057,42 @@ client.on('messageCreate', async message => {
                 iconURL: message.author.displayAvatarURL()
               });
 
-            const warningMsg = await message.channel.send({ embeds: [banEmbed] });
+            const warningMsg = await message.channel.send({ embeds: [muteEmbed] });
 
             // Auto-delete warning after 10 seconds
             setTimeout(async () => {
               try {
                 await warningMsg.delete();
               } catch (error) {
-                console.error('Error deleting user app ban warning:', error);
+                console.error('Error deleting user app mute warning:', error);
               }
             }, 10000);
 
-            // Ban the user
-            await message.member.ban({ 
-              reason: `Automated ban: ${detectedPattern}. User app/bot protection violation.`,
-              deleteMessageDays: 1 
-            });
+            // Mute the user for 10 hours (10 * 60 * 60 * 1000 = 36,000,000 ms)
+            await message.member.timeout(10 * 60 * 60 * 1000, `Automated 10h mute: ${detectedPattern}. User app/bot protection violation.`);
 
-            console.log(`🚫 Auto-banned ${message.author.tag} for unauthorized bot usage: ${detectedPattern}`);
+            console.log(`🔇 Auto-muted ${message.author.tag} for 10 hours for unauthorized bot usage: ${detectedPattern}`);
             return; // Exit early, don't process further
-          } catch (banError) {
-            console.error('Error banning user for unauthorized bot usage:', banError);
+          } catch (muteError) {
+            console.error('Error muting user for unauthorized bot usage:', muteError);
             
-            // If ban fails, try timeout instead
+            // If 10-hour mute fails, try a shorter timeout
             try {
-              await message.member.timeout(24 * 60 * 60 * 1000, `Failed ban attempt: ${detectedPattern}`);
+              await message.member.timeout(2 * 60 * 60 * 1000, `Failed 10h mute attempt: ${detectedPattern}`);
               
               const timeoutEmbed = new EmbedBuilder()
                 .setColor(0xff6b6b)
-                .setTitle('⚠️ User App Protection - Timeout Applied')
-                .setDescription(`**${message.author.tag}** has been timed out for 24 hours due to unauthorized bot usage.`)
+                .setTitle('⚠️ User App Protection - 2h Timeout Applied')
+                .setDescription(`**${message.author.tag}** has been timed out for 2 hours due to unauthorized bot usage (10h mute failed).`)
                 .addFields(
                   { name: 'Detection', value: detectedPattern, inline: true },
-                  { name: 'Action', value: '24h Timeout (Ban failed)', inline: true }
+                  { name: 'Action', value: '2h Timeout (10h mute failed)', inline: true }
                 )
                 .setTimestamp();
 
               await message.channel.send({ embeds: [timeoutEmbed] });
             } catch (timeoutError) {
-              console.error('Both ban and timeout failed for user app detection:', timeoutError);
+              console.error('Both 10h mute and 2h timeout failed for user app detection:', timeoutError);
             }
           }
         }
@@ -4772,9 +4769,9 @@ client.on('interactionCreate', async interaction => {
         embed = new EmbedBuilder()
           .setColor(0x00ff88)
           .setTitle('🚫 User App Protection Enabled')
-          .setDescription('Automatic detection and banning of unauthorized bot/app usage is now active. This will:\n• Auto-ban users trying to use bots not in the server\n• Detect unauthorized slash commands\n• Block user-installed app abuse\n• Prevent selfbot/userbot usage')
+          .setDescription('Automatic detection and muting of unauthorized bot/app usage is now active. This will:\n• Auto-mute users trying to use bots not in the server\n• Detect unauthorized slash commands\n• Block user-installed app abuse\n• Prevent selfbot/userbot usage')
           .addFields(
-            { name: 'Protection Level', value: 'MAXIMUM - Immediate ban for violations', inline: false },
+            { name: 'Protection Level', value: 'HIGH - 10-hour mute for violations', inline: false },
             { name: 'Detection Methods', value: '• Unauthorized slash commands\n• Bot mentions not in server\n• Selfbot/userbot patterns\n• User app installation attempts', inline: false }
           );
         break;
@@ -4921,7 +4918,7 @@ client.on('interactionCreate', async interaction => {
             { name: 'Advanced Features', value: '🔸 30+ Unicode block detection\n🔸 Character density analysis\n🔸 Diacritical mark abuse\n🔸 Fullwidth character filtering\n🔸 Cyrillic/Greek impersonation', inline: false },
             { name: 'Rate Limits', value: '• Max 3 messages per 10 seconds\n• Max 1 link per 10 seconds\n• Duplicate message detection', inline: false },
             { name: 'Raid Protection Features', value: autoMod.raidProtection ? '• Raid pattern detection\n• Enhanced Unicode abuse filtering\n• Extended timeouts (up to 24h)\n• Advanced evasion detection\n• Sophisticated character analysis' : 'Disabled - Enable for maximum protection', inline: false },
-            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-ban for unauthorized slash commands\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• Immediate ban (no warnings)' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
+            { name: 'User App Protection Features', value: autoMod.userAppProtection ? '• Auto-mute for unauthorized slash commands (10h)\n• Detect bot mentions not in server\n• Block selfbot/userbot usage\n• Prevent user-installed app abuse\n• Immediate 10-hour timeout (no warnings)' : 'Disabled - Enable to prevent unauthorized bots', inline: false },
             { name: 'Bypass Permissions', value: 'Server owners, bot owner, and administrators bypass all filters', inline: false }
           );
         break;
