@@ -766,11 +766,11 @@ const defaultBadWords = [
   'nuke bot', 'server nuker', 'mass dm', 'token grabber', 'token logger'
 ];
 
-// Rate limiting system for enhanced spam detection
+// Rate limiting system focused only on link spam
 const userMessageRates = new Map(); // userId -> { messages: [], links: [], lastMessage: null }
 const RATE_LIMIT_WINDOW = 10000; // 10 seconds
-const MAX_MESSAGES_PER_WINDOW = 3;
-const MAX_LINKS_PER_WINDOW = 1;
+const MAX_MESSAGES_PER_WINDOW = 15; // Much more lenient for normal chatting
+const MAX_LINKS_PER_WINDOW = 0; // Block all links completely
 
 // Advanced Unicode character complexity analysis
 function analyzeUnicodeComplexity(message) {
@@ -866,35 +866,19 @@ setInterval(() => {
   }
 }, 30000); // Clean up every 30 seconds
 
-// Enhanced link detection function with raid server detection
+// Link detection focused only on suspicious/spam links
 function containsLink(message) {
   const patterns = [
-    // Standard URLs
-    /https?:\/\/[^\s]+/gi,
-    /www\.[^\s]+/gi,
-
-    // Discord invites (various formats) - enhanced for raid detection
+    // Discord invites (raid servers)
     /discord\.gg\/[^\s]+/gi,
     /discord\.com\/invite\/[^\s]+/gi,
     /discordapp\.com\/invite\/[^\s]+/gi,
-    /disc\.gg\/[^\s]+/gi, // Alternative Discord invite shortener
-
-    // Obfuscated links
-    /[a-zA-Z0-9-]+\s*\.\s*[a-zA-Z]{2,}/gi, // spaced dots
-    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.] instead of .
-    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.) instead of .
-    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT instead of .
-    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot] instead of .
 
     // Obfuscated Discord invites
     /discord\s*\.\s*gg/gi,
     /disc\s*ord\s*\.\s*gg/gi,
-    /d\s*i\s*s\s*c\s*o\s*r\s*d/gi,
 
-    // IP addresses
-    /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
-
-    // Shortened URLs
+    // Shortened URLs (commonly used in spam)
     /bit\.ly\/[^\s]+/gi,
     /tinyurl\.com\/[^\s]+/gi,
     /t\.co\/[^\s]+/gi,
@@ -902,8 +886,17 @@ function containsLink(message) {
     /tiny\.cc\/[^\s]+/gi,
     /is\.gd\/[^\s]+/gi,
 
+    // Obfuscated links (spam technique)
+    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.] instead of .
+    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.) instead of .
+    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT instead of .
+    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot] instead of .
+
+    // IP addresses (suspicious)
+    /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
+
     // Base64 encoded links (common in spam)
-    /[A-Za-z0-9+\/]{20,}={0,2}/g // Potential base64
+    /[A-Za-z0-9+\/]{30,}={0,2}/g // Potential base64 (longer to avoid false positives)
   ];
 
   return patterns.some(pattern => pattern.test(message));
@@ -922,135 +915,47 @@ function containsRaidInvite(message) {
   return raidInvitePatterns.some(pattern => pattern.test(message));
 }
 
-// Enhanced spam detection with comprehensive Unicode and special character filtering
+// Enhanced spam detection focused on raid/spam links only
 function detectSpamPatterns(message, userId) {
   const lowerMessage = message.toLowerCase();
   let severity = 0;
   const reasons = [];
 
-  // Check for raid-specific patterns (highest priority)
+  // Only check for actual raid-specific patterns (highest priority)
   const raidPatterns = [
-    { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 8, reason: 'Raid announcement detected' },
-    { pattern: /👺|😈|💀|🔥.*?(raid|nuke|revenge|destroy)/gi, weight: 7, reason: 'Raid emoji pattern' },
-    { pattern: /(want|wanna).{0,20}(learn|know).{0,20}(nuke|raid)/gi, weight: 8, reason: 'Raid recruitment message' },
-    { pattern: /free\s*bot.{0,30}(raid|nuke|without\s*admin)/gi, weight: 9, reason: 'Free raid bot offer' },
-    { pattern: /external\s*link.{0,30}discord\.gg/gi, weight: 6, reason: 'External raid invite' },
-    { pattern: /server\s*in\s*my\s*bio/gi, weight: 5, reason: 'Bio server promotion (common in raids)' },
-    { pattern: /we\s*provide.{0,20}free\s*bot/gi, weight: 7, reason: 'Free bot service offer' },
-    { pattern: /without\s*admin(istrator)?\s*role/gi, weight: 8, reason: 'Admin bypass claim' },
-    { pattern: /\.{5,}|—{5,}|_{5,}|-{5,}/gi, weight: 3, reason: 'Decorative separator spam' },
-    { pattern: /\|\|.*?@(everyone|here).*?\|\|/gi, weight: 9, reason: 'Hidden ping attempt' }
+    { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 10, reason: 'Raid announcement detected' },
+    { pattern: /(want|wanna).{0,20}(learn|know).{0,20}(nuke|raid)/gi, weight: 10, reason: 'Raid recruitment message' },
+    { pattern: /free\s*bot.{0,30}(raid|nuke|without\s*admin)/gi, weight: 10, reason: 'Free raid bot offer' },
+    { pattern: /we\s*provide.{0,20}free\s*bot/gi, weight: 8, reason: 'Free bot service offer' },
+    { pattern: /without\s*admin(istrator)?\s*role/gi, weight: 10, reason: 'Admin bypass claim' },
+    { pattern: /\|\|.*?@(everyone|here).*?\|\|/gi, weight: 10, reason: 'Hidden ping attempt' }
   ];
 
-  // Check for suspicious patterns
-  const suspiciousPatterns = [
-    { pattern: /(free|get|win).{0,10}(nitro|robux|v-?bucks|gift)/gi, weight: 3, reason: 'Free item scam pattern' },
-    { pattern: /click.{0,10}(here|link|this)/gi, weight: 2, reason: 'Click bait pattern' },
-    { pattern: /(urgent|limited|expires|hurry)/gi, weight: 1, reason: 'Urgency pattern' },
-    { pattern: /(.)\1{4,}/gi, weight: 1, reason: 'Repeated characters' },
-    { pattern: /[A-Z]{5,}/gi, weight: 1, reason: 'Excessive caps' },
-    { pattern: /(dm|pm|message).{0,10}me/gi, weight: 2, reason: 'DM request pattern' },
-    { pattern: /\b(everyone|here)\b.{0,20}@/gi, weight: 2, reason: 'Mass mention attempt' }
+  // Only check for actual scam patterns
+  const scamPatterns = [
+    { pattern: /(free|get|win).{0,10}(nitro|robux|v-?bucks|gift)/gi, weight: 8, reason: 'Free item scam pattern' },
+    { pattern: /click.{0,10}(here|link|this).{0,30}(discord\.gg|bit\.ly|tinyurl)/gi, weight: 6, reason: 'Suspicious link pattern' }
   ];
 
-  // Enhanced Unicode/special character abuse detection
-  const unicodePatterns = [
-    // Mathematical Unicode fonts (bold, italic, script, etc.)
-    { pattern: /[\u1D400-\u1D7FF]+/g, weight: 6, reason: 'Mathematical Unicode font abuse' },
+  // Check rate limiting for links only (much more lenient)
+  const now = Date.now();
+  if (!userMessageRates.has(userId)) {
+    userMessageRates.set(userId, { messages: [], links: [], lastMessage: null });
+  }
 
-    // Letterlike symbols and Roman numerals
-    { pattern: /[\u2100-\u214F]+/g, weight: 4, reason: 'Letterlike symbols abuse' },
+  const userData = userMessageRates.get(userId);
 
-    // Fullwidth and halfwidth forms (Japanese/Chinese character width abuse)
-    { pattern: /[\uFF00-\uFFEF]+/g, weight: 5, reason: 'Fullwidth character abuse' },
+  if (containsLink(message)) {
+    userData.links.push(now);
+  }
 
-    // Combining diacritical marks spam (excessive accents)
-    { pattern: /[\u0300-\u036F]{3,}/g, weight: 7, reason: 'Combining diacritical marks spam' },
+  // Remove old entries
+  userData.links = userData.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
 
-    // Enclosed alphanumerics (circled, squared letters/numbers)
-    { pattern: /[\u2460-\u24FF]+/g, weight: 4, reason: 'Enclosed alphanumeric abuse' },
-
-    // Box drawing characters abuse
-    { pattern: /[\u2500-\u257F]{10,}/g, weight: 5, reason: 'Box drawing character spam' },
-
-    // Block elements abuse
-    { pattern: /[\u2580-\u259F]{8,}/g, weight: 5, reason: 'Block element spam' },
-
-    // Geometric shapes abuse
-    { pattern: /[\u25A0-\u25FF]{6,}/g, weight: 4, reason: 'Geometric shape spam' },
-
-    // Miscellaneous symbols abuse
-    { pattern: /[\u2600-\u26FF]{8,}/g, weight: 4, reason: 'Miscellaneous symbol spam' },
-
-    // Dingbats abuse
-    { pattern: /[\u2700-\u27BF]{6,}/g, weight: 4, reason: 'Dingbats symbol spam' },
-
-    // Superscript and subscript abuse
-    { pattern: /[\u2070-\u209F]{4,}/g, weight: 5, reason: 'Superscript/subscript abuse' },
-
-    // Currency symbols abuse
-    { pattern: /[\u20A0-\u20CF]{4,}/g, weight: 4, reason: 'Currency symbol spam' },
-
-    // Arabic presentation forms abuse
-    { pattern: /[\uFB50-\uFDFF]{10,}/g, weight: 6, reason: 'Arabic presentation form abuse' },
-
-    // CJK (Chinese/Japanese/Korean) symbols abuse
-    { pattern: /[\u3000-\u303F]{8,}/g, weight: 5, reason: 'CJK symbol spam' },
-
-    // Hiragana/Katakana abuse (when used excessively by non-Japanese speakers)
-    { pattern: /[\u3040-\u309F\u30A0-\u30FF]{15,}/g, weight: 4, reason: 'Japanese character abuse' },
-
-    // Cyrillic abuse (when used to impersonate Latin characters)
-    { pattern: /[\u0400-\u04FF]{10,}/g, weight: 5, reason: 'Cyrillic character abuse' },
-
-    // Armenian/Georgian abuse
-    { pattern: /[\u0530-\u058F\u10A0-\u10FF]{8,}/g, weight: 6, reason: 'Armenian/Georgian character abuse' },
-
-    // Thai abuse
-    { pattern: /[\u0E00-\u0E7F]{10,}/g, weight: 5, reason: 'Thai character abuse' },
-
-    // Hebrew abuse
-    { pattern: /[\u0590-\u05FF]{10,}/g, weight: 5, reason: 'Hebrew character abuse' },
-
-    // Devanagari (Hindi) abuse
-    { pattern: /[\u0900-\u097F]{10,}/g, weight: 5, reason: 'Devanagari character abuse' },
-
-    // Bengali abuse
-    { pattern: /[\u0980-\u09FF]{10,}/g, weight: 5, reason: 'Bengali character abuse' },
-
-    // Various punctuation abuse
-    { pattern: /[\u2000-\u206F]{6,}/g, weight: 4, reason: 'General punctuation spam' },
-
-    // Small form variants abuse
-    { pattern: /[\uFE50-\uFE6F]{4,}/g, weight: 5, reason: 'Small form variant abuse' },
-
-    // Vertical forms abuse
-    { pattern: /[\uFE10-\uFE1F]{4,}/g, weight: 5, reason: 'Vertical form abuse' },
-
-    // Spacing modifier letters abuse
-    { pattern: /[\u02B0-\u02FF]{5,}/g, weight: 5, reason: 'Spacing modifier abuse' }
-  ];
-
-  // Check for sophisticated Unicode impersonation
-  const unicodeImpersonationPatterns = [
-    // Latin lookalikes using Cyrillic
-    { pattern: /[АВЕКМНОРСТХаеорсухАВЕКМНОРСТХ]/g, weight: 3, reason: 'Cyrillic Latin impersonation' },
-
-    // Mathematical bold/italic impersonation
-    { pattern: /[𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻𝙰𝚥]/g, weight: 4, reason: 'Mathematical font impersonation' },
-
-    // Greek letter impersonation
-    { pattern: /[αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ]/g, weight: 3, reason: 'Greek letter impersonation' },
-
-    // Subscript/superscript numbers mixed with normal text
-    { pattern: /[₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹]/g, weight: 4, reason: 'Sub/superscript number abuse' }
-  ];
-
-  // Advanced Unicode character analysis
-  const unicodeStats = analyzeUnicodeComplexity(message);
-  if (unicodeStats.isSuspicious) {
-    severity += unicodeStats.severity;
-    reasons.push(...unicodeStats.reasons);
+  // Only check for excessive link spam (5 links in 10 seconds)
+  if (userData.links.length > 5) {
+    severity += 8;
+    reasons.push(`Excessive link spam (${userData.links.length} links in 10s)`);
   }
 
   // Check raid patterns first (highest priority)
@@ -1061,73 +966,16 @@ function detectSpamPatterns(message, userId) {
     }
   }
 
-  // Check suspicious patterns
-  for (const { pattern, weight, reason } of suspiciousPatterns) {
+  // Check scam patterns
+  for (const { pattern, weight, reason } of scamPatterns) {
     if (pattern.test(message)) {
       severity += weight;
       reasons.push(reason);
     }
   }
 
-  // Check Unicode patterns
-  for (const { pattern, weight, reason } of unicodePatterns) {
-    if (pattern.test(message)) {
-      severity += weight;
-      reasons.push(reason);
-    }
-  }
-
-  // Check Unicode impersonation patterns
-  for (const { pattern, weight, reason } of unicodeImpersonationPatterns) {
-    const matches = message.match(pattern);
-    if (matches && matches.length > 2) { // Only flag if multiple impersonation characters
-      severity += weight;
-      reasons.push(reason);
-    }
-  }
-
-  // Check rate limiting
-  const now = Date.now();
-  if (!userMessageRates.has(userId)) {
-    userMessageRates.set(userId, { messages: [], links: [], lastMessage: null });
-  }
-
-  const userData = userMessageRates.get(userId);
-
-  // Check for rapid messaging
-  if (userData.lastMessage && now - userData.lastMessage < 1000) { // Less than 1 second
-    severity += 2;
-    reasons.push('Rapid messaging');
-  }
-
-  // Check for duplicate messages
-  if (userData.lastMessage && userData.lastMessage === message) {
-    severity += 3;
-    reasons.push('Duplicate message');
-  }
-
-  // Update user data
-  userData.messages.push(now);
+  // Update user data (but don't use for rate limiting normal messages)
   userData.lastMessage = message;
-
-  if (containsLink(message)) {
-    userData.links.push(now);
-  }
-
-  // Remove old entries
-  userData.messages = userData.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-  userData.links = userData.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-
-  // Check rate limits
-  if (userData.messages.length > MAX_MESSAGES_PER_WINDOW) {
-    severity += 4;
-    reasons.push(`Rapid spam (${userData.messages.length} messages in 10s)`);
-  }
-
-  if (userData.links.length > MAX_LINKS_PER_WINDOW) {
-    severity += 5;
-    reasons.push(`Link spam (${userData.links.length} links in 10s)`);
-  }
 
   return { severity, reasons };
 }
@@ -2068,7 +1916,7 @@ client.on('messageCreate', async message => {
       if (isOwnerOrAdmin) {
         // Continue without auto-moderation checks
       } else {
-        // Enhanced spam detection
+        // Enhanced spam detection (now much more lenient)
         const spamResult = detectSpamPatterns(message.content, message.author.id);
         severity = spamResult.severity;
 
@@ -2076,43 +1924,44 @@ client.on('messageCreate', async message => {
         if (containsRaidInvite(message.content)) {
           shouldDelete = true;
           reason = 'Raid server invite detected';
-          severity += 10; // Maximum severity for raid invites
+          severity += 15; // Very high severity for raid invites
         }
 
-        // Check for links (only for regular users)
+        // Check for suspicious links only (much more selective)
         if (autoMod.linkFilter && containsLink(message.content)) {
           shouldDelete = true;
           if (!reason) reason = 'Suspicious link detected';
-          severity += 2;
+          severity += 3;
         }
 
         // Check for bad words (only for regular users)
         if (autoMod.badWordFilter && containsBadWords(message.content, autoMod.badWords)) {
           shouldDelete = true;
           if (!reason) reason = 'Inappropriate content detected';
-          severity += 1;
+          severity += 2;
         }
 
-        // Anti-spam detection (now includes raid patterns)
-        if (autoMod.antispam && (severity > 0 || spamResult.severity >= 5)) {
+        // Anti-spam detection - only trigger on HIGH severity (8+)
+        if (autoMod.antispam && spamResult.severity >= 8) {
           shouldDelete = true;
           if (!reason) {
             reason = `Spam pattern detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
           }
           // Add raid-specific severity
           if (spamResult.reasons.some(r => r.includes('Raid') || r.includes('raid'))) {
-            severity += 5;
+            severity += 8;
           }
         }
 
-        // Determine timeout duration based on severity (enhanced for raids)
-        if (severity >= 10) {
-          timeoutDuration = 24 * 60 * 60 * 1000; // 24 hours for raid attempts
+        // Determine timeout duration based on severity (much more lenient)
+        if (severity >= 15) {
+          timeoutDuration = 10 * 60 * 1000; // 10 minutes for severe raid attempts
+        } else if (severity >= 12) {
+          timeoutDuration = 5 * 60 * 1000; // 5 minutes for high severity
         } else if (severity >= 8) {
-          timeoutDuration = 60 * 60 * 1000; // 1 hour for critical
-        } else if (severity >= 5) {
-          timeoutDuration = 10 * 60 * 1000; // 10 minutes for high severity
+          timeoutDuration = 2 * 60 * 1000; // 2 minutes for moderate severity
         }
+        // No timeout for severity < 8
       }
 
       if (shouldDelete) {
