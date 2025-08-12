@@ -869,37 +869,60 @@ setInterval(() => {
   }
 }, 30000); // Clean up every 30 seconds
 
-// Link detection focused only on suspicious/spam links
+// Enhanced link detection with aggressive raid bot patterns
 function containsLink(message) {
   const patterns = [
-    // Discord invites (raid servers)
+    // Discord invites (all variations)
     /discord\.gg\/[^\s]+/gi,
     /discord\.com\/invite\/[^\s]+/gi,
     /discordapp\.com\/invite\/[^\s]+/gi,
+    /dsc\.gg\/[^\s]+/gi, // Discord shortlink service
 
-    // Obfuscated Discord invites
+    // Obfuscated Discord invites (more variations)
     /discord\s*\.\s*gg/gi,
     /disc\s*ord\s*\.\s*gg/gi,
+    /d\s*i\s*s\s*c\s*o\s*r\s*d\s*\.\s*g\s*g/gi,
+    /d1sc0rd\.gg/gi,
+    /disc0rd\.gg/gi,
 
-    // Shortened URLs (commonly used in spam)
+    // Any HTTP/HTTPS link (most aggressive - blocks ALL links)
+    /https?:\/\/[^\s]+/gi,
+
+    // Shortened URLs (commonly used in spam) 
     /bit\.ly\/[^\s]+/gi,
     /tinyurl\.com\/[^\s]+/gi,
     /t\.co\/[^\s]+/gi,
     /short\.link\/[^\s]+/gi,
     /tiny\.cc\/[^\s]+/gi,
     /is\.gd\/[^\s]+/gi,
+    /rb\.gy\/[^\s]+/gi,
+    /cutt\.ly\/[^\s]+/gi,
+    /shortened\.link\/[^\s]+/gi,
 
-    // Obfuscated links (spam technique)
-    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.] instead of .
-    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.) instead of .
-    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT instead of .
-    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot] instead of .
+    // Obfuscated links (more patterns)
+    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.]
+    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.)
+    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT
+    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot]
+    /[a-zA-Z0-9-]+\s*\{\.\}\s*[a-zA-Z]{2,}/gi, // {.}
+    /[a-zA-Z0-9-]+\s*<\.\>\s*[a-zA-Z]{2,}/gi, // <.>
+    /[a-zA-Z0-9-]+\s*\*\.\*\s*[a-zA-Z]{2,}/gi, // *.*
 
     // IP addresses (suspicious)
     /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
 
-    // Base64 encoded links (common in spam)
-    /[A-Za-z0-9+\/]{30,}={0,2}/g // Potential base64 (longer to avoid false positives)
+    // Base64 encoded links
+    /[A-Za-z0-9+\/]{30,}={0,2}/g,
+
+    // Domain-like patterns with unusual spacing/characters
+    /[a-zA-Z0-9-]+\s*[.,]\s*[a-zA-Z]{2,}\s*\/[^\s]*/gi,
+
+    // Common free hosting/suspicious domains used by raid bots
+    /[^\s]*\.tk\/[^\s]*/gi,
+    /[^\s]*\.ml\/[^\s]*/gi,
+    /[^\s]*\.ga\/[^\s]*/gi,
+    /[^\s]*\.cf\/[^\s]*/gi,
+    /[^\s]*\.herokuapp\.com\/[^\s]*/gi
   ];
 
   return patterns.some(pattern => pattern.test(message));
@@ -918,7 +941,7 @@ function containsRaidInvite(message) {
   return raidInvitePatterns.some(pattern => pattern.test(message));
 }
 
-// Enhanced spam detection focused on raid/spam links only
+// Enhanced spam detection with aggressive raid bot patterns
 function detectSpamPatterns(message, userId) {
   const lowerMessage = message.toLowerCase();
   let severity = 0;
@@ -926,27 +949,38 @@ function detectSpamPatterns(message, userId) {
 
   // Enhanced raid-specific patterns (highest priority)
   const raidPatterns = [
-    { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 15, reason: 'Raid announcement detected' },
-    { pattern: /(want|wanna).{0,20}(learn|know).{0,20}(nuke|raid)/gi, weight: 15, reason: 'Raid recruitment message' },
-    { pattern: /free.{0,10}(raid|nuke).{0,10}server/gi, weight: 15, reason: 'Free raid server offer' },
-    { pattern: /\/\s*(free-raid-server|give-premium|premium|nuke|raid)/gi, weight: 15, reason: 'Raid bot slash commands detected' },
-    { pattern: /start\s*nuking/gi, weight: 15, reason: 'Nuke instruction detected' },
-    { pattern: /(join|joining).{0,30}(server|bio).{0,30}(provide|free|nuke|raid)/gi, weight: 15, reason: 'Bio server recruitment for raids' },
-    { pattern: /we\s*provide.{0,20}(free|raid|nuke)/gi, weight: 12, reason: 'Raid service advertisement' },
-    { pattern: /without\s*admin(istrator)?\s*role/gi, weight: 15, reason: 'Admin bypass claim' },
-    { pattern: /\|\|.*?@(everyone|here).*?\|\|/gi, weight: 15, reason: 'Hidden ping attempt' },
-    { pattern: /(revenge|destroy|annihilate).{0,20}(server|discord)/gi, weight: 12, reason: 'Server destruction threat' },
-    { pattern: /━{5,}|─{5,}|═{5,}/gi, weight: 8, reason: 'ASCII art border (common in raid messages)' },
-    { pattern: /(bot|user).{0,20}(revenge|retaliation|payback)/gi, weight: 10, reason: 'Revenge bot pattern' }
+    { pattern: /(raided|raid|nuke|nuked|nuking)\s*(by|from)/gi, weight: 20, reason: 'Raid announcement detected' },
+    { pattern: /(want|wanna).{0,20}(learn|know).{0,20}(nuke|raid)/gi, weight: 20, reason: 'Raid recruitment message' },
+    { pattern: /free.{0,10}(raid|nuke).{0,10}server/gi, weight: 20, reason: 'Free raid server offer' },
+    { pattern: /\/\s*(free-raid-server|give-premium|premium|nuke|raid)/gi, weight: 20, reason: 'Raid bot slash commands detected' },
+    { pattern: /start\s*nuking/gi, weight: 20, reason: 'Nuke instruction detected' },
+    { pattern: /(join|joining).{0,30}(server|bio).{0,30}(provide|free|nuke|raid)/gi, weight: 20, reason: 'Bio server recruitment for raids' },
+    { pattern: /we\s*provide.{0,20}(free|raid|nuke)/gi, weight: 18, reason: 'Raid service advertisement' },
+    { pattern: /without\s*admin(istrator)?\s*role/gi, weight: 20, reason: 'Admin bypass claim' },
+    { pattern: /\|\|.*?@(everyone|here).*?\|\|/gi, weight: 25, reason: 'Hidden ping attempt' },
+    { pattern: /(revenge|destroy|annihilate).{0,20}(server|discord)/gi, weight: 18, reason: 'Server destruction threat' },
+    { pattern: /━{5,}|─{5,}|═{5,}/gi, weight: 15, reason: 'ASCII art border (common in raid messages)' },
+    { pattern: /(bot|user).{0,20}(revenge|retaliation|payback)/gi, weight: 18, reason: 'Revenge bot pattern' },
+    
+    // Additional aggressive raid patterns
+    { pattern: /check.{0,10}(my|our).{0,10}bio/gi, weight: 15, reason: 'Bio redirect pattern' },
+    { pattern: /(dm|message).{0,10}me.{0,10}for.{0,10}(free|raid|nuke)/gi, weight: 18, reason: 'DM recruitment for raids' },
+    { pattern: /mass.{0,10}(ping|dm|ban|kick)/gi, weight: 20, reason: 'Mass action threat' },
+    { pattern: /token.{0,10}(grab|logger|steal)/gi, weight: 25, reason: 'Token stealing threat' },
+    { pattern: /selfbot|userbot|raid.{0,10}bot/gi, weight: 20, reason: 'Bot abuse mention' },
+    { pattern: /(owner|admin).{0,10}(gay|stupid|retard)/gi, weight: 15, reason: 'Staff insult pattern' },
+    { pattern: /this.{0,10}server.{0,10}(sucks|trash|dead)/gi, weight: 12, reason: 'Server degradation' }
   ];
 
-  // Only check for actual scam patterns
+  // Enhanced scam/spam patterns
   const scamPatterns = [
-    { pattern: /(free|get|win).{0,10}(nitro|robux|v-?bucks|gift)/gi, weight: 8, reason: 'Free item scam pattern' },
-    { pattern: /click.{0,10}(here|link|this).{0,30}(discord\.gg|bit\.ly|tinyurl)/gi, weight: 6, reason: 'Suspicious link pattern' }
+    { pattern: /(free|get|win).{0,10}(nitro|robux|v-?bucks|gift)/gi, weight: 12, reason: 'Free item scam pattern' },
+    { pattern: /click.{0,10}(here|link|this).{0,30}(discord\.gg|bit\.ly|tinyurl)/gi, weight: 15, reason: 'Suspicious link pattern' },
+    { pattern: /(steam|epic|ubisoft).{0,10}(gift|free|giveaway)/gi, weight: 10, reason: 'Gaming platform scam' },
+    { pattern: /limited.{0,10}time.{0,10}offer/gi, weight: 8, reason: 'Urgency scam tactic' }
   ];
 
-  // Check rate limiting for links only (much more lenient)
+  // Check rate limiting - now includes any message with links
   const now = Date.now();
   if (!userMessageRates.has(userId)) {
     userMessageRates.set(userId, { messages: [], links: [], lastMessage: null });
@@ -954,17 +988,36 @@ function detectSpamPatterns(message, userId) {
 
   const userData = userMessageRates.get(userId);
 
+  // Track ALL messages
+  userData.messages.push(now);
+  
   if (containsLink(message)) {
     userData.links.push(now);
+    // Immediate high severity for ANY link since we're blocking all links
+    severity += 10;
+    reasons.push('Link detected (all links blocked)');
   }
 
   // Remove old entries
+  userData.messages = userData.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
   userData.links = userData.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
 
-  // Only check for excessive link spam (5 links in 10 seconds)
-  if (userData.links.length > 5) {
-    severity += 8;
-    reasons.push(`Excessive link spam (${userData.links.length} links in 10s)`);
+  // Much more aggressive rate limiting
+  if (userData.messages.length > 5) {
+    severity += 15;
+    reasons.push(`Rapid messaging (${userData.messages.length} msgs in 10s)`);
+  }
+
+  if (userData.links.length > 0) {
+    severity += 20; // Any link is now heavily penalized
+    reasons.push(`Link spam detected (${userData.links.length} links in 10s)`);
+  }
+
+  // Check for repeated identical messages (raid bot behavior)
+  const recentMessages = userData.messages.slice(-3);
+  if (recentMessages.length >= 3 && userData.lastMessage === message) {
+    severity += 25;
+    reasons.push('Identical message spam (bot behavior)');
   }
 
   // Check raid patterns first (highest priority)
@@ -983,7 +1036,7 @@ function detectSpamPatterns(message, userId) {
     }
   }
 
-  // Update user data (but don't use for rate limiting normal messages)
+  // Update user data
   userData.lastMessage = message;
 
   return { severity, reasons };
@@ -1950,38 +2003,42 @@ client.on('messageCreate', async message => {
           severity += 2;
         }
 
-        // Anti-spam detection - trigger on MEDIUM severity (5+) for better raid protection
-        if (autoMod.antispam && spamResult.severity >= 5) {
+        // Anti-spam detection - trigger on LOW severity (3+) for aggressive protection
+        if (autoMod.antispam && spamResult.severity >= 3) {
           shouldDelete = true;
           if (!reason) {
             reason = `Suspicious activity detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
           }
           // Add raid-specific severity
           if (spamResult.reasons.some(r => r.includes('Raid') || r.includes('raid') || r.includes('Nuke') || r.includes('nuke'))) {
-            severity += 10;
+            severity += 15;
           }
         }
 
-        // Enhanced raid protection with immediate action
-        if (autoMod.raidProtection && spamResult.severity >= 10) {
+        // Enhanced raid protection with immediate action - trigger on ANY severity (1+)
+        if (autoMod.raidProtection && spamResult.severity >= 1) {
           shouldDelete = true;
           if (!reason) {
             reason = `Raid activity detected: ${spamResult.reasons.slice(0, 2).join(', ')}`;
           }
-          severity += 15; // Immediate high severity for raid protection
+          severity += 20; // Immediate high severity for raid protection
         }
 
-        // Determine timeout duration based on severity (more aggressive for raids)
-        if (severity >= 20) {
-          timeoutDuration = 60 * 60 * 1000; // 1 hour for severe raid attempts
+        // More aggressive timeout durations for raid bots
+        if (severity >= 30) {
+          timeoutDuration = 24 * 60 * 60 * 1000; // 24 hours for extreme raid attempts
+        } else if (severity >= 20) {
+          timeoutDuration = 6 * 60 * 60 * 1000; // 6 hours for severe raid attempts
         } else if (severity >= 15) {
-          timeoutDuration = 30 * 60 * 1000; // 30 minutes for high severity raids
+          timeoutDuration = 2 * 60 * 60 * 1000; // 2 hours for high severity raids
         } else if (severity >= 10) {
-          timeoutDuration = 10 * 60 * 1000; // 10 minutes for moderate severity
+          timeoutDuration = 30 * 60 * 1000; // 30 minutes for moderate severity
         } else if (severity >= 5) {
-          timeoutDuration = 2 * 60 * 1000; // 2 minutes for low severity
+          timeoutDuration = 10 * 60 * 1000; // 10 minutes for low severity
+        } else if (severity >= 1) {
+          timeoutDuration = 5 * 60 * 1000; // 5 minutes for any detected activity
         }
-        // No timeout for severity < 5
+        // Now even severity 1+ gets timeout
       }
 
       if (shouldDelete) {
