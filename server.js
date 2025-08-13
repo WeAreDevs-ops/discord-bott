@@ -69,8 +69,12 @@ function initializeSessionStoreSync() {
       const FirebaseStore = require('connect-session-firebase')(session);
       sessionConfig.store = new FirebaseStore({
         database: db,
-        sessions: 'sessions'
-        // Remove reapCallback to prevent function call errors
+        sessions: 'sessions',
+        reapCallback: function(err) {
+          if (err) {
+            console.log('Session cleanup error:', err.message);
+          }
+        }
       });
       
       // Monitor Firebase connection asynchronously with error handling
