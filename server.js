@@ -104,13 +104,10 @@ initializeSessionStore();
 
 
 function requireAuth(req, res, next) {
-  console.log('Checking auth for session:', req.session.id);
-  console.log('User in session:', req.session.user ? req.session.user.username : 'none');
-  
   if (req.session && req.session.user && req.session.user.id) {
     next();
   } else {
-    console.log('User not authenticated, redirecting to Discord OAuth');
+    console.log('Unauthenticated access attempt - redirecting to Discord OAuth');
     res.redirect('/auth/discord');
   }
 }
@@ -286,7 +283,7 @@ app.get('/auth/discord/callback', async (req, res) => {
     }
 
     const { access_token } = tokenResponse.data;
-    console.log('Access token received successfully');
+    console.log('OAuth token received successfully');
 
     // Get user info
     const userResponse = await axios.get('https://discord.com/api/users/@me', {
@@ -299,7 +296,7 @@ app.get('/auth/discord/callback', async (req, res) => {
       throw new Error('Failed to get user data from Discord');
     }
 
-    console.log('User data received:', userResponse.data.username);
+    console.log('User authentication data received successfully');
 
     // Store user data in session
     req.session.user = {
@@ -317,7 +314,7 @@ app.get('/auth/discord/callback', async (req, res) => {
         return res.redirect('/?error=session_error');
       }
       
-      console.log('Session saved successfully for user:', userResponse.data.username);
+      console.log('Session saved successfully for authenticated user');
       
       // Redirect based on whether this was a guild-specific invite
       if (guild_id) {
