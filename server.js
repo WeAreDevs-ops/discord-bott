@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 });
 
 
-// Session configuration - only use FirebaseStore if Firebase is properly initialized
+// Session configuration with proper Firebase session store setup
 let sessionConfig = {
   secret: process.env.SESSION_SECRET || require('crypto').randomBytes(64).toString('hex'),
   resave: false,
@@ -56,29 +56,24 @@ let sessionConfig = {
   }
 };
 
-
-
-// Initialize session middleware synchronously
-function initializeSessionStoreSync() {
+// Initialize Firebase session store
+function initializeSessionStore() {
   // Check if Firebase is properly initialized before using FirebaseStore
   const requiredEnvVars = ['GOOGLE_PROJECT_ID', 'GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'FIREBASE_DB_URL'];
   const hasFirebaseConfig = requiredEnvVars.every(varName => process.env[varName]);
 
   if (hasFirebaseConfig && db && typeof db.ref === 'function') {
     try {
+      // Import and initialize FirebaseStore correctly
       const FirebaseStore = require('connect-session-firebase')(session);
+      
       sessionConfig.store = new FirebaseStore({
-        database: db,
-        sessions: 'sessions',
-        reapCallback: function(err) {
-          if (err) {
-            console.log('Session cleanup error:', err.message);
-          }
-        },
-        reapInterval: 600000 // 10 minutes cleanup interval
+        database: db
       });
       
-      // Monitor Firebase connection asynchronously with error handling
+      console.log('✅ Using Firebase session store');
+      
+      // Monitor Firebase connection
       try {
         db.ref('.info/connected').on('value', (snapshot) => {
           if (!snapshot.val()) {
@@ -91,7 +86,6 @@ function initializeSessionStoreSync() {
         console.log('⚠️ Firebase connection monitoring failed:', connectionError.message);
       }
       
-      console.log('✅ Using Firebase session store');
     } catch (error) {
       console.log('⚠️ Firebase session store failed, falling back to memory store:', error.message);
     }
@@ -99,12 +93,12 @@ function initializeSessionStoreSync() {
     console.log('⚠️ Firebase not configured, using memory session store');
   }
 
-  // Apply session middleware immediately
+  // Apply session middleware
   app.use(session(sessionConfig));
 }
 
-// Initialize session store synchronously
-initializeSessionStoreSync();
+// Initialize session store
+initializeSessionStore();
 
 
 function requireAuth(req, res, next) {
