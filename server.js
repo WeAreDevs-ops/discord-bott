@@ -49,10 +49,12 @@ app.use((req, res, next) => {
 let sessionConfig = {
   secret: process.env.SESSION_SECRET || require('crypto').randomBytes(64).toString('hex'),
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true, // Changed to true to help with login flow
   cookie: { 
     secure: false, 
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    httpOnly: true,
+    sameSite: 'lax'
   }
 };
 
@@ -102,9 +104,13 @@ initializeSessionStore();
 
 
 function requireAuth(req, res, next) {
-  if (req.session.user) {
+  console.log('Checking auth for session:', req.session.id);
+  console.log('User in session:', req.session.user ? req.session.user.username : 'none');
+  
+  if (req.session && req.session.user && req.session.user.id) {
     next();
   } else {
+    console.log('User not authenticated, redirecting to Discord OAuth');
     res.redirect('/auth/discord');
   }
 }
@@ -196,7 +202,38 @@ function hasManageGuildPermission(permissions) {
 
 
 app.get('/', (req, res) => {
-  res.render('index', { user: req.session.user });
+  const error = req.query.error;
+  let errorMessage = null;
+  
+  if (error) {
+    switch (error) {
+      case 'access_denied':
+        errorMessage = 'Login was cancelled. Please try again.';
+        break;
+      case 'no_code':
+        errorMessage = 'Authentication failed. Please try again.';
+        break;
+      case 'invalid_code':
+        errorMessage = 'Invalid authorization code. Please try again.';
+        break;
+      case 'unauthorized':
+        errorMessage = 'Authorization failed. Please try again.';
+        break;
+      case 'session_error':
+        errorMessage = 'Session error. Please try again.';
+        break;
+      case 'oauth_failed':
+        errorMessage = 'Login failed. Please try again.';
+        break;
+      default:
+        errorMessage = 'An error occurred during login.';
+    }
+  }
+  
+  res.render('index', { 
+    user: req.session.user,
+    error: errorMessage
+  });
 });
 
 app.get('/auth/discord', (req, res) => {
@@ -216,13 +253,21 @@ app.get('/auth/discord/bot-invite', requireAuth, (req, res) => {
 });
 
 app.get('/auth/discord/callback', async (req, res) => {
-  const { code, guild_id } = req.query;
+  const { code, guild_id, error } = req.query;
+  
+  // Handle OAuth errors (user denied access, etc.)
+  if (error) {
+    console.log('OAuth error from Discord:', error);
+    return res.redirect('/?error=access_denied');
+  }
   
   if (!code) {
-    return res.redirect('/');
+    console.log('No authorization code received');
+    return res.redirect('/?error=no_code');
   }
 
   try {
+    console.log('Processing Discord OAuth callback...');
     
     const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
@@ -236,7 +281,12 @@ app.get('/auth/discord/callback', async (req, res) => {
       }
     });
 
+    if (!tokenResponse.data.access_token) {
+      throw new Error('No access token received from Discord');
+    }
+
     const { access_token } = tokenResponse.data;
+    console.log('Access token received successfully');
 
     // Get user info
     const userResponse = await axios.get('https://discord.com/api/users/@me', {
@@ -245,23 +295,49 @@ app.get('/auth/discord/callback', async (req, res) => {
       }
     });
 
+    if (!userResponse.data.id) {
+      throw new Error('Failed to get user data from Discord');
+    }
+
+    console.log('User data received:', userResponse.data.username);
+
+    // Store user data in session
     req.session.user = {
-      ...userResponse.data,
+      id: userResponse.data.id,
+      username: userResponse.data.username,
+      discriminator: userResponse.data.discriminator,
+      avatar: userResponse.data.avatar,
       access_token: access_token
     };
 
-    
-    if (guild_id) {
+    // Save session explicitly
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.redirect('/?error=session_error');
+      }
       
-      setTimeout(() => {
+      console.log('Session saved successfully for user:', userResponse.data.username);
+      
+      // Redirect based on whether this was a guild-specific invite
+      if (guild_id) {
         res.redirect(`/guild/${guild_id}?invited=true`);
-      }, 2000);
-    } else {
-      res.redirect('/dashboard');
-    }
+      } else {
+        res.redirect('/dashboard');
+      }
+    });
+
   } catch (error) {
-    console.error('OAuth error:', error);
-    res.redirect('/');
+    console.error('OAuth callback error:', error.response?.data || error.message);
+    
+    // More specific error handling
+    if (error.response?.status === 400) {
+      res.redirect('/?error=invalid_code');
+    } else if (error.response?.status === 401) {
+      res.redirect('/?error=unauthorized');
+    } else {
+      res.redirect('/?error=oauth_failed');
+    }
   }
 });
 
