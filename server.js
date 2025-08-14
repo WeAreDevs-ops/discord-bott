@@ -86,8 +86,6 @@ function initializeSessionStoreSync() {
           } else {
             console.log('✅ Firebase connection restored');
           }
-        }, (error) => {
-          console.log('⚠️ Firebase connection monitoring error:', error.message);
         });
       } catch (connectionError) {
         console.log('⚠️ Firebase connection monitoring failed:', connectionError.message);
