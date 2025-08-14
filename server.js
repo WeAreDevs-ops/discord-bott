@@ -74,7 +74,8 @@ function initializeSessionStoreSync() {
           if (err) {
             console.log('Session cleanup error:', err.message);
           }
-        }
+        },
+        reapInterval: 600000 // 10 minutes cleanup interval
       });
       
       // Monitor Firebase connection asynchronously with error handling
@@ -85,6 +86,8 @@ function initializeSessionStoreSync() {
           } else {
             console.log('✅ Firebase connection restored');
           }
+        }, (error) => {
+          console.log('⚠️ Firebase connection monitoring error:', error.message);
         });
       } catch (connectionError) {
         console.log('⚠️ Firebase connection monitoring failed:', connectionError.message);
