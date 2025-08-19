@@ -620,6 +620,50 @@ const autoModSettings = new Map();
 // Auto role settings (guildId -> roleId)
 const autoRoleSettings = new Map();
 
+// Restricted channels (guildId -> Set of channelIds)
+const restrictedChannels = new Map();
+
+
+
+// Helper function to reload settings from Firebase
+async function reloadGuildSettings(guildId) {
+  try {
+    const [settingsData, automodData, autoRoleData, commandAssignmentsData, restrictedChannelsData] = await Promise.all([
+      getGuildSettings(guildId),
+      getAutoModSettings(guildId),
+      getAutoRoleSettings(guildId),
+      getCommandAssignments(guildId),
+      getRestrictedChannels(guildId)
+    ]);
+
+    // Update local maps
+    if (settingsData && Object.keys(settingsData).length > 0) {
+      guildSettings.set(guildId, settingsData);
+    }
+
+    if (automodData) {
+      autoModSettings.set(guildId, automodData);
+    }
+
+    if (autoRoleData) {
+      autoRoleSettings.set(guildId, autoRoleData);
+    } else {
+      autoRoleSettings.delete(guildId);
+    }
+
+    if (commandAssignmentsData && Object.keys(commandAssignmentsData).length > 0) {
+      commandChannelAssignments.set(guildId, commandAssignmentsData);
+    }
+
+    if (restrictedChannelsData && Array.isArray(restrictedChannelsData) && restrictedChannelsData.length > 0) {
+      restrictedChannels.set(guildId, new Set(restrictedChannelsData));
+    }
+
+    } catch (error) {
+    console.error(`Error reloading settings for guild`);
+  }
+}
+
 // Firebase Database Functions
 async function saveGuildSettings(guildId, settings) {
   try {
@@ -775,172 +819,6 @@ const RATE_LIMIT_WINDOW = 10000; // 10 seconds
 const MAX_MESSAGES_PER_WINDOW = 15; // Much more lenient for normal chatting
 const MAX_LINKS_PER_WINDOW = 0; // Block all links completely
 
-// Advanced Unicode character complexity analysis
-function analyzeUnicodeComplexity(message) {
-  let severity = 0;
-  const reasons = [];
-  let isSuspicious = false;
-
-  // Count different Unicode blocks
-  const unicodeBlocks = {
-    mathematical: (message.match(/[\u1D400-\u1D7FF]/g) || []).length,
-    fullwidth: (message.match(/[\uFF00-\uFFEF]/g) || []).length,
-    combining: (message.match(/[\u0300-\u036F]/g) || []).length,
-    cyrillic: (message.match(/[\u0400-\u04FF]/g) || []).length,
-    greek: (message.match(/[\u0370-\u03FF]/g) || []).length,
-    arabic: (message.match(/[\u0600-\u06FF\uFB50-\uFDFF]/g) || []).length,
-    cjk: (message.match(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF]/g) || []).length,
-    symbols: (message.match(/[\u2600-\u26FF\u2700-\u27BF]/g) || []).length,
-    enclosed: (message.match(/[\u2460-\u24FF]/g) || []).length,
-    boxDrawing: (message.match(/[\u2500-\u257F]/g) || []).length
-  };
-
-  // Calculate Unicode diversity (too many different scripts is suspicious)
-  const activeBlocks = Object.values(unicodeBlocks).filter(count => count > 0).length;
-  const totalSpecialChars = Object.values(unicodeBlocks).reduce((sum, count) => sum + count, 0);
-
-  // Flag excessive Unicode diversity
-  if (activeBlocks > 4) {
-    severity += 6;
-    reasons.push('Excessive Unicode script mixing');
-    isSuspicious = true;
-  }
-
-  // Flag high ratio of special characters to normal text
-  const normalChars = message.replace(/[\u0000-\u007F]/g, '').length;
-  const specialRatio = totalSpecialChars / (message.length || 1);
-
-  if (specialRatio > 0.3) {
-    severity += Math.floor(specialRatio * 10);
-    reasons.push('High special character density');
-    isSuspicious = true;
-  }
-
-  // Flag specific suspicious patterns
-  if (unicodeBlocks.mathematical > 5) {
-    severity += 5;
-    reasons.push('Mathematical Unicode font abuse');
-    isSuspicious = true;
-  }
-
-  if (unicodeBlocks.combining > 8) {
-    severity += 7;
-    reasons.push('Excessive diacritical marks');
-    isSuspicious = true;
-  }
-
-  if (unicodeBlocks.fullwidth > 3) {
-    severity += 4;
-    reasons.push('Fullwidth character manipulation');
-    isSuspicious = true;
-  }
-
-  // Check for invisible/zero-width characters
-  const invisibleChars = (message.match(/[\u200B-\u200F\u202A-\u202E\u2060-\u2064]/g) || []).length;
-  if (invisibleChars > 2) {
-    severity += 8;
-    reasons.push('Invisible character abuse');
-    isSuspicious = true;
-  }
-
-  // Check for homograph attacks (characters that look similar to Latin)
-  const homographs = (message.match(/[АВЕКМНОРСТХаеорсух𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇αβγδεζηθικλμνξοπρστυφχψω]/g) || []).length;
-  if (homographs > 3) {
-    severity += 6;
-    reasons.push('Homograph attack detected');
-    isSuspicious = true;
-  }
-
-  return { isSuspicious, severity, reasons, unicodeBlocks, specialRatio };
-}
-
-// Clean up old rate limit data periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [userId, data] of userMessageRates.entries()) {
-    // Remove messages older than rate limit window
-    data.messages = data.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-    data.links = data.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-
-    // Remove users with no recent activity
-    if (data.messages.length === 0 && data.links.length === 0 && (!data.lastMessage || now - data.lastMessage > RATE_LIMIT_WINDOW * 2)) {
-      userMessageRates.delete(userId);
-    }
-  }
-}, 30000); // Clean up every 30 seconds
-
-// Enhanced link detection with aggressive raid bot patterns
-function containsLink(message) {
-  const patterns = [
-    // Discord invites (all variations)
-    /discord\.gg\/[^\s]+/gi,
-    /discord\.com\/invite\/[^\s]+/gi,
-    /discordapp\.com\/invite\/[^\s]+/gi,
-    /dsc\.gg\/[^\s]+/gi, // Discord shortlink service
-
-    // Obfuscated Discord invites (more variations)
-    /discord\s*\.\s*gg/gi,
-    /disc\s*ord\s*\.\s*gg/gi,
-    /d\s*i\s*s\s*c\s*o\s*r\s*d\s*\.\s*g\s*g/gi,
-    /d1sc0rd\.gg/gi,
-    /disc0rd\.gg/gi,
-
-    // Any HTTP/HTTPS link (most aggressive - blocks ALL links)
-    /https?:\/\/[^\s]+/gi,
-
-    // Shortened URLs (commonly used in spam) 
-    /bit\.ly\/[^\s]+/gi,
-    /tinyurl\.com\/[^\s]+/gi,
-    /t\.co\/[^\s]+/gi,
-    /short\.link\/[^\s]+/gi,
-    /tiny\.cc\/[^\s]+/gi,
-    /is\.gd\/[^\s]+/gi,
-    /rb\.gy\/[^\s]+/gi,
-    /cutt\.ly\/[^\s]+/gi,
-    /shortened\.link\/[^\s]+/gi,
-
-    // Obfuscated links (more patterns)
-    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.]
-    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.)
-    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT
-    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot]
-    /[a-zA-Z0-9-]+\s*\{\.\}\s*[a-zA-Z]{2,}/gi, // {.}
-    /[a-zA-Z0-9-]+\s*<\.\>\s*[a-zA-Z]{2,}/gi, // <.>
-    /[a-zA-Z0-9-]+\s*\*\.\*\s*[a-zA-Z]{2,}/gi, // *.*
-
-    // IP addresses (suspicious)
-    /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
-
-    // Base64 encoded links
-    /[A-Za-z0-9+\/]{30,}={0,2}/g,
-
-    // Domain-like patterns with unusual spacing/characters
-    /[a-zA-Z0-9-]+\s*[.,]\s*[a-zA-Z]{2,}\s*\/[^\s]*/gi,
-
-    // Common free hosting/suspicious domains used by raid bots
-    /[^\s]*\.tk\/[^\s]*/gi,
-    /[^\s]*\.ml\/[^\s]*/gi,
-    /[^\s]*\.ga\/[^\s]*/gi,
-    /[^\s]*\.cf\/[^\s]*/gi,
-    /[^\s]*\.herokuapp\.com\/[^\s]*/gi
-  ];
-
-  return patterns.some(pattern => pattern.test(message));
-}
-
-// Function to detect raid invite patterns specifically
-function containsRaidInvite(message) {
-  const raidInvitePatterns = [
-    /discord\.gg\/[a-zA-Z0-9]{8,}/gi, // Standard Discord invite format
-    /join.{0,20}server.{0,20}bio/gi, // "join the server in my bio" pattern
-    /check.{0,20}bio.{0,20}link/gi, // "check bio for link" pattern
-    /link.{0,20}bio/gi, // "link in bio" pattern
-    /server.{0,20}profile/gi // "server in profile" pattern
-  ];
-
-  return raidInvitePatterns.some(pattern => pattern.test(message));
-}
-
 // Enhanced spam detection with aggressive raid bot patterns
 function detectSpamPatterns(message, userId) {
   const lowerMessage = message.toLowerCase();
@@ -961,7 +839,7 @@ function detectSpamPatterns(message, userId) {
     { pattern: /(revenge|destroy|annihilate).{0,20}(server|discord)/gi, weight: 18, reason: 'Server destruction threat' },
     { pattern: /━{5,}|─{5,}|═{5,}/gi, weight: 15, reason: 'ASCII art border (common in raid messages)' },
     { pattern: /(bot|user).{0,20}(revenge|retaliation|payback)/gi, weight: 18, reason: 'Revenge bot pattern' },
-    
+
     // Additional aggressive raid patterns
     { pattern: /check.{0,10}(my|our).{0,10}bio/gi, weight: 15, reason: 'Bio redirect pattern' },
     { pattern: /(dm|message).{0,10}me.{0,10}for.{0,10}(free|raid|nuke)/gi, weight: 18, reason: 'DM recruitment for raids' },
@@ -990,7 +868,7 @@ function detectSpamPatterns(message, userId) {
 
   // Track ALL messages
   userData.messages.push(now);
-  
+
   if (containsLink(message)) {
     userData.links.push(now);
     // Immediate high severity for ANY link since we're blocking all links
@@ -1963,7 +1841,7 @@ client.on('messageCreate', async message => {
     await reloadGuildSettings(message.guild.id);
 
     const autoMod = autoModSettings.get(message.guild.id);
-    
+
     // Check for user app/bot detection first (highest priority)
     const isOwnerOrAdmin = message.guild.ownerId === message.author.id || 
                           isBotOwner(message.author.id) ||
@@ -2000,7 +1878,7 @@ client.on('messageCreate', async message => {
           for (const mention of botMentions) {
             const mentionedId = mention.replace(/[<@>]/g, '');
             const memberInGuild = message.guild.members.cache.has(mentionedId);
-            
+
             // Only flag if the mentioned ID is not in the server (likely an external bot)
             // AND it's not a regular user who might have left
             if (!memberInGuild) {
@@ -2055,7 +1933,7 @@ client.on('messageCreate', async message => {
             // Send warning embed before mute
             // Simple timeout message for user app violations
             const simpleUserAppMessage = `<@${message.author.id}> has been timeout for violating server rules`;
-            
+
             const muteEmbed = new EmbedBuilder()
               .setColor(0x2C2F33)
               .setDescription(simpleUserAppMessage)
@@ -2178,35 +2056,13 @@ client.on('messageCreate', async message => {
 
           // Simple timeout message
           const simpleMessage = `<@${message.author.id}> has been timeout for violating server rules`;
-          
+
           const warningEmbed = new EmbedBuilder()
             .setColor(0x2C2F33)
             .setDescription(simpleMessage)
             .setTimestamp();
 
           const warningMsg = await message.channel.send({ embeds: [warningEmbed] });
-
-          // Log high/critical severity incidents for admin review
-          if (severity >= 5) {
-            try {
-              await logAdminActivity('automod_high_severity', {
-                title: 'High Severity Automod Action',
-                description: `User ${message.author.tag} triggered high severity automod in ${message.guild.name}`,
-                serverId: message.guild.id,
-                serverName: message.guild.name,
-                userId: message.author.id,
-                username: message.author.tag,
-                channelId: message.channel.id,
-                channelName: message.channel.name,
-                reason: reason,
-                severity: severity,
-                timeoutDuration: timeoutDuration,
-                messageContent: message.content.substring(0, 200)
-              });
-            } catch (error) {
-              console.error('Error logging high severity automod activity:', error);
-            }
-          }
 
           // Auto-delete warning after 8 seconds for high severity, 5 seconds for others
           setTimeout(async () => {
@@ -2358,48 +2214,190 @@ client.on('messageCreate', async message => {
   }
 });
 
-// Restricted channels (guildId -> Set of channelIds)
-const restrictedChannels = new Map();
 
+// Helper function to detect raid invite patterns specifically
+function containsRaidInvite(message) {
+  const raidInvitePatterns = [
+    /discord\.gg\/[a-zA-Z0-9]{8,}/gi, // Standard Discord invite format
+    /join.{0,20}server.{0,20}bio/gi, // "join the server in my bio" pattern
+    /check.{0,20}bio.{0,20}link/gi, // "check bio for link" pattern
+    /link.{0,20}bio/gi, // "link in bio" pattern
+    /server.{0,20}profile/gi // "server in profile" pattern
+  ];
 
+  return raidInvitePatterns.some(pattern => pattern.test(message));
+}
 
-// Helper function to reload settings from Firebase
-async function reloadGuildSettings(guildId) {
-  try {
-    const [settingsData, automodData, autoRoleData, commandAssignmentsData, restrictedChannelsData] = await Promise.all([
-      getGuildSettings(guildId),
-      getAutoModSettings(guildId),
-      getAutoRoleSettings(guildId),
-      getCommandAssignments(guildId),
-      getRestrictedChannels(guildId)
-    ]);
+// Enhanced Unicode character complexity analysis
+function analyzeUnicodeComplexity(message) {
+  let severity = 0;
+  const reasons = [];
+  let isSuspicious = false;
 
-    // Update local maps
-    if (settingsData && Object.keys(settingsData).length > 0) {
-      guildSettings.set(guildId, settingsData);
-    }
+  // Count different Unicode blocks
+  const unicodeBlocks = {
+    mathematical: (message.match(/[\u1D400-\u1D7FF]/g) || []).length,
+    fullwidth: (message.match(/[\uFF00-\uFFEF]/g) || []).length,
+    combining: (message.match(/[\u0300-\u036F]/g) || []).length,
+    cyrillic: (message.match(/[\u0400-\u04FF]/g) || []).length,
+    greek: (message.match(/[\u0370-\u03FF]/g) || []).length,
+    arabic: (message.match(/[\u0600-\u06FF\uFB50-\uFDFF]/g) || []).length,
+    cjk: (message.match(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF]/g) || []).length,
+    symbols: (message.match(/[\u2600-\u26FF\u2700-\u27BF]/g) || []).length,
+    enclosed: (message.match(/[\u2460-\u24FF]/g) || []).length,
+    boxDrawing: (message.match(/[\u2500-\u257F]/g) || []).length
+  };
 
-    if (automodData) {
-      autoModSettings.set(guildId, automodData);
-    }
+  // Calculate Unicode diversity (too many different scripts is suspicious)
+  const activeBlocks = Object.values(unicodeBlocks).filter(count => count > 0).length;
+  const totalSpecialChars = Object.values(unicodeBlocks).reduce((sum, count) => sum + count, 0);
 
-    if (autoRoleData) {
-      autoRoleSettings.set(guildId, autoRoleData);
-    } else {
-      autoRoleSettings.delete(guildId);
-    }
-
-    if (commandAssignmentsData && Object.keys(commandAssignmentsData).length > 0) {
-      commandChannelAssignments.set(guildId, commandAssignmentsData);
-    }
-
-    if (restrictedChannelsData && Array.isArray(restrictedChannelsData) && restrictedChannelsData.length > 0) {
-      restrictedChannels.set(guildId, new Set(restrictedChannelsData));
-    }
-
-    } catch (error) {
-    console.error(`Error reloading settings for guild`);
+  // Flag excessive Unicode diversity
+  if (activeBlocks > 4) {
+    severity += 6;
+    reasons.push('Excessive Unicode script mixing');
+    isSuspicious = true;
   }
+
+  // Flag high ratio of special characters to normal text
+  const normalChars = message.replace(/[\u0000-\u007F]/g, '').length;
+  const specialRatio = totalSpecialChars / (message.length || 1);
+
+  if (specialRatio > 0.3) {
+    severity += Math.floor(specialRatio * 10);
+    reasons.push('High special character density');
+    isSuspicious = true;
+  }
+
+  // Flag specific suspicious patterns
+  if (unicodeBlocks.mathematical > 5) {
+    severity += 5;
+    reasons.push('Mathematical Unicode font abuse');
+    isSuspicious = true;
+  }
+
+  if (unicodeBlocks.combining > 8) {
+    severity += 7;
+    reasons.push('Excessive diacritical marks');
+    isSuspicious = true;
+  }
+
+  if (unicodeBlocks.fullwidth > 3) {
+    severity += 4;
+    reasons.push('Fullwidth character manipulation');
+    isSuspicious = true;
+  }
+
+  // Check for invisible/zero-width characters
+  const invisibleChars = (message.match(/[\u200B-\u200F\u202A-\u202E\u2060-\u2064]/g) || []).length;
+  if (invisibleChars > 2) {
+    severity += 8;
+    reasons.push('Invisible character abuse');
+    isSuspicious = true;
+  }
+
+  // Check for homograph attacks (characters that look similar to Latin)
+  const homographs = (message.match(/[АВЕКМНОРСТХаеорсух𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪X𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇αβγδεζηθικλμνξοπρστυφχψω]/g) || []).length;
+  if (homographs > 3) {
+    severity += 6;
+    reasons.push('Homograph attack detected');
+    isSuspicious = true;
+  }
+
+  return { isSuspicious, severity, reasons, unicodeBlocks, specialRatio };
+}
+
+// Clean up old rate limit data periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [userId, data] of userMessageRates.entries()) {
+    // Remove messages older than rate limit window
+    data.messages = data.messages.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+    data.links = data.links.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+
+    // Remove users with no recent activity
+    if (data.messages.length === 0 && data.links.length === 0 && (!data.lastMessage || now - data.lastMessage > RATE_LIMIT_WINDOW * 2)) {
+      userMessageRates.delete(userId);
+    }
+  }
+}, 30000); // Clean up every 30 seconds
+
+// Enhanced link detection with aggressive raid bot patterns
+function containsLink(message) {
+  const patterns = [
+    // Discord invites (all variations)
+    /discord\.gg\/[^\s]+/gi,
+    /discord\.com\/invite\/[^\s]+/gi,
+    /discordapp\.com\/invite\/[^\s]+/gi,
+    /dsc\.gg\/[^\s]+/gi, // Discord shortlink service
+
+    // Obfuscated Discord invites (more variations)
+    /discord\s*\.\s*gg/gi,
+    /disc\s*ord\s*\.\s*gg/gi,
+    /d\s*i\s*s\s*c\s*o\s*r\s*d\s*\.\s*g\s*g/gi,
+    /d1sc0rd\.gg/gi,
+    /disc0rd\.gg/gi,
+
+    // Any HTTP/HTTPS link (most aggressive - blocks ALL links)
+    /https?:\/\/[^\s]+/gi,
+
+    // Shortened URLs (commonly used in spam) 
+    /bit\.ly\/[^\s]+/gi,
+    /tinyurl\.com\/[^\s]+/gi,
+    /t\.co\/[^\s]+/gi,
+    /short\.link\/[^\s]+/gi,
+    /tiny\.cc\/[^\s]+/gi,
+    /is\.gd\/[^\s]+/gi,
+    /rb\.gy\/[^\s]+/gi,
+    /cutt\.ly\/[^\s]+/gi,
+    /shortened\.link\/[^\s]+/gi,
+
+    // Obfuscated links (more patterns)
+    /[a-zA-Z0-9-]+\s*\[\.\]\s*[a-zA-Z]{2,}/gi, // [.]
+    /[a-zA-Z0-9-]+\s*\(\.\)\s*[a-zA-Z]{2,}/gi, // (.)
+    /[a-zA-Z0-9-]+\s*DOT\s*[a-zA-Z]{2,}/gi, // DOT
+    /[a-zA-Z0-9-]+\s*\[dot\]\s*[a-zA-Z]{2,}/gi, // [dot]
+    /[a-zA-Z0-9-]+\s*\{\.\}\s*[a-zA-Z]{2,}/gi, // {.}
+    /[a-zA-Z0-9-]+\s*<\.\>\s*[a-zA-Z]{2,}/gi, // <.>
+    /[a-zA-Z0-9-]+\s*\*\.\*\s*[a-zA-Z]{2,}/gi, // *.*
+
+    // IP addresses (suspicious)
+    /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/gi,
+
+    // Base64 encoded links
+    /[A-Za-z0-9+\/]{30,}={0,2}/g,
+
+    // Domain-like patterns with unusual spacing/characters
+    /[a-zA-Z0-9-]+\s*[.,]\s*[a-zA-Z]{2,}\s*\/[^\s]*/gi,
+
+    // Common free hosting/suspicious domains used by raid bots
+    /[^\s]*\.tk\/[^\s]*/gi,
+    /[^\s]*\.ml\/[^\s]*/gi,
+    /[^\s]*\.ga\/[^\s]*/gi,
+    /[^\s]*\.cf\/[^\s]*/gi,
+    /[^\s]*\.herokuapp\.com\/[^\s]*/gi
+  ];
+
+  return patterns.some(pattern => pattern.test(message));
+}
+
+// Helper function to detect raid invite patterns specifically
+function containsRaidInvite(message) {
+  const raidInvitePatterns = [
+    /discord\.gg\/[a-zA-Z0-9]{8,}/gi, // Standard Discord invite format
+    /join.{0,20}server.{0,20}bio/gi, // "join the server in my bio" pattern
+    /check.{0,20}bio.{0,20}link/gi, // "check bio for link" pattern
+    /link.{0,20}bio/gi, // "link in bio" pattern
+    /server.{0,20}profile/gi // "server in profile" pattern
+  ];
+
+  return raidInvitePatterns.some(pattern => pattern.test(message));
+}
+
+// Helper function to detect bad words
+function containsBadWords(message, badWords) {
+  const lowerMessage = message.toLowerCase();
+  return badWords.some(word => lowerMessage.includes(word.toLowerCase()));
 }
 
 client.on('interactionCreate', async interaction => {
@@ -4091,7 +4089,7 @@ client.on('interactionCreate', async interaction => {
                   .setLabel(label)
                   .setStyle(ButtonStyle.Link)
                   .setURL(url)
-                  .setEmoji({ name, id, animated }),
+                  .setEmoji({ name: name, id: id, animated: animated }),
                 label,
                 url
               };
@@ -5640,7 +5638,7 @@ client.on('interactionCreate', async interaction => {
                   .setLabel(label)
                   .setStyle(ButtonStyle.Link)
                   .setURL(url)
-                  .setEmoji({ name, id, animated }),
+                  .setEmoji({ name: name, id: id, animated: animated }),
                 label,
                 url
               };
@@ -5799,4 +5797,4 @@ client.on('interactionCreate', async interaction => {
 client.login(process.env.BOT_TOKEN);
 
 // Export the client for use in other modules
-module.exports = { client };
+module.module.exports = { client };

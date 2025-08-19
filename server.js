@@ -703,7 +703,7 @@ app.post('/api/guild/:id/embed/create', requireAuth, async (req, res) => {
               style: 5, 
               label: label,
               url: url,
-              emoji: { name, id, animated }
+              emoji: { name: name, id: id, animated: animated }
             };
           } else {
             
